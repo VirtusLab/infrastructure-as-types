@@ -1,3 +1,5 @@
+import sbt.Keys.scalacOptions
+
 name := "infrastructure-as-types"
 
 version := "0.1"
@@ -20,3 +22,18 @@ libraryDependencies ++= Seq(
 scalafmtOnCompile := true
 
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+
+lazy val kubernetes = project.in(file("kubernetes"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.google.code.gson" % "gson" % "2.8.6",
+      "org.apache.commons" % "commons-lang3" % "3.7",
+      "org.specs2" %% "specs2-core" % "4.8.3" % "test",
+      "org.specs2" %% "specs2-matcher-extra" % "4.8.3" % "test",
+    ),
+    scalacOptions in Test ++= Seq("-Yrangepos")
+  )
+
+lazy val root = project.in(file("."))
+  .aggregate(kubernetes)
+  .dependsOn(kubernetes)
