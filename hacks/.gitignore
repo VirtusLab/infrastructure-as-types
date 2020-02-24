@@ -1,3 +1,4 @@
 openapi-generator-cli.jar
 swagger.json
 *.log
+*.unprocessed
