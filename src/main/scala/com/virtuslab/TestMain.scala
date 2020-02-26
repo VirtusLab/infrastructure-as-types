@@ -2,7 +2,7 @@ package com.virtuslab
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 object TestMain extends DSLMain with App {
 
@@ -19,7 +19,7 @@ object TestMain extends DSLMain with App {
   } yield ns
 
   Await.result(create, 1.minute) match {
-    case Success(_) => println("Successfully created resources on Kubernetes cluster")
+    case Success(_)  => println("Successfully created resources on Kubernetes cluster")
     case Failure(ex) => throw new Exception("Encountered exception trying to create resources on Kubernetes cluster: ", ex)
   }
 

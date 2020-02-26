@@ -18,45 +18,73 @@ case class ConfigMap(name: String, values: Map[String, String]) {
 }
 
 case class Container protected (
+    name: String,
     image: Image,
     imagePullPolicy: Option[ImagePullPolicy] = None,
     env: List[EnvVar] = Nil,
-    ports: List[Port] = Nil)
+    ports: List[Port] = Nil) {
+
+  // TODO factor this out
+  def toSkuber: skuber.Container = {
+    skuber.Container(
+      name = name,
+      image = image.toString
+    )
+  }
+}
 object Container {
   def apply(
+      name: String,
       image: Image,
-      imagePullPolicy: ImagePullPolicy,
-      env: List[EnvVar] = Nil
+      imagePullPolicy: ImagePullPolicy
     ): Container = {
-    new Container(image = image, imagePullPolicy = imagePullPolicy.some)
+    new Container(
+      name = name,
+      image = image,
+      imagePullPolicy = imagePullPolicy.some
+    )
   }
 
-  def apply(image: Image, env: List[EnvVar] = Nil): Container = {
-    new Container(image)
+  def apply(name: String, image: Image): Container = {
+    new Container(name, image)
   }
 }
 case class PodSpec(containers: NonEmptyList[Container])
-case class Pod(spec: PodSpec)
+case class Pod(meta: ObjectMeta, spec: PodSpec) {
+  // TODO factor this out
+  def toSkuber: skuber.Pod = {
+    skuber.Pod(
+      metadata = skuber.ObjectMeta(name = meta.name),
+      spec = Some(
+        skuber.Pod.Spec(
+          containers = spec.containers.map(_.toSkuber).toList
+        )
+      )
+    )
+  }
+}
 
 object Foo {
   val pod1 = {
     val configMap: EnvVar = ConfigMap("asd", Map("vodka" -> "bols")).foo("vodka")
     val env: EnvVar = EnvVar("sda", "dasda")
     val fooImage: Image = Image.byTag("foo", "bar")
-    val value: Container = Container(fooImage, ImagePullPolicy.Always, env :: configMap :: Nil)
+    val value: Container = Container("foo", fooImage, ImagePullPolicy.Always)
     val podSpec: PodSpec = PodSpec(NonEmptyList.of(value))
+    val meta: ObjectMeta = ObjectMeta("test")
 
-    Pod(podSpec)
+    Pod(meta, podSpec)
   }
 
   val pod2 = {
     val configMap: EnvVar = ConfigMap("xd", Map("meme" -> "doggo")).foo("meme")
     val env: EnvVar = EnvVar("abcd", "efgh")
     val fooImage: Image = Image.byTag("boo", "bak")
-    val value: Container = Container(fooImage, ImagePullPolicy.IfNotPresent, env :: configMap :: Nil)
+    val value: Container = Container("foo", fooImage, ImagePullPolicy.IfNotPresent)
     val podSpec: PodSpec = PodSpec(NonEmptyList.of(value))
+    val meta: ObjectMeta = ObjectMeta("test")
 
-    Pod(podSpec)
+    Pod(meta, podSpec)
   }
 
   //pod1.viaHttp(pod2)

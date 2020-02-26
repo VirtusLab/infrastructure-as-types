@@ -13,6 +13,7 @@ object ImagePullPolicy extends Enum[ImagePullPolicy] {
 
 sealed trait Image {
   def image: String
+  override def toString: String = image
 }
 object Image {
   private case class ImageByTag(name: String, tag: String) extends Image {
@@ -29,5 +30,16 @@ object Image {
 
   def byHash(name: String, hash: String): Image = {
     ImageByHash(name, hash)
+  }
+
+  private val taggedImage = raw"(.*):(.*)".r
+  private val hashedImage = raw"(.*)@(.*)".r
+
+  def parse(image: String): Image = {
+    image match {
+      case taggedImage(name, tag)  => ImageByTag(name, tag)
+      case hashedImage(name, hash) => ImageByHash(name, hash)
+      case _                       => throw new Exception(s"Can't parse image: '$image'")
+    }
   }
 }

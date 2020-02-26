@@ -1,6 +1,6 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.{Application, HttpApplication, HttpApplicationInterpreter, System, SystemInterpreter}
+import com.virtuslab.dsl.{ Application, HttpApplication, HttpApplicationInterpreter, System, SystemInterpreter }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
