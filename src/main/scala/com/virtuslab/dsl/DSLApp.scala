@@ -3,7 +3,7 @@ package com.virtuslab.dsl
 import cats.syntax.either._
 import cats.syntax.option._
 import skuber.apps.v1.Deployment
-import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, Pod, Probe, Service }
+import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service }
 
 trait ApplicationInterpreter[A <: Application] {
   def system: System
@@ -12,7 +12,7 @@ trait ApplicationInterpreter[A <: Application] {
 
   protected def generateService(app: A): Service = {
     app.ports
-      .foldLeft(Service(s"${app.name}-svc")) {
+      .foldLeft(Service(app.name)) {
         case (svc, port) =>
           val rewrittenPort =
             portForward.applyOrElse(port.number, identity[Int])
@@ -55,7 +55,10 @@ trait ApplicationInterpreter[A <: Application] {
       template = podTemplateSpec
     )
 
-    Deployment(s"${app.name}-dpl", spec = dplSpec.some)
+    Deployment(
+      metadata = ObjectMeta(name = app.name),
+      spec = dplSpec.some
+    )
   }
 
   def apply(app: A): (Service, Deployment)
@@ -95,13 +98,13 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
 class SystemInterpreter(
     applicationInterpreters: PartialFunction[
       Application,
-      ApplicationInterpreter[_]
+      ApplicationInterpreter[Application]
     ]) {
 
-  def apply(system: System): Unit = {
+  def apply(system: System): Seq[(Service, Deployment)] = {
     system.applications.map { app =>
       if (applicationInterpreters.isDefinedAt(app)) {
-        applicationInterpreters(app)
+        applicationInterpreters(app)(app)
       } else {
         throw new IllegalArgumentException(
           s"Application $app is not suitable for the interpreter."
