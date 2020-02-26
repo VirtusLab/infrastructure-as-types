@@ -11,7 +11,7 @@ abstract class DSLMain {
 
   import skuber._
 
-  implicit private val system: ActorSystem = ActorSystem("")
+  implicit protected val system: ActorSystem = ActorSystem("")
   implicit private val actorMaterializer: ActorMaterializer = ActorMaterializer()
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 

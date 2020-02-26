@@ -26,4 +26,9 @@ object TestMain extends DSLMain with App {
   // Populate the namespace
   private val nsClient = client.usingNamespace(namespace.name)
 
+  // Cleanup
+  client.close
+  system.terminate().foreach { f =>
+    System.exit(0)
+  }
 }
