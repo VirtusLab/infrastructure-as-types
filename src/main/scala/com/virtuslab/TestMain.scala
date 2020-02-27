@@ -44,11 +44,12 @@ object TestMain extends DSLMain with App {
     )
 
     // Populate the namespace
-    val app = new HttpApplication(
+    val app = HttpApplication(
       name = "app",
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
-      args = List("--config", "/config.yaml")
+      args = List("--config", "/config.yaml"),
+      configurations = List(configuration)
     ).listensOn(8080)
 
     val system = System("test")
