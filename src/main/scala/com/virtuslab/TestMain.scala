@@ -52,10 +52,12 @@ object TestMain extends DSLMain with App {
     println(s"Successfully created '$config' on Kubernetes cluster")
 
     // Populate the namespace
-    val app = new HttpApplication("app", "quay.io/virtuslab/cloud-file-server:v0.0.6") {
-      override val command: List[String] = List("cloud-file-server")
-      override val args: List[String] = List("--config", "/opt/config.yaml")
-    }.listensOn(8080)
+    val app = new HttpApplication(
+      name = "app",
+      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+      command = List("cloud-file-server"),
+      args = List("--config", "/opt/config.yaml")
+    ).listensOn(8080)
 
     val system = System("test")
       .addApplication(app)

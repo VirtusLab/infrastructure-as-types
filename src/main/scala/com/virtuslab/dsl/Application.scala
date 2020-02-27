@@ -34,8 +34,8 @@ abstract class Application {
   def envs: List[Application.EnvironmentVariable]
   def ping: Option[PingAction]
   def healthCheck: Option[HealthCheckAction]
-  def command: List[String] = Nil
-  def args: List[String] = Nil
+  def command: List[String]
+  def args: List[String]
 
   protected def addPort(port: Application.Port): Application
 
@@ -51,6 +51,8 @@ abstract class Application {
 case class HttpApplication(
     name: String,
     image: String,
+    command: List[String] = Nil,
+    args: List[String] = Nil,
     ports: List[Application.Port] = Nil,
     envs: List[Application.EnvironmentVariable] = Nil,
     ping: Option[HttpPing] = None,
