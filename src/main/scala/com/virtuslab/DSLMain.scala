@@ -11,7 +11,7 @@ abstract class DSLMain {
 
   import skuber._
 
-  implicit protected val system: ActorSystem = ActorSystem("")
+  implicit private val system: ActorSystem = ActorSystem("bartektolama")
   implicit private val actorMaterializer: ActorMaterializer = ActorMaterializer()
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 
@@ -20,4 +20,10 @@ abstract class DSLMain {
   private val configWithContext = kubeconfig.useContext(ourContext)
 
   protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
+
+  def close(): Unit = {
+    system.terminate().foreach { f =>
+      System.exit(0)
+    }
+  }
 }
