@@ -113,8 +113,8 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
       volumeMounts = app.configurations.map { cfg =>
         Volume.Mount(
           name = volumeName(cfg),
-          mountPath = "/",
-          readOnly = true
+          mountPath = "/opt", // TODO
+          readOnly = true // TODO
         )
       }
     )

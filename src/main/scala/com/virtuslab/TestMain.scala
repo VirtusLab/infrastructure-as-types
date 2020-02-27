@@ -48,7 +48,7 @@ object TestMain extends DSLMain with App {
       name = "app",
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
-      args = List("--config", "/config.yaml"),
+      args = List("--config", "/opt/config.yaml"),
       configurations = List(configuration)
     ).listensOn(8080)
 
@@ -89,5 +89,5 @@ object TestMain extends DSLMain with App {
 
   // Cleanup
   client.close
-  super.close()
+//  super.close() // FIXME
 }
