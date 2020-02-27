@@ -48,7 +48,7 @@ object TestMain extends DSLMain with App {
       name = "app",
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
-      args = List("--config", "/opt/config.yaml")
+      args = List("--config", "/config.yaml")
     ).listensOn(8080)
 
     val system = System("test")

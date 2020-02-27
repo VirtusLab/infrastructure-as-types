@@ -36,6 +36,7 @@ abstract class Application {
   def healthCheck: Option[HealthCheckAction]
   def command: List[String]
   def args: List[String]
+  def configurations: List[Configuration]
 
   protected def addPort(port: Application.Port): Application
 
@@ -53,6 +54,7 @@ case class HttpApplication(
     image: String,
     command: List[String] = Nil,
     args: List[String] = Nil,
+    configurations: List[Configuration] = Nil,
     ports: List[Application.Port] = Nil,
     envs: List[Application.EnvironmentVariable] = Nil,
     ping: Option[HttpPing] = None,
@@ -69,5 +71,9 @@ case class HttpApplication(
           s"Port ${port.show} is already defined."
         )
       }
+  }
+
+  def withConfiguration(configuration: Configuration): HttpApplication = {
+    copy(configurations = configuration :: configurations)
   }
 }

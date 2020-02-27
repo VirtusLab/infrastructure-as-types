@@ -47,14 +47,16 @@ trait ApplicationInterpreter[A <: Application] {
       )
   }
 
+  protected def volumeName(configuration: Configuration): String = {
+    s"config-${configuration.name}"
+  }
+
   protected def generateDeployment(app: A, container: Container): Deployment = {
     val podSpec = Pod.Spec(
       containers = container :: Nil,
-      // FIXME --start--
-      volumes = List(
-        Volume("config", ConfigMapVolumeSource(name = "app"))
-      )
-      // FIXME --end--
+      volumes = app.configurations.map { cfg =>
+        Volume(volumeName(cfg), ConfigMapVolumeSource(name = cfg.name))
+      }
     )
     val podTemplateSpec = Pod.Template
       .Spec(
@@ -108,15 +110,13 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
       readinessProbe = app.healthCheck.map(
         healthCheck => Probe(action = HTTPGetAction(healthCheck.url))
       ),
-      // FIXME --start--
-      volumeMounts = List(
+      volumeMounts = app.configurations.map { cfg =>
         Volume.Mount(
-          name = "config",
-          mountPath = "/opt/",
+          name = volumeName(cfg),
+          mountPath = "/",
           readOnly = true
         )
-      )
-      // FIXME --end--
+      }
     )
 
     val dpl = generateDeployment(app, container)
