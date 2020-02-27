@@ -13,12 +13,11 @@ class SkuberConverter(interpreter: SystemInterpreter) {
   import skuber.json.format._
 
   def toMetaAndJson(system: System): Seq[(ShortMeta, JsValue)] = {
-    interpreter(system) flatMap {
-      case (service, deployment) =>
-        Seq(
-          ShortMeta(service.apiVersion, service.kind, service.ns, service.name) -> Json.toJson(service),
-          ShortMeta(deployment.apiVersion, deployment.kind, deployment.ns, deployment.name) -> Json.toJson(deployment)
-        )
+    interpreter(system).map {
+      case deployment: skuber.apps.v1.Deployment =>
+        ShortMeta(deployment.apiVersion, deployment.kind, deployment.ns, deployment.name) -> Json.toJson(deployment)
+      case service: skuber.Service =>
+        ShortMeta(service.apiVersion, service.kind, service.ns, service.name) -> Json.toJson(service)
       case r => throw new IllegalArgumentException(s"Resource $r was not expected")
     }
   }

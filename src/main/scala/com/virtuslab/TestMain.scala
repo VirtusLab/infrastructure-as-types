@@ -1,7 +1,9 @@
 package com.virtuslab
 
-import com.virtuslab.dsl.{ HttpApplication, System, SystemInterpreter }
+import akka.actor.Deploy
+import com.virtuslab.dsl.{ Configuration, HttpApplication, System, SystemInterpreter }
 import play.api.libs.json.Format
+import skuber.apps.v1.Deployment
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
 import scala.concurrent.duration._
@@ -22,47 +24,55 @@ object TestMain extends DSLMain with App {
 
     val nsClient = client.usingNamespace(namespace.name)
 
-    val appConfig = ConfigMap(
-      metadata = ObjectMeta(name = "app"),
-      data = Map(
+    val configuration = Configuration(
+      "app",
+      Map(
         "config.yaml" ->
           """
-          |listen: :8080
-          |logRequests: true
-          |connectors:
-          |- type: file
-          |  uri: file:///opt/test.txt
-          |  pathPrefix: /health
-          |""".stripMargin,
+            |listen: :8080
+            |logRequests: true
+            |connectors:
+            |- type: file
+            |  uri: file:///opt/test.txt
+            |  pathPrefix: /health
+            |""".stripMargin,
         "test.txt" ->
           """
-          |I'm testy tester, being tested ;-)
-          |""".stripMargin
+            |I'm testy tester, being tested ;-)
+            |""".stripMargin
       )
+    )
+
+    val appConfig = ConfigMap(
+      metadata = ObjectMeta(name = "app"),
+      data = configuration.entries
     )
     val createConfig = createOrUpdate(nsClient, appConfig)
     val config = Await.result(createConfig, 1.minute)
     println(s"Successfully created '$config' on Kubernetes cluster")
 
     // Populate the namespace
-    val app = HttpApplication("app", "quay.io/virtuslab/cloud-file-server:v0.0.6")
-      .listensOn(8080)
+    val app = new HttpApplication("app", "quay.io/virtuslab/cloud-file-server:v0.0.6") {
+      override val command: List[String] = List("cloud-file-server")
+      override val args: List[String] = List("--config", "/opt/config.yaml")
+    }.listensOn(8080)
 
     val system = System("test")
       .addApplication(app)
+      .addConfiguration(configuration)
 
     val systemInterpreter = SystemInterpreter.of(system)
 
-    systemInterpreter(system) foreach {
-      case (service, deployment) => {
+    systemInterpreter(system).foreach {
+      case service: Service =>
         val createService = createOrUpdate(nsClient, service)
-        val createDeployment = createOrUpdate(nsClient, deployment)
-
         val svc = Await.result(createService, 1.minute)
         println(s"Successfully created '$svc' on Kubernetes cluster")
+
+      case deployment: Deployment =>
+        val createDeployment = createOrUpdate(nsClient, deployment)
         val dpl = Await.result(createDeployment, 1.minute)
         println(s"Successfully created '$dpl' on Kubernetes cluster")
-      }
     }
   }
 

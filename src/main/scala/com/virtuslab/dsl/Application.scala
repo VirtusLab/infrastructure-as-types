@@ -14,6 +14,8 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
+case class Configuration(name: String, entries: Map[String, String])
+
 object Application {
   case class Port(number: Int, name: Option[String] = None)
   object Port {
@@ -32,6 +34,8 @@ abstract class Application {
   def envs: List[Application.EnvironmentVariable]
   def ping: Option[PingAction]
   def healthCheck: Option[HealthCheckAction]
+  def command: List[String] = Nil
+  def args: List[String] = Nil
 
   protected def addPort(port: Application.Port): Application
 

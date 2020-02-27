@@ -4,7 +4,16 @@ import cats.syntax.either._
 import cats.syntax.option._
 import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
-import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
+import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
+
+class ConfigurationInterpreter() {
+  def apply(configuration: Configuration): ConfigMap = {
+    ConfigMap(
+      metadata = ObjectMeta(name = configuration.name),
+      data = configuration.entries
+    )
+  }
+}
 
 trait ApplicationInterpreter[A <: Application] {
   def system: System
@@ -86,10 +95,8 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
     val container = Container(
       name = app.name,
       image = app.image,
-      // FIXME --start--
-      command = List("cloud-file-server"),
-      args = List("--config", "/opt/config.yaml"),
-      // FIXME --end--
+      command = app.command,
+      args = app.args,
       env = env,
       ports = app.ports.map { port =>
         Container.Port(
@@ -122,17 +129,21 @@ class SystemInterpreter(
     applicationInterpreters: PartialFunction[
       Application,
       ApplicationInterpreter[Application]
-    ]) {
+    ],
+    config: ConfigurationInterpreter) {
 
-  def apply(system: System): Seq[(Service, Deployment)] = {
-    system.applications.map { app =>
+  def apply(system: System): Seq[ObjectResource] = {
+    system.applications.flatMap { app =>
       if (applicationInterpreters.isDefinedAt(app)) {
-        applicationInterpreters(app)(app)
+        val (svc, dpl) = applicationInterpreters(app)(app)
+        Seq(svc, dpl)
       } else {
         throw new IllegalArgumentException(
           s"Application $app is not suitable for the interpreter."
         )
       }
+    } ++ system.configurations.map { cfg =>
+      config(cfg)
     }
   }
 }
@@ -142,13 +153,14 @@ object SystemInterpreter {
       applicationInterpreters: PartialFunction[
         Application,
         ApplicationInterpreter[Application]
-      ]
-    ): SystemInterpreter = new SystemInterpreter(applicationInterpreters)
+      ],
+      configurationInterpreter: ConfigurationInterpreter
+    ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter)
 
   def of(system: System): SystemInterpreter = {
     val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application]] // FIXME
     new SystemInterpreter({
       case _: HttpApplication => httpApplicationInterpreter
-    })
+    }, new ConfigurationInterpreter)
   }
 }

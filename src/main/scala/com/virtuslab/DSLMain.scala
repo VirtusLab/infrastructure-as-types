@@ -5,7 +5,8 @@ import akka.stream.ActorMaterializer
 import skuber.api.Configuration
 import skuber.api.client.Context
 
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.{ Await, ExecutionContextExecutor }
+import scala.concurrent.duration._
 
 abstract class DSLMain {
 
@@ -22,8 +23,7 @@ abstract class DSLMain {
   protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
 
   def close(): Unit = {
-    system.terminate().foreach { f =>
-      System.exit(0)
-    }
+    actorMaterializer.shutdown()
+    Await.result(system.terminate(), 1.minute)
   }
 }
