@@ -43,14 +43,6 @@ object TestMain extends DSLMain with App {
       )
     )
 
-    val appConfig = ConfigMap(
-      metadata = ObjectMeta(name = "app"),
-      data = configuration.entries
-    )
-    val createConfig = createOrUpdate(nsClient, appConfig)
-    val config = Await.result(createConfig, 1.minute)
-    println(s"Successfully created '$config' on Kubernetes cluster")
-
     // Populate the namespace
     val app = new HttpApplication(
       name = "app",
@@ -66,6 +58,11 @@ object TestMain extends DSLMain with App {
     val systemInterpreter = SystemInterpreter.of(system)
 
     systemInterpreter(system).foreach {
+      case config: ConfigMap =>
+        val createConfig = createOrUpdate(nsClient, config)
+        val cfg = Await.result(createConfig, 1.minute)
+        println(s"Successfully created '$cfg' on Kubernetes cluster")
+
       case service: Service =>
         val createService = createOrUpdate(nsClient, service)
         val svc = Await.result(createService, 1.minute)
