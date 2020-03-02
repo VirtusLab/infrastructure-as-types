@@ -9,8 +9,8 @@ import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, Obje
 class ConfigurationInterpreter() {
   def apply(configuration: Configuration): ConfigMap = {
     ConfigMap(
-      metadata = ObjectMeta(name = configuration.name),
-      data = configuration.entries
+      metadata = ObjectMeta(name = configuration.name, namespace = configuration.namespace.name),
+      data = configuration.data
     )
   }
 }
