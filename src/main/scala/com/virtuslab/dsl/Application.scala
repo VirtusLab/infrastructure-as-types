@@ -6,6 +6,8 @@ import cats.Show
 import cats.syntax.option._
 import cats.syntax.show._
 
+final case class Namespace(value: String)
+
 sealed trait PingAction
 case class HttpPing(url: URL) extends PingAction
 case class TCPPing(port: Int) extends PingAction
@@ -30,6 +32,7 @@ object Application {
 abstract class Application {
   def name: String
   def image: String
+  def namespace: Namespace
   def ports: List[Application.Port]
   def envs: List[Application.EnvironmentVariable]
   def ping: Option[PingAction]
@@ -52,6 +55,7 @@ abstract class Application {
 case class HttpApplication(
     name: String,
     image: String,
+    namespace: Namespace = Namespace("default"),
     command: List[String] = Nil,
     args: List[String] = Nil,
     configurations: List[Configuration] = Nil,
@@ -75,5 +79,9 @@ case class HttpApplication(
 
   def withConfiguration(configuration: Configuration): HttpApplication = {
     copy(configurations = configuration :: configurations)
+  }
+
+  def inNamespace(name: String): HttpApplication = {
+    copy(namespace = Namespace(name))
   }
 }
