@@ -14,6 +14,8 @@ class SkuberConverter(interpreter: SystemInterpreter) {
 
   def toMetaAndJson(system: System): Seq[(ShortMeta, JsValue)] = {
     interpreter(system).map {
+      case namespace: skuber.Namespace =>
+        ShortMeta(namespace.apiVersion, namespace.kind, namespace.ns, namespace.name) -> Json.toJson(namespace)
       case deployment: skuber.apps.v1.Deployment =>
         ShortMeta(deployment.apiVersion, deployment.kind, deployment.ns, deployment.name) -> Json.toJson(deployment)
       case service: skuber.Service =>

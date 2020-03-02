@@ -1,31 +1,38 @@
 package com.virtuslab.dsl
 
+import cats.data.NonEmptyList
 import com.stephenn.scalatest.playjson.JsonMatchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
+import com.virtuslab.internal.{ShortMeta, SkuberConverter}
 
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a system" in {
-    val appOne = HttpApplication("app-one", "image-app-one")
-      .listensOn(9090)
-
-    val appTwo = HttpApplication("app-two", "image-app-two")
-      .listensOn(9090, "http-port")
+    val ns = Namespace("test").inNamespace { implicit ns =>
+      NonEmptyList.of(
+        HttpApplication("app-one", "image-app-one")
+          .listensOn(9090)
+        ,
+        HttpApplication("app-two", "image-app-two")
+          .listensOn(9090, "http-port")
+      )
+    }
 
     val system = System("test-system")
-      .addApplication(appOne)
-      .addApplication(appTwo)
+      .addNamespace(ns)
 
     val systemInterpreter = SystemInterpreter.of(system)
+
     SkuberConverter(systemInterpreter).toMetaAndJson(system) foreach {
-      case (ShortMeta(_, "Service", _, "app-one"), json) => json should matchJsonString("""
+      case (ShortMeta(_, "Service", _, "app-one"), json) => json should matchJsonString(
+        """
 {
   "apiVersion":"v1",
   "kind":"Service",
   "metadata":{
     "name":"app-one",
+    "namespace":"test",
     "labels":{
       "system":"test-system",
       "app":"app-one"
@@ -45,12 +52,14 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 }
 """)
 
-      case (ShortMeta(_, "Deployment", _, "app-one"), json) => json should matchJsonString("""
+      case (ShortMeta(_, "Deployment", _, "app-one"), json) => json should matchJsonString(
+        """
 {
   "apiVersion":"apps/v1",
   "kind":"Deployment",
   "metadata":{
-    "name": "app-one"
+    "name": "app-one",
+    "namespace":"test"
   },
   "spec":{
     "selector":{
@@ -86,12 +95,14 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 }
 """)
 
-      case (ShortMeta(_, "Service", _, "app-two"), json) => json should matchJsonString("""
+      case (ShortMeta(_, "Service", _, "app-two"), json) => json should matchJsonString(
+        """
 {
   "apiVersion":"v1",
   "kind":"Service",
   "metadata":{
     "name":"app-two",
+    "namespace":"test",
     "labels":{
       "system":"test-system",
       "app":"app-two"
@@ -111,12 +122,14 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 }
 """)
 
-      case (ShortMeta(_, "Deployment", _, "app-two"), json) => json should matchJsonString("""
+      case (ShortMeta(_, "Deployment", _, "app-two"), json) => json should matchJsonString(
+        """
 {
   "kind":"Deployment",
   "apiVersion":"apps/v1",
   "metadata":{
-    "name": "app-two"
+    "name": "app-two",
+    "namespace":"test"
   },
   "spec":{
     "selector":{
@@ -151,7 +164,16 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
   }
 }
 """)
-      case (m, _)                                           => throw new IllegalArgumentException(s"Resource $m was not matched")
+      case (ShortMeta(_, "Namespace", _, _), json) => json should matchJsonString("""
+{
+  "kind":"Namespace",
+  "apiVersion":"v1",
+  "metadata": {
+    "name":"test"
+  }
+}
+""")
+      case (m, _) => throw new IllegalArgumentException(s"Resource $m was not matched")
     }
   }
 }

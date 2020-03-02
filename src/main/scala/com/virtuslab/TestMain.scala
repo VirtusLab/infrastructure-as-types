@@ -82,7 +82,7 @@ object TestMain extends DSLMain with App {
     import skuber._
 
     client.create(o) recoverWith {
-      case ex: K8SException if ex.status.code.contains(409) => client.update(o) // this need an abstraction
+      case ex: K8SException if ex.status.code.contains(409) => client.update(o)
     }
   }
 
