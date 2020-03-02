@@ -6,6 +6,12 @@ import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
 import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
 
+class NamespaceInterpreter() {
+  def apply(namespace: Namespace): skuber.Namespace = {
+    skuber.Namespace.from(ObjectMeta(name = namespace.name))
+  }
+}
+
 class ConfigurationInterpreter() {
   def apply(configuration: Configuration): ConfigMap = {
     ConfigMap(
@@ -130,7 +136,8 @@ class SystemInterpreter(
       Application,
       ApplicationInterpreter[Application]
     ],
-    config: ConfigurationInterpreter) {
+    config: ConfigurationInterpreter,
+    namespace: NamespaceInterpreter) {
 
   def apply(system: System): Seq[ObjectResource] = {
     system.applications.flatMap { app =>
@@ -144,7 +151,7 @@ class SystemInterpreter(
       }
     } ++ system.configurations.map { cfg =>
       config(cfg)
-    }
+    } ++ ???
   }
 }
 
@@ -154,13 +161,14 @@ object SystemInterpreter {
         Application,
         ApplicationInterpreter[Application]
       ],
-      configurationInterpreter: ConfigurationInterpreter
-    ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter)
+      configurationInterpreter: ConfigurationInterpreter,
+      namespaceInterpreter: NamespaceInterpreter
+    ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter, namespaceInterpreter)
 
   def of(system: System): SystemInterpreter = {
     val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application]] // FIXME
     new SystemInterpreter({
       case _: HttpApplication => httpApplicationInterpreter
-    }, new ConfigurationInterpreter)
+    }, new ConfigurationInterpreter, new NamespaceInterpreter)
   }
 }

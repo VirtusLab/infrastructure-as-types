@@ -1,18 +1,15 @@
 package com.virtuslab
 
-import com.virtuslab.dsl.{Configuration, HttpApplication, Namespace, System, SystemInterpreter}
 import play.api.libs.json.Format
-import skuber.apps.v1.Deployment
 import skuber.{K8SRequestContext, ObjectResource, ResourceDefinition}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 object TestMain extends DSLMain with App {
+  import com.virtuslab.dsl.{Configuration, HttpApplication, Namespace, System, SystemInterpreter}
 
   def deploy(): Unit = {
-    import skuber.json.format._
-
     val namespace = Namespace("test")
 
     val configuration = Configuration(
@@ -49,7 +46,10 @@ object TestMain extends DSLMain with App {
       .addApplication(app)
       .addConfiguration(configuration)
 
-    import skuber._
+    import skuber.{Namespace, ConfigMap, Service}
+    import skuber.apps.v1.Deployment
+    import skuber.json.format._
+
     val systemInterpreter = SystemInterpreter.of(system)
     systemInterpreter(system).foreach {
 
@@ -72,6 +72,8 @@ object TestMain extends DSLMain with App {
         val createDeployment = createOrUpdate(client, deployment)
         val dpl = Await.result(createDeployment, 1.minute)
         println(s"Successfully created '$dpl' on Kubernetes cluster")
+
+      case o => throw new UnsupportedOperationException(s"unexpected resource $o")
     }
   }
 

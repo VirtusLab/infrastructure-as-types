@@ -26,7 +26,7 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
-case class Configuration(name: String, namespace: Namespace = Namespace("default"), data: Map[String, String])
+case class Configuration(name: String, data: Map[String, String], namespace: Namespace = Namespace("default"))
 
 object Application {
   case class Port(number: Int, name: Option[String] = None)
@@ -89,9 +89,5 @@ case class HttpApplication(
 
   def withConfiguration(configuration: Configuration): HttpApplication = {
     copy(configurations = configuration :: configurations)
-  }
-
-  def inNamespace(name: String): HttpApplication = {
-    copy(namespace = Namespace(name))
   }
 }
