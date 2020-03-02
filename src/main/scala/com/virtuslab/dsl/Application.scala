@@ -3,25 +3,22 @@ package com.virtuslab.dsl
 import java.net.URL
 
 import cats.Show
+import cats.data.NonEmptyList
 import cats.syntax.option._
 import cats.syntax.show._
 
 trait Namespace {
   def name: String
-  def components: Seq[AnyRef]
 }
 
 object Namespace {
   final case class UndefinedNamespace protected (name: String) extends Namespace {
-
-    override def components: Seq[Application] = Seq.empty
-
-    def inNamespace(f: Namespace => Seq[AnyRef]): DefinedNamespace = {
+    def inNamespace(f: Namespace => NonEmptyList[AnyRef]): DefinedNamespace = {
       DefinedNamespace(name, f(this))
     }
   }
 
-  final case class DefinedNamespace protected (name: String, components: Seq[AnyRef]) extends Namespace
+  final case class DefinedNamespace protected (name: String, components: NonEmptyList[AnyRef]) extends Namespace
 
   def apply(name: String): UndefinedNamespace = {
     UndefinedNamespace(name)

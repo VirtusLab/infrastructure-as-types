@@ -141,7 +141,7 @@ class SystemInterpreter(
 
   def apply(system: System): Seq[ObjectResource] = {
     system.namespaces.flatMap { ns =>
-      Seq(namespace(ns)) ++ ns.components match {
+      Seq(namespace(ns)) ++ ns.components.toList.flatMap {
         case app: Application =>
           if (applicationInterpreters.isDefinedAt(app)) {
             val (svc, dpl) = applicationInterpreters(app)(app)

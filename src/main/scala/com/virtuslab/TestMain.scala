@@ -1,5 +1,6 @@
 package com.virtuslab
 
+import cats.data.NonEmptyList
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
@@ -38,7 +39,7 @@ object TestMain extends DSLMain with App {
         configurations = List(configuration)
       ).listensOn(8080)
 
-      Seq(configuration, app)
+      NonEmptyList.of(configuration) :+ app
     }
 
     // Populate the namespace
