@@ -6,7 +6,17 @@ import cats.Show
 import cats.syntax.option._
 import cats.syntax.show._
 
-final case class Namespace(value: String)
+trait Namespace {
+  def name: String
+}
+
+object Namespace {
+  final case class SimpleNamespace(name: String) extends Namespace
+
+  def apply(name: String): Namespace = {
+    SimpleNamespace(name)
+  }
+}
 
 sealed trait PingAction
 case class HttpPing(url: URL) extends PingAction
@@ -81,7 +91,7 @@ case class HttpApplication(
     copy(configurations = configuration :: configurations)
   }
 
-  def inNamespace(name: String): HttpApplication = {
-    copy(namespace = Namespace(name))
+  def inNamespace(ns: Namespace): HttpApplication = {
+    copy(namespace = ns)
   }
 }

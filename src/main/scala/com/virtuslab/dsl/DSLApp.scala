@@ -22,7 +22,7 @@ trait ApplicationInterpreter[A <: Application] {
 
   protected def generateService(app: A): Service = {
     app.ports
-      .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = app.namespace.value))) {
+      .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = app.namespace.name))) {
         case (svc, port) =>
           val rewrittenPort =
             portForward.applyOrElse(port.number, identity[Int])
@@ -77,7 +77,7 @@ trait ApplicationInterpreter[A <: Application] {
     )
 
     Deployment(
-      metadata = ObjectMeta(name = app.name, namespace = app.namespace.value),
+      metadata = ObjectMeta(name = app.name, namespace = app.namespace.name),
       spec = dplSpec.some
     )
   }
