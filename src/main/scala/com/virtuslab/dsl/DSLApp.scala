@@ -140,18 +140,21 @@ class SystemInterpreter(
     namespace: NamespaceInterpreter) {
 
   def apply(system: System): Seq[ObjectResource] = {
-    system.applications.flatMap { app =>
-      if (applicationInterpreters.isDefinedAt(app)) {
-        val (svc, dpl) = applicationInterpreters(app)(app)
-        Seq(svc, dpl)
-      } else {
-        throw new IllegalArgumentException(
-          s"Application $app is not suitable for the interpreter."
-        )
+    system.namespaces.flatMap { ns =>
+      Seq(namespace(ns)) ++ ns.components match {
+        case app: Application =>
+          if (applicationInterpreters.isDefinedAt(app)) {
+            val (svc, dpl) = applicationInterpreters(app)(app)
+            Seq(svc, dpl)
+          } else {
+            throw new IllegalArgumentException(
+              s"Application $app is not suitable for the interpreter."
+            )
+          }
+        case cfg: Configuration =>
+          Seq(config(cfg))
       }
-    } ++ system.configurations.map { cfg =>
-      config(cfg)
-    } ++ ???
+    }
   }
 }
 

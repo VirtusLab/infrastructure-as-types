@@ -1,52 +1,52 @@
 package com.virtuslab
 
 import play.api.libs.json.Format
-import skuber.{K8SRequestContext, ObjectResource, ResourceDefinition}
+import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 object TestMain extends DSLMain with App {
-  import com.virtuslab.dsl.{Configuration, HttpApplication, Namespace, System, SystemInterpreter}
+  import com.virtuslab.dsl.{ Configuration, HttpApplication, Namespace, System, SystemInterpreter }
 
   def deploy(): Unit = {
-    val namespace = Namespace("test")
-
-    val configuration = Configuration(
-      name = "app",
-      namespace = namespace,
-      data = Map(
-        "config.yaml" ->
-          """
-            |listen: :8080
-            |logRequests: true
-            |connectors:
-            |- type: file
-            |  uri: file:///opt/test.txt
-            |  pathPrefix: /health
-            |""".stripMargin,
-        "test.txt" ->
-          """
-            |I'm testy tester, being tested ;-)
-            |""".stripMargin
+    val namespace = Namespace("test").inNamespace { implicit ns =>
+      val configuration = Configuration(
+        name = "app",
+        data = Map(
+          "config.yaml" ->
+            """
+              |listen: :8080
+              |logRequests: true
+              |connectors:
+              |- type: file
+              |  uri: file:///opt/test.txt
+              |  pathPrefix: /health
+              |""".stripMargin,
+          "test.txt" ->
+            """
+              |I'm testy tester, being tested ;-)
+              |""".stripMargin
+        )
       )
-    )
+
+      val app = HttpApplication(
+        name = "app",
+        image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+        command = List("cloud-file-server"),
+        args = List("--config", "/opt/config.yaml"),
+        configurations = List(configuration)
+      ).listensOn(8080)
+
+      Seq(configuration, app)
+    }
 
     // Populate the namespace
-    val app = HttpApplication(
-      name = "app",
-      namespace = namespace,
-      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-      command = List("cloud-file-server"),
-      args = List("--config", "/opt/config.yaml"),
-      configurations = List(configuration)
-    ).listensOn(8080)
 
     val system = System("test")
-      .addApplication(app)
-      .addConfiguration(configuration)
+      .addNamespace(namespace)
 
-    import skuber.{Namespace, ConfigMap, Service}
+    import skuber.{ ConfigMap, Namespace, Service }
     import skuber.apps.v1.Deployment
     import skuber.json.format._
 

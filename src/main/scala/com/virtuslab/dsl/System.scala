@@ -1,14 +1,16 @@
 package com.virtuslab.dsl
 
-case class System(
-    name: String,
-    applications: List[Application] = Nil,
-    configurations: List[Configuration] = Nil) {
-  def addApplication(application: Application): System = {
-    copy(applications = application :: applications)
-  }
+import com.virtuslab.dsl.Namespace.DefinedNamespace
 
-  def addConfiguration(configuration: Configuration): System = {
-    copy(configurations = configuration :: configurations)
+case class System protected (name: String, namespaces: List[Namespace]) {
+
+  def addNamespace(ns: DefinedNamespace): System = {
+    copy(namespaces = ns :: namespaces)
+  }
+}
+
+object System {
+  def apply(name: String): System = {
+    System(name, Nil)
   }
 }
