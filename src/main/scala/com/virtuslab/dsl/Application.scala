@@ -11,9 +11,11 @@ trait Component {
   def namespace: Namespace
 }
 
-trait Namespace {
+trait Namespace extends Resource {
   def name: String
 }
+
+trait Resource {}
 
 object Namespace {
   final case class UndefinedNamespace protected (name: String) extends Namespace {
