@@ -8,7 +8,7 @@ import skuber.api.client.Context
 import scala.concurrent.{ Await, ExecutionContextExecutor }
 import scala.concurrent.duration._
 
-abstract class DSLMain {
+abstract class AbstractMain {
 
   import skuber._
 

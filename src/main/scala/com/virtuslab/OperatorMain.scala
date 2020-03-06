@@ -7,7 +7,7 @@ import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
-object TestMain extends DSLMain with App {
+object OperatorMain extends AbstractMain with App {
   import com.virtuslab.dsl.{ Configuration, HttpApplication, Namespace, System, SystemInterpreter }
 
   def deploy(): Unit = {
