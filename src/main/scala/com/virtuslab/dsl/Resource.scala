@@ -70,10 +70,8 @@ class Selectable[T]
 object Selectable {
   implicit object UnselectedWitness extends Selectable[Unselected]
   implicit object LabelWitness extends Selectable[Labeled] // k8s API: "matchLabels"
-  implicit object LabelRequirementWitness extends Selectable[LabelExpressions] // k8s API: "matchExpressions"
+  implicit object LabelExpressionsWitness extends Selectable[LabelExpressions] // k8s API: "matchExpressions"
 }
-
-// TODO check NodeSelector
 
 abstract class Selector[S: Selectable] {
   def selectable: S

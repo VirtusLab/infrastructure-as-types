@@ -12,38 +12,20 @@ class GraphTest extends AnyFlatSpec with Matchers {
 //    type IPBlock = String // TODO a proper object, a CIDR
 //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
-    case class Connection[A : Selectable, B : Selectable, C: Selectable](
-             resourceSelector: ApplicationSelector[A],
-             ingress: Selector[B] = EmptySelector(),
-             egress: Selector[C] = EmptySelector())
+    class Connection[A : Selectable, B : Selectable, C: Selectable](
+        namespace: Namespace,
+        resourceSelector: Selector[A],
+        ingress: Selector[B],
+        egress: Selector[C])
 
-    val frontendToBackend = Connection(
-      resourceSelector = ApplicationSelector(
-        Labels(
-          NameLabel("frontend")
-        )
-      ),
-      ingress = EmptySelector(),
-      egress = ApplicationSelector(
-        Labels(
-          NameLabel("backend")
-        )
-      )
-    )
-
-    val backendFromFrontend = Connection(
-      resourceSelector = ApplicationSelector(
-        Labels(
-          NameLabel("backend")
-        )
-      ),
-      ingress = NamespaceSelector(
-        Labels(
-          NameLabel("frontend")
-        )
-      ),
-      egress = EmptySelector()
-    )
+    object Connection {
+      def apply[A : Selectable, B : Selectable, C: Selectable](
+          resourceSelector: Selector[A],
+          ingress: Selector[B] = EmptySelector(),
+          egress: Selector[C] = EmptySelector())
+      (implicit ns: Namespace): Connection[A, B, C] =
+        new Connection(ns, resourceSelector, ingress, egress)
+    }
 
     case class RoleLabel(value: Label#Value) extends Label {
       override def name: Key = "role"
