@@ -1,0 +1,90 @@
+package com.virtuslab.dsl
+
+import cats.data.NonEmptyList
+import com.virtuslab.internal.Pod
+
+trait Resource {}
+
+trait Namespaced {
+  def namespace: Namespace
+}
+
+trait Namespace extends Resource {
+  def name: String
+}
+
+object Namespace {
+  final case class UndefinedNamespace protected (name: String) extends Namespace {
+    def inNamespace(f: Namespace => NonEmptyList[Namespaced]): DefinedNamespace = {
+      DefinedNamespace(name, f(this))
+    }
+  }
+
+  final case class DefinedNamespace protected (name: String, components: NonEmptyList[Namespaced]) extends Namespace
+
+  def apply(name: String): UndefinedNamespace = {
+    UndefinedNamespace(name)
+  }
+}
+
+trait Label {
+  type Key = String // "[prefix/]name" where name is required (same format as value) and prefix is optional (DNS Subdomain Name format)
+  type Value = String // 63 characters, [a-z0-9A-Z] with (-_.), basically DNS Label Names with dots and underscores allowed
+
+  def name: Key
+  def value: Value
+}
+
+trait Labeled {
+  def labels: Set[Label]
+}
+
+object Labels {
+  def apply(values: Label*): Labeled = apply(values.toSet)
+  def apply(values: Set[Label]): Labeled = new Labeled {
+    override def labels: Set[Label] = values
+  }
+}
+
+final case class Unselected()
+final case class LabelExpression(expression: String) // TODO a proper expression DSL with =, ==, and != and sets
+trait LabelExpressions {
+  def expressions: Set[LabelExpression]
+}
+
+
+case class NameLabel(value: Label#Value) extends Label {
+  override def name: Key = "name"
+}
+
+class Selectable[T]
+object Selectable {
+  implicit object UnselectedWitness extends Selectable[Unselected]
+  implicit object LabelWitness extends Selectable[Labeled] // k8s API: "matchLabels"
+  implicit object LabelRequirementWitness extends Selectable[LabelExpressions] // k8s API: "matchExpressions"
+}
+
+// TODO check NodeSelector
+
+abstract class Selector[S : Selectable] {
+  def selectable: S
+}
+
+case class NamespaceSelector[S : Selectable](selectable: S) extends Selector[S] {
+  def matches[R <: Namespace with Labeled](resource: R): Boolean = selectable match {
+    case _: Labeled => resource.asInstanceOf[Labeled] == selectable
+    case _: LabelExpressions => ???
+  }
+}
+
+case class PodSelector[S : Selectable](selectable: S) extends Selector[S] {
+  def matches[R <: Pod with Labeled](resource: R): Boolean = selectable match {
+    case _: Labeled => resource.asInstanceOf[Labeled] == selectable
+    case _: LabelExpressions => ???
+  }
+}
+
+case class EmptySelector() extends Selector[Unselected] {
+  override def selectable: Unselected = Unselected()
+  def matches[R <: Resource with Labeled](resource: Resource) = false
+}

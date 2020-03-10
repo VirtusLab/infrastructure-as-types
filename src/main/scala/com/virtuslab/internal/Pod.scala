@@ -2,7 +2,7 @@ package com.virtuslab.internal
 
 import cats.data.NonEmptyList
 import cats.syntax.option._
-import com.virtuslab.dsl.{Component, Namespace, Resource}
+import com.virtuslab.dsl.{Namespaced, Namespace, Resource}
 import com.virtuslab.internal.EnvVar.ValueFromRef
 import com.virtuslab.internal.ValueFrom.ConfigMapKeyRefValue
 import com.virtuslab.internal.ValueRef.ConfigMapKeyRef

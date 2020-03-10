@@ -7,30 +7,6 @@ import cats.data.NonEmptyList
 import cats.syntax.option._
 import cats.syntax.show._
 
-trait Component {
-  def namespace: Namespace
-}
-
-trait Namespace extends Resource {
-  def name: String
-}
-
-trait Resource {}
-
-object Namespace {
-  final case class UndefinedNamespace protected (name: String) extends Namespace {
-    def inNamespace(f: Namespace => NonEmptyList[Component]): DefinedNamespace = {
-      DefinedNamespace(name, f(this))
-    }
-  }
-
-  final case class DefinedNamespace protected (name: String, components: NonEmptyList[Component]) extends Namespace
-
-  def apply(name: String): UndefinedNamespace = {
-    UndefinedNamespace(name)
-  }
-}
-
 sealed trait PingAction
 case class HttpPing(url: URL) extends PingAction
 case class TCPPing(port: Int) extends PingAction
@@ -43,7 +19,7 @@ case class Configuration(
     name: String,
     namespace: Namespace,
     data: Map[String, String])
-  extends Component
+  extends Namespaced
 
 object Configuration {
   def apply(name: String, data: Map[String, String])(implicit ns: Namespace): Configuration = {
@@ -62,7 +38,7 @@ object Application {
   case class EnvironmentVariable(key: String, value: String)
 }
 
-abstract class Application extends Component {
+abstract class Application extends Namespaced {
   def name: String
   def image: String
   def ports: List[Application.Port]
