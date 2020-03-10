@@ -2,7 +2,7 @@ package com.virtuslab.internal
 
 import cats.data.NonEmptyList
 import cats.syntax.option._
-import com.virtuslab.dsl.{Namespaced, Namespace, Resource}
+import com.virtuslab.dsl.{ Namespace, Namespaced, Resource }
 import com.virtuslab.internal.EnvVar.ValueFromRef
 import com.virtuslab.internal.ValueFrom.ConfigMapKeyRefValue
 import com.virtuslab.internal.ValueRef.ConfigMapKeyRef
@@ -52,6 +52,8 @@ object Container {
 }
 case class PodSpec(containers: NonEmptyList[Container])
 case class Pod(meta: ObjectMeta, spec: PodSpec) extends Resource {
+  override def name: String = meta.name
+
   // TODO factor this out
   def toSkuber: skuber.Pod = {
     skuber.Pod(

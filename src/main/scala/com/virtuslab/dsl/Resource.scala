@@ -2,27 +2,38 @@ package com.virtuslab.dsl
 
 import cats.data.NonEmptyList
 
-trait Resource {}
+trait Resource extends Named {}
+
+trait Named {
+  def name: String // TODO create a proper type
+}
 
 trait Namespaced {
   def namespace: Namespace
 }
 
-trait Namespace extends Resource {
-  def name: String
-}
+trait Namespace extends Resource
 
 object Namespace {
-  final case class UndefinedNamespace protected (name: String) extends Namespace {
+  final case class UndefinedNamespace protected (name: String, labels: Set[Label]) extends Namespace with Labeled {
+    def labeled(ls: Label*): UndefinedNamespace = {
+      UndefinedNamespace(name, labels ++ ls)
+    }
+
     def inNamespace(f: Namespace => NonEmptyList[Namespaced]): DefinedNamespace = {
-      DefinedNamespace(name, f(this))
+      DefinedNamespace(name, labels, f(this))
     }
   }
 
-  final case class DefinedNamespace protected (name: String, components: NonEmptyList[Namespaced]) extends Namespace
+  final case class DefinedNamespace protected (
+      name: String,
+      labels: Set[Label],
+      members: NonEmptyList[Namespaced])
+    extends Namespace
+    with Labeled
 
   def apply(name: String): UndefinedNamespace = {
-    UndefinedNamespace(name)
+    UndefinedNamespace(name, Set(NameLabel(name)))
   }
 }
 
@@ -51,7 +62,6 @@ trait LabelExpressions {
   def expressions: Set[LabelExpression]
 }
 
-
 case class NameLabel(value: Label#Value) extends Label {
   override def name: Key = "name"
 }
@@ -65,20 +75,20 @@ object Selectable {
 
 // TODO check NodeSelector
 
-abstract class Selector[S : Selectable] {
+abstract class Selector[S: Selectable] {
   def selectable: S
 }
 
-case class NamespaceSelector[S : Selectable](selectable: S) extends Selector[S] {
+case class NamespaceSelector[S: Selectable](selectable: S) extends Selector[S] {
   def matches[R <: Namespace with Labeled](resource: R): Boolean = selectable match {
-    case _: Labeled => resource.asInstanceOf[Labeled] == selectable
+    case _: Labeled          => resource.asInstanceOf[Labeled] == selectable
     case _: LabelExpressions => ???
   }
 }
 
-case class ApplicationSelector[S : Selectable](selectable: S) extends Selector[S] {
+case class ApplicationSelector[S: Selectable](selectable: S) extends Selector[S] {
   def matches[R <: Application with Labeled](resource: R): Boolean = selectable match {
-    case _: Labeled => resource.asInstanceOf[Labeled] == selectable
+    case _: Labeled          => resource.asInstanceOf[Labeled] == selectable
     case _: LabelExpressions => ???
   }
 }

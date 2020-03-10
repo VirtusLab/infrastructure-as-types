@@ -18,12 +18,19 @@ case class TCPHealthCheck(port: Int) extends HealthCheckAction
 case class Configuration(
     name: String,
     namespace: Namespace,
+    labels: Set[Label],
     data: Map[String, String])
-  extends Namespaced
+  extends Resource
+  with Namespaced
+  with Labeled {
+  def labeled(ls: Label*): Configuration = {
+    copy(labels = labels ++ ls)
+  }
+}
 
 object Configuration {
   def apply(name: String, data: Map[String, String])(implicit ns: Namespace): Configuration = {
-    Configuration(name, ns, data)
+    Configuration(name, ns, Set(NameLabel(name)), data)
   }
 }
 
@@ -38,7 +45,7 @@ object Application {
   case class EnvironmentVariable(key: String, value: String)
 }
 
-abstract class Application extends Namespaced {
+abstract class Application extends Resource with Namespaced with Labeled {
   def name: String
   def image: String
   def ports: List[Application.Port]
@@ -62,8 +69,9 @@ abstract class Application extends Namespaced {
 
 case class HttpApplication(
     name: String,
-    image: String,
     namespace: Namespace,
+    labels: Set[Label],
+    image: String,
     command: List[String],
     args: List[String],
     configurations: List[Configuration],
@@ -88,6 +96,10 @@ case class HttpApplication(
   def withConfiguration(configuration: Configuration): HttpApplication = {
     copy(configurations = configuration :: configurations)
   }
+
+  def labeled(ls: Label*): HttpApplication = {
+    copy(labels = labels ++ ls)
+  }
 }
 
 object HttpApplication {
@@ -104,15 +116,18 @@ object HttpApplication {
     )(implicit
       ns: Namespace
     ): HttpApplication = {
-    HttpApplication(name = name,
-                    image = image,
-                    namespace = ns,
-                    command = command,
-                    args = args,
-                    configurations = configurations,
-                    ports = ports,
-                    envs = envs,
-                    ping = ping,
-                    healthCheck = healthCheck)
+    HttpApplication(
+      name = name,
+      image = image,
+      namespace = ns,
+      labels = Set(NameLabel(name)),
+      command = command,
+      args = args,
+      configurations = configurations,
+      ports = ports,
+      envs = envs,
+      ping = ping,
+      healthCheck = healthCheck
+    )
   }
 }

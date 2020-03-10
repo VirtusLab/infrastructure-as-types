@@ -1,5 +1,6 @@
 package com.virtuslab.graph
 
+import cats.data.NonEmptyList
 import com.virtuslab.dsl._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -13,8 +14,8 @@ class GraphTest extends AnyFlatSpec with Matchers {
 
     case class Connection[A : Selectable, B : Selectable, C: Selectable](
              resourceSelector: ApplicationSelector[A],
-             ingress: Selector[B],
-             egress: Selector[C])
+             ingress: Selector[B] = EmptySelector(),
+             egress: Selector[C] = EmptySelector())
 
     val frontendToBackend = Connection(
       resourceSelector = ApplicationSelector(
@@ -48,27 +49,30 @@ class GraphTest extends AnyFlatSpec with Matchers {
       override def name: Key = "role"
     }
 
-    val backendNamespace = new Namespaced with Labeled {
-      override def namespace: Namespace = Namespace("backend")
+    val backendRoleLabel = RoleLabel("backend")
 
-      override def labels: Set[Label] = Set(
-        NameLabel("backend"),
-        RoleLabel("backend")
-      )
+    val backend = Namespace("backend")
+      .labeled(backendRoleLabel)
+
+    val frontendRoleLabel = RoleLabel("frontend")
+
+    val frontend = Namespace("test")
+      .labeled(frontendRoleLabel)
+      .inNamespace { implicit ns => {
+        val app1 = HttpApplication("app-one", "image-app-one")
+            .labeled(frontendRoleLabel)
+            .listensOn(9090)
+        val app2 = HttpApplication("app-two", "image-app-two")
+            .labeled(frontendRoleLabel)
+            .listensOn(9090, "http-port")
+
+        val conn1 = Connection(
+          ApplicationSelector(Labels(backendRoleLabel)),
+          NamespaceSelector(Labels(frontendRoleLabel))
+        )
+
+        NonEmptyList.of(app1, app2)
+      }
     }
-
-    val frontendNamespace = new Namespaced with Labeled {
-      override def namespace: Namespace = Namespace("frontend")
-
-      override def labels: Set[Label] = Set(
-        NameLabel("frontend"),
-        RoleLabel("frontend")
-      )
-    }
-
-//    val app = HttpApplication("app-two", "image-app-two")
-//      .listensOn(9090, "http-port")
-//
-//    frontendToBackend.resourceSelector.matches(app)
   }
 }
