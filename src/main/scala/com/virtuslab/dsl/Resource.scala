@@ -1,7 +1,6 @@
 package com.virtuslab.dsl
 
 import cats.data.NonEmptyList
-import com.virtuslab.internal.Pod
 
 trait Resource {}
 
@@ -77,8 +76,8 @@ case class NamespaceSelector[S : Selectable](selectable: S) extends Selector[S] 
   }
 }
 
-case class PodSelector[S : Selectable](selectable: S) extends Selector[S] {
-  def matches[R <: Pod with Labeled](resource: R): Boolean = selectable match {
+case class ApplicationSelector[S : Selectable](selectable: S) extends Selector[S] {
+  def matches[R <: Application with Labeled](resource: R): Boolean = selectable match {
     case _: Labeled => resource.asInstanceOf[Labeled] == selectable
     case _: LabelExpressions => ???
   }

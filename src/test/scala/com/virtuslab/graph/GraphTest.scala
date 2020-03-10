@@ -12,18 +12,18 @@ class GraphTest extends AnyFlatSpec with Matchers {
 //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
     case class Connection[A : Selectable, B : Selectable, C: Selectable](
-             resourceSelector: PodSelector[A],
+             resourceSelector: ApplicationSelector[A],
              ingress: Selector[B],
              egress: Selector[C])
 
     val frontendToBackend = Connection(
-      resourceSelector = PodSelector(
+      resourceSelector = ApplicationSelector(
         Labels(
           NameLabel("frontend")
         )
       ),
       ingress = EmptySelector(),
-      egress = PodSelector(
+      egress = ApplicationSelector(
         Labels(
           NameLabel("backend")
         )
@@ -31,7 +31,7 @@ class GraphTest extends AnyFlatSpec with Matchers {
     )
 
     val backendFromFrontend = Connection(
-      resourceSelector = PodSelector(
+      resourceSelector = ApplicationSelector(
         Labels(
           NameLabel("backend")
         )
