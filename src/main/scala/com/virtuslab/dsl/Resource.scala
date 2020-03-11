@@ -12,7 +12,7 @@ trait Namespaced {
   def namespace: Namespace
 }
 
-trait Namespace extends Resource
+trait Namespace extends Resource with Labeled
 
 object Namespace {
   final case class UndefinedNamespace protected (name: String, labels: Set[Label]) extends Namespace with Labeled {

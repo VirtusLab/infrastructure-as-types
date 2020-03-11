@@ -19,7 +19,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
     }
 
     val system = System("test-system")
-      .addNamespace(ns)
+      .inSystem(ns)
 
     val systemInterpreter = SystemInterpreter.of(system)
 

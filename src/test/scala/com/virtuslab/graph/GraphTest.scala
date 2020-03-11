@@ -38,7 +38,15 @@ class GraphTest extends AnyFlatSpec with Matchers {
           Connection(
             resourceSelector = ApplicationSelector(app),
             ingress = ApplicationSelector(other),
-            egress = EmptySelector
+            egress = ApplicationSelector(app)
+          )(implicitly, implicitly, implicitly, app.namespace)
+        }
+
+        def communicatesWith(ns: Namespace): Connection[_, _, _] = {
+          Connection(
+            resourceSelector = ApplicationSelector(app),
+            ingress = NamespaceSelector(ns),
+            egress = ApplicationSelector(app)
           )(implicitly, implicitly, implicitly, app.namespace)
         }
       }
@@ -52,8 +60,24 @@ class GraphTest extends AnyFlatSpec with Matchers {
 
     val backend = Namespace("backend")
       .labeled(backendRoleLabel)
+      .inNamespace { implicit ns =>
+        val app3 = Application("app-two", "image-app-two")
+          .labeled(backendRoleLabel)
+          .listensOn(9090, "http-port")
+
+        Connections {
+          import  Connections._
+
+          Set(
+            app3 communicatesWith frontend
+          )
+        }
+
+        NonEmptyList.of(app3)
+      }
 
     val frontendRoleLabel = RoleLabel("frontend")
+
 
     val frontend = Namespace("test")
       .labeled(frontendRoleLabel)
@@ -65,15 +89,17 @@ class GraphTest extends AnyFlatSpec with Matchers {
           .labeled(frontendRoleLabel)
           .listensOn(9090, "http-port")
 
-//          val conn1 = Connection(
-//            ApplicationSelector(Labels(backendRoleLabel)),
-//            NamespaceSelector(Labels(frontendRoleLabel))
-//          )
+//        val conn1 = Connection(
+//          ApplicationSelector(Labels(backendRoleLabel)),
+//          NamespaceSelector(Labels(frontendRoleLabel))
+//        )
+
         Connections {
           import Connections._
 
           Set(
-            app1 communicatesWith app2
+            app1 communicatesWith app2,
+            app1 communicatesWith backend
           )
         }
 

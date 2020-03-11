@@ -53,7 +53,7 @@ object OperatorMain extends AbstractMain with App {
     // Populate the namespace
 
     val system = System("test")
-      .addNamespace(namespace)
+      .inSystem(namespace)
 
     import skuber.{ ConfigMap, Namespace, Service }
     import skuber.apps.v1.Deployment
