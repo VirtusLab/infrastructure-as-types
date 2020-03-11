@@ -56,7 +56,9 @@ object Labels {
   }
 }
 
-final case class Unselected()
+sealed trait Unselected
+case object Unselected extends Unselected
+
 final case class LabelExpression(expression: String) // TODO a proper expression DSL with =, ==, and != and sets
 trait LabelExpressions {
   def expressions: Set[LabelExpression]
@@ -66,15 +68,16 @@ case class NameLabel(value: Label#Value) extends Label {
   override def name: Key = "name"
 }
 
-class Selectable[T]
+class Selectable[-T]
 object Selectable {
   implicit object UnselectedWitness extends Selectable[Unselected]
   implicit object LabelWitness extends Selectable[Labeled] // k8s API: "matchLabels"
   implicit object LabelExpressionsWitness extends Selectable[LabelExpressions] // k8s API: "matchExpressions"
 }
 
-abstract class Selector[S: Selectable] {
-  def selectable: S
+abstract class PlaceholderSelector[-A, S >: A: Selectable]
+abstract class Selector[A: Selectable] extends PlaceholderSelector[A, A] {
+  def selectable: A
 }
 
 case class NamespaceSelector[S: Selectable](selectable: S) extends Selector[S] {
@@ -91,7 +94,8 @@ case class ApplicationSelector[S: Selectable](selectable: S) extends Selector[S]
   }
 }
 
-case class EmptySelector() extends Selector[Unselected] {
-  override def selectable: Unselected = Unselected()
+sealed trait EmptySelector extends Selector[Unselected]
+case object EmptySelector extends EmptySelector {
+  override def selectable: Unselected = Unselected
   def matches[R <: Resource with Labeled](resource: Resource) = false
 }

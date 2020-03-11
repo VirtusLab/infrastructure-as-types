@@ -21,12 +21,27 @@ class GraphTest extends AnyFlatSpec with Matchers {
     object Connection {
       def apply[A: Selectable, B: Selectable, C: Selectable](
           resourceSelector: Selector[A],
-          ingress: Selector[B] = EmptySelector(),
-          egress: Selector[C] = EmptySelector()
+          ingress: Selector[B] = EmptySelector,
+          egress: Selector[C] = EmptySelector
         )(implicit
           ns: Namespace
         ): Connection[A, B, C] =
         new Connection(ns, resourceSelector, ingress, egress)
+    }
+
+    case class Connections(defined: Set[Connection[_, _, _]])
+    object Connections {
+
+      //TODO: extract to common place for implicits
+      implicit class ApplicationConnectionOps(app: Application) {
+        def communicatesWith(other: Application): Connection[_, _, _] = {
+          Connection(
+            resourceSelector = ApplicationSelector(app),
+            ingress = ApplicationSelector(other),
+            egress = EmptySelector
+          )(implicitly, implicitly, implicitly, app.namespace)
+        }
+      }
     }
 
     case class RoleLabel(value: Label#Value) extends Label {
@@ -43,21 +58,26 @@ class GraphTest extends AnyFlatSpec with Matchers {
     val frontend = Namespace("test")
       .labeled(frontendRoleLabel)
       .inNamespace { implicit ns =>
-        {
-          val app1 = Application("app-one", "image-app-one")
-            .labeled(frontendRoleLabel)
-            .listensOn(9090)
-          val app2 = Application("app-two", "image-app-two")
-            .labeled(frontendRoleLabel)
-            .listensOn(9090, "http-port")
+        val app1 = Application("app-one", "image-app-one")
+          .labeled(frontendRoleLabel)
+          .listensOn(9090)
+        val app2 = Application("app-two", "image-app-two")
+          .labeled(frontendRoleLabel)
+          .listensOn(9090, "http-port")
 
-          val conn1 = Connection(
-            ApplicationSelector(Labels(backendRoleLabel)),
-            NamespaceSelector(Labels(frontendRoleLabel))
+//          val conn1 = Connection(
+//            ApplicationSelector(Labels(backendRoleLabel)),
+//            NamespaceSelector(Labels(frontendRoleLabel))
+//          )
+        Connections {
+          import Connections._
+
+          Set(
+            app1 communicatesWith app2
           )
-
-          NonEmptyList.of(app1, app2)
         }
+
+        NonEmptyList.of(app1, app2)
       }
   }
 }
