@@ -15,9 +15,9 @@ trait Namespaced {
 trait Namespace extends Resource with Labeled
 
 object Namespace {
-  final case class UndefinedNamespace protected (name: String, labels: Set[Label]) extends Namespace with Labeled {
-    def labeled(ls: Label*): UndefinedNamespace = {
-      UndefinedNamespace(name, labels ++ ls)
+  final case class NamespaceReference protected (name: String, labels: Set[Label]) extends Namespace with Labeled {
+    def labeled(ls: Label*): NamespaceReference = {
+      NamespaceReference(name, labels ++ ls)
     }
 
     def inNamespace(f: Namespace => NonEmptyList[Namespaced]): DefinedNamespace = {
@@ -32,8 +32,8 @@ object Namespace {
     extends Namespace
     with Labeled
 
-  def apply(name: String): UndefinedNamespace = {
-    UndefinedNamespace(name, Set(NameLabel(name)))
+  def apply(name: String): NamespaceReference = {
+    NamespaceReference(name, Set(NameLabel(name)))
   }
 }
 

@@ -1,6 +1,7 @@
 package com.virtuslab
 
 import cats.data.NonEmptyList
+import com.virtuslab.dsl.Networked
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
@@ -36,16 +37,18 @@ object OperatorMain extends AbstractMain with App {
         image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
         command = List("cloud-file-server"),
         args = List("--config", "/opt/config.yaml"),
-        configurations = List(configuration)
-      ).listensOn(8080)
+        configurations = List(configuration),
+        ports = Networked.Port(8080) :: Nil
+      ).bind()
 
       val second = Application(
         name = "app",
         image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
         command = List("cloud-file-server"),
         args = List("--config", "/opt/config.yaml"),
-        configurations = List(configuration)
-      ).listensOn(8080)
+        configurations = List(configuration),
+        ports = Networked.Port(8080) :: Nil
+      ).bind()
 
       NonEmptyList.of(configuration) :+ app :+ second
     }

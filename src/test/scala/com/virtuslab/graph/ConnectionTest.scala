@@ -1,6 +1,8 @@
 package com.virtuslab.graph
 
 import cats.data.NonEmptyList
+import com.virtuslab.dsl.Application.DefinedApplication
+import com.virtuslab.dsl.Namespace.NamespaceReference
 import com.virtuslab.dsl._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -33,8 +35,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
     object Connections {
 
       //TODO: extract to common place for implicits
-      implicit class ApplicationConnectionOps(app: Application) {
-        def communicatesWith(other: Application): Connection[_, _, _] = {
+      implicit class ApplicationConnectionOps(app: DefinedApplication) {
+        def communicatesWith(other: DefinedApplication): Connection[_, _, _] = {
           Connection(
             resourceSelector = ApplicationSelector(app),
             ingress = ApplicationSelector(other),
@@ -42,7 +44,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
           )(implicitly, implicitly, implicitly, app.namespace)
         }
 
-        def communicatesWith(ns: Namespace): Connection[_, _, _] = {
+        def communicatesWith(ns: NamespaceReference): Connection[_, _, _] = {
           Connection(
             resourceSelector = ApplicationSelector(app),
             ingress = NamespaceSelector(ns),
@@ -56,37 +58,39 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
       override def name: Key = "role"
     }
 
-    val backendRoleLabel = RoleLabel("backend")
+    val frontendRoleLabel = RoleLabel("frontend")
+    val frontendNsRef = Namespace("test")
+      .labeled(frontendRoleLabel)
 
-    val backend = Namespace("backend")
+    val backendRoleLabel = RoleLabel("backend")
+    val backendNsRef = Namespace("backend")
       .labeled(backendRoleLabel)
+
+    val app3 = Application("app-two", "app-two-image")
+
+    val backend = backendNsRef
       .inNamespace { implicit ns =>
-        val app3 = Application("app-two", "image-app-two")
-          .labeled(backendRoleLabel)
-          .listensOn(9090, "http-port")
+        val completedApp3 = app3.bind()
 
         Connections {
-          import  Connections._
+          import Connections._
 
           Set(
-            app3 communicatesWith frontend
+            completedApp3 communicatesWith frontendNsRef
           )
         }
 
         NonEmptyList.of(app3)
       }
 
-    val frontendRoleLabel = RoleLabel("frontend")
+    val app1 = Application("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
+    val app2 = Application("app-two", "image-app-two", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
 
-    val frontend = Namespace("test")
-      .labeled(frontendRoleLabel)
+    val frontend = frontendNsRef
       .inNamespace { implicit ns =>
-        val app1 = Application("app-one", "image-app-one")
-          .labeled(frontendRoleLabel)
-          .listensOn(9090)
-        val app2 = Application("app-two", "image-app-two")
-          .labeled(frontendRoleLabel)
-          .listensOn(9090, "http-port")
+
+        val bindedApp1 = app1.bind()
+        val bindedApp2 = app2.bind()
 
 //        val conn1 = Connection(
 //          ApplicationSelector(Labels(backendRoleLabel)),
@@ -97,8 +101,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
           import Connections._
 
           Set(
-            app1 communicatesWith app2,
-            app1 communicatesWith backend
+            bindedApp1 communicatesWith bindedApp2,
+            bindedApp1 communicatesWith backendNsRef
           )
         }
 

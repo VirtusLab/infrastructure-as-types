@@ -3,9 +3,6 @@ package com.virtuslab.dsl
 import java.net.URL
 
 import cats.Show
-import cats.data.NonEmptyList
-import cats.syntax.option._
-import cats.syntax.show._
 
 sealed trait PingAction
 case class HttpPing(url: URL) extends PingAction
@@ -60,25 +57,73 @@ object Networked {
     }
   }
 }
+trait ResourceReference extends Resource with Labeled
+
+trait Application extends ResourceReference with Containerized with Networked
 
 object Application {
+  case class ApplicationReference(
+      name: String,
+      labels: Set[Label],
+      configurations: List[Configuration],
+      image: String,
+      command: List[String],
+      args: List[String],
+      envs: List[Containerized.EnvironmentVariable],
+      ports: List[Networked.Port],
+      ping: Option[HttpPing],
+      healthCheck: Option[HttpHealthCheck])
+    extends ResourceReference {
+    def bind()(implicit namespace: Namespace): DefinedApplication = {
+      DefinedApplication(
+        name = name,
+        labels = labels,
+        namespace = namespace,
+        configurations = configurations,
+        image = image,
+        command = command,
+        args = args,
+        envs = envs,
+        ports = ports,
+        ping = ping,
+        healthCheck = healthCheck
+      )
+    }
+  }
+
+  case class DefinedApplication(
+      name: String,
+      labels: Set[Label],
+      namespace: Namespace,
+      configurations: List[Configuration],
+      image: String,
+      command: List[String],
+      args: List[String],
+      envs: List[Containerized.EnvironmentVariable],
+      ports: List[Networked.Port],
+      ping: Option[HttpPing],
+      healthCheck: Option[HttpHealthCheck])
+    extends Resource
+    with Namespaced
+    with Labeled
+    with Containerized
+    with Networked
+
   def apply(
       name: String,
       image: String,
+      labels: Set[Label] = Set.empty,
+      configurations: List[Configuration] = Nil,
       command: List[String] = Nil,
       args: List[String] = Nil,
       envs: List[Containerized.EnvironmentVariable] = Nil,
       ports: List[Networked.Port] = Nil,
       ping: Option[HttpPing] = None,
-      healthCheck: Option[HttpHealthCheck] = None,
-      configurations: List[Configuration] = Nil,
-    )(implicit
-      ns: Namespace
-    ): Application = {
-    Application(
+      healthCheck: Option[HttpHealthCheck] = None
+    ): ApplicationReference = {
+    ApplicationReference(
       name = name,
-      namespace = ns,
-      labels = Set(NameLabel(name)),
+      labels = Set(NameLabel(name)) ++ labels,
       configurations = configurations,
       image = image,
       command = command,
@@ -88,52 +133,5 @@ object Application {
       ping = ping,
       healthCheck = healthCheck
     )
-  }
-}
-
-case class Application(
-    name: String,
-    namespace: Namespace,
-    labels: Set[Label],
-    configurations: List[Configuration],
-    image: String,
-    command: List[String],
-    args: List[String],
-    envs: List[Containerized.EnvironmentVariable],
-    ports: List[Networked.Port],
-    ping: Option[HttpPing],
-    healthCheck: Option[HttpHealthCheck])
-  extends Resource
-  with Namespaced
-  with Labeled
-  with Containerized
-  with Networked {
-
-  protected def addPort(port: Networked.Port): Application = {
-    ports
-      .find(_ == port)
-      .fold {
-        copy(ports = port :: ports)
-      } { port =>
-        throw new IllegalStateException(
-          s"Port ${port.show} is already defined."
-        )
-      }
-  }
-
-  def listensOn(number: Int): Application = {
-    addPort(Networked.Port(number))
-  }
-
-  def listensOn(number: Int, name: String): Application = {
-    addPort(Networked.Port(number, name.some))
-  }
-
-  def withConfiguration(configuration: Configuration): Application = {
-    copy(configurations = configuration :: configurations)
-  }
-
-  def labeled(ls: Label*): Application = {
-    copy(labels = labels ++ ls)
   }
 }

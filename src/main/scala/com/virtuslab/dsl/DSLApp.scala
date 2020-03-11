@@ -21,7 +21,7 @@ class ConfigurationInterpreter() {
   }
 }
 
-trait ApplicationInterpreter[A <: Application] {
+trait ApplicationInterpreter[A <: Application.DefinedApplication] {
   def system: System
 
   def portForward: PartialFunction[Int, Int]
@@ -92,9 +92,9 @@ trait ApplicationInterpreter[A <: Application] {
 }
 
 class HttpApplicationInterpreter(val system: System, val portForward: PartialFunction[Int, Int] = PartialFunction.empty)
-  extends ApplicationInterpreter[Application] {
+  extends ApplicationInterpreter[Application.DefinedApplication] {
 
-  def apply(app: Application): (Service, Deployment) = {
+  def apply(app: Application.DefinedApplication): (Service, Deployment) = {
     val svc = generateService(app)
 
     val env = app.envs.map { env =>
@@ -133,8 +133,8 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
 
 class SystemInterpreter(
     applicationInterpreters: PartialFunction[
-      Application,
-      ApplicationInterpreter[Application]
+      Application.DefinedApplication,
+      ApplicationInterpreter[Application.DefinedApplication]
     ],
     config: ConfigurationInterpreter,
     namespace: NamespaceInterpreter) {
@@ -142,7 +142,7 @@ class SystemInterpreter(
   def apply(system: System): Seq[ObjectResource] = {
     system.namespaces.flatMap { ns =>
       Seq(namespace(ns)) ++ ns.members.toList.flatMap {
-        case app: Application =>
+        case app: Application.DefinedApplication =>
           if (applicationInterpreters.isDefinedAt(app)) {
             val (svc, dpl) = applicationInterpreters(app)(app)
             Seq(svc, dpl)
@@ -161,17 +161,17 @@ class SystemInterpreter(
 object SystemInterpreter {
   def apply(
       applicationInterpreters: PartialFunction[
-        Application,
-        ApplicationInterpreter[Application]
+        Application.DefinedApplication,
+        ApplicationInterpreter[Application.DefinedApplication]
       ],
       configurationInterpreter: ConfigurationInterpreter,
       namespaceInterpreter: NamespaceInterpreter
     ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter, namespaceInterpreter)
 
   def of(system: System): SystemInterpreter = {
-    val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application]] // FIXME
+    val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application.DefinedApplication]] // FIXME
     new SystemInterpreter({
-      case _: Application => httpApplicationInterpreter
+      case _: Application.DefinedApplication => httpApplicationInterpreter
     }, new ConfigurationInterpreter, new NamespaceInterpreter)
   }
 }
