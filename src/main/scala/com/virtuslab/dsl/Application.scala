@@ -73,7 +73,7 @@ object Application {
       ports: List[Networked.Port],
       ping: Option[HttpPing],
       healthCheck: Option[HttpHealthCheck])
-    extends ResourceReference {
+    extends Application {
     def bind()(implicit namespace: Namespace): DefinedApplication = {
       DefinedApplication(
         name = name,
@@ -103,11 +103,8 @@ object Application {
       ports: List[Networked.Port],
       ping: Option[HttpPing],
       healthCheck: Option[HttpHealthCheck])
-    extends Resource
+    extends Application
     with Namespaced
-    with Labeled
-    with Containerized
-    with Networked
 
   def apply(
       name: String,

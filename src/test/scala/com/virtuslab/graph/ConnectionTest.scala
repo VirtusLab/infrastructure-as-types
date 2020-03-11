@@ -1,7 +1,7 @@
 package com.virtuslab.graph
 
 import cats.data.NonEmptyList
-import com.virtuslab.dsl.Application.DefinedApplication
+import com.virtuslab.dsl.Application.{ ApplicationReference, DefinedApplication }
 import com.virtuslab.dsl.Namespace.NamespaceReference
 import com.virtuslab.dsl._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -36,7 +36,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 
       //TODO: extract to common place for implicits
       implicit class ApplicationConnectionOps(app: DefinedApplication) {
-        def communicatesWith(other: DefinedApplication): Connection[_, _, _] = {
+        def communicatesWith(other: Application): Connection[_, _, _] = {
           Connection(
             resourceSelector = ApplicationSelector(app),
             ingress = ApplicationSelector(other),
@@ -70,17 +70,17 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 
     val backend = backendNsRef
       .inNamespace { implicit ns =>
-        val completedApp3 = app3.bind()
+        val bindedApp3 = app3.bind()
 
         Connections {
           import Connections._
 
           Set(
-            completedApp3 communicatesWith frontendNsRef
+            bindedApp3 communicatesWith frontendNsRef
           )
         }
 
-        NonEmptyList.of(app3)
+        NonEmptyList.of(bindedApp3)
       }
 
     val app1 = Application("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
@@ -88,7 +88,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
-
         val bindedApp1 = app1.bind()
         val bindedApp2 = app2.bind()
 
@@ -106,7 +105,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
           )
         }
 
-        NonEmptyList.of(app1, app2)
+        NonEmptyList.of(bindedApp1, bindedApp2)
       }
   }
 }
