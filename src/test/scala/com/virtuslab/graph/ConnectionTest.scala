@@ -5,7 +5,7 @@ import com.virtuslab.dsl._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class GraphTest extends AnyFlatSpec with Matchers {
+class ConnectionTest extends AnyFlatSpec with Matchers {
   it should "allow to express a connection between two applications" in {
 
 //    type IP = String // TODO a proper object
@@ -77,7 +77,6 @@ class GraphTest extends AnyFlatSpec with Matchers {
       }
 
     val frontendRoleLabel = RoleLabel("frontend")
-
 
     val frontend = Namespace("test")
       .labeled(frontendRoleLabel)

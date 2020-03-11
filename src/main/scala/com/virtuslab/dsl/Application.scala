@@ -34,40 +34,57 @@ object Configuration {
   }
 }
 
-object Application {
+trait Containerized {
+  def image: String
+  def command: List[String]
+  def args: List[String]
+  def envs: List[Containerized.EnvironmentVariable]
+}
 
+object Containerized {
+  case class EnvironmentVariable(key: String, value: String)
+}
+
+trait Networked {
+  def ports: List[Networked.Port]
+  def ping: Option[HttpPing]
+  def healthCheck: Option[HttpHealthCheck]
+}
+
+object Networked {
   case class Port(number: Int, name: Option[String] = None)
+
   object Port {
     implicit val show: Show[Port] = Show.show { port =>
       s"Port(number=${port.number}, name=${port.name}"
     }
   }
+}
 
-  case class EnvironmentVariable(key: String, value: String)
-
+object Application {
   def apply(
       name: String,
       image: String,
       command: List[String] = Nil,
       args: List[String] = Nil,
-      configurations: List[Configuration] = Nil,
-      ports: List[Application.Port] = Nil,
-      envs: List[Application.EnvironmentVariable] = Nil,
+      envs: List[Containerized.EnvironmentVariable] = Nil,
+      ports: List[Networked.Port] = Nil,
       ping: Option[HttpPing] = None,
-      healthCheck: Option[HttpHealthCheck] = None
+      healthCheck: Option[HttpHealthCheck] = None,
+      configurations: List[Configuration] = Nil,
     )(implicit
       ns: Namespace
     ): Application = {
     Application(
       name = name,
-      image = image,
       namespace = ns,
       labels = Set(NameLabel(name)),
+      configurations = configurations,
+      image = image,
       command = command,
       args = args,
-      configurations = configurations,
-      ports = ports,
       envs = envs,
+      ports = ports,
       ping = ping,
       healthCheck = healthCheck
     )
@@ -78,19 +95,21 @@ case class Application(
     name: String,
     namespace: Namespace,
     labels: Set[Label],
+    configurations: List[Configuration],
     image: String,
     command: List[String],
     args: List[String],
-    configurations: List[Configuration],
-    ports: List[Application.Port],
-    envs: List[Application.EnvironmentVariable],
+    envs: List[Containerized.EnvironmentVariable],
+    ports: List[Networked.Port],
     ping: Option[HttpPing],
     healthCheck: Option[HttpHealthCheck])
   extends Resource
   with Namespaced
-  with Labeled {
+  with Labeled
+  with Containerized
+  with Networked {
 
-  protected def addPort(port: Application.Port): Application = {
+  protected def addPort(port: Networked.Port): Application = {
     ports
       .find(_ == port)
       .fold {
@@ -103,11 +122,11 @@ case class Application(
   }
 
   def listensOn(number: Int): Application = {
-    addPort(Application.Port(number))
+    addPort(Networked.Port(number))
   }
 
   def listensOn(number: Int, name: String): Application = {
-    addPort(Application.Port(number, name.some))
+    addPort(Networked.Port(number, name.some))
   }
 
   def withConfiguration(configuration: Configuration): Application = {
