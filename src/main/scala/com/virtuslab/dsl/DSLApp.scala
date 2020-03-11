@@ -92,9 +92,9 @@ trait ApplicationInterpreter[A <: Application] {
 }
 
 class HttpApplicationInterpreter(val system: System, val portForward: PartialFunction[Int, Int] = PartialFunction.empty)
-  extends ApplicationInterpreter[HttpApplication] {
+  extends ApplicationInterpreter[Application] {
 
-  def apply(app: HttpApplication): (Service, Deployment) = {
+  def apply(app: Application): (Service, Deployment) = {
     val svc = generateService(app)
 
     val env = app.envs.map { env =>
@@ -171,7 +171,7 @@ object SystemInterpreter {
   def of(system: System): SystemInterpreter = {
     val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application]] // FIXME
     new SystemInterpreter({
-      case _: HttpApplication => httpApplicationInterpreter
+      case _: Application => httpApplicationInterpreter
     }, new ConfigurationInterpreter, new NamespaceInterpreter)
   }
 }

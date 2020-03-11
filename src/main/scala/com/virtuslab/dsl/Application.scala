@@ -35,6 +35,7 @@ object Configuration {
 }
 
 object Application {
+
   case class Port(number: Int, name: Option[String] = None)
   object Port {
     implicit val show: Show[Port] = Show.show { port =>
@@ -43,66 +44,7 @@ object Application {
   }
 
   case class EnvironmentVariable(key: String, value: String)
-}
 
-abstract class Application extends Resource with Namespaced with Labeled {
-  def name: String
-  def image: String
-  def ports: List[Application.Port]
-  def envs: List[Application.EnvironmentVariable]
-  def ping: Option[PingAction]
-  def healthCheck: Option[HealthCheckAction]
-  def command: List[String]
-  def args: List[String]
-  def configurations: List[Configuration]
-
-  protected def addPort(port: Application.Port): Application
-
-  def listensOn(number: Int): Application = {
-    addPort(Application.Port(number))
-  }
-
-  def listensOn(number: Int, name: String): Application = {
-    addPort(Application.Port(number, name.some))
-  }
-}
-
-case class HttpApplication(
-    name: String,
-    namespace: Namespace,
-    labels: Set[Label],
-    image: String,
-    command: List[String],
-    args: List[String],
-    configurations: List[Configuration],
-    ports: List[Application.Port],
-    envs: List[Application.EnvironmentVariable],
-    ping: Option[HttpPing],
-    healthCheck: Option[HttpHealthCheck])
-  extends Application {
-
-  override protected def addPort(port: Application.Port): HttpApplication = {
-    ports
-      .find(_ == port)
-      .fold {
-        copy(ports = port :: ports)
-      } { port =>
-        throw new IllegalStateException(
-          s"Port ${port.show} is already defined."
-        )
-      }
-  }
-
-  def withConfiguration(configuration: Configuration): HttpApplication = {
-    copy(configurations = configuration :: configurations)
-  }
-
-  def labeled(ls: Label*): HttpApplication = {
-    copy(labels = labels ++ ls)
-  }
-}
-
-object HttpApplication {
   def apply(
       name: String,
       image: String,
@@ -115,8 +57,8 @@ object HttpApplication {
       healthCheck: Option[HttpHealthCheck] = None
     )(implicit
       ns: Namespace
-    ): HttpApplication = {
-    HttpApplication(
+    ): Application = {
+    Application(
       name = name,
       image = image,
       namespace = ns,
@@ -129,5 +71,50 @@ object HttpApplication {
       ping = ping,
       healthCheck = healthCheck
     )
+  }
+}
+
+case class Application(
+    name: String,
+    namespace: Namespace,
+    labels: Set[Label],
+    image: String,
+    command: List[String],
+    args: List[String],
+    configurations: List[Configuration],
+    ports: List[Application.Port],
+    envs: List[Application.EnvironmentVariable],
+    ping: Option[HttpPing],
+    healthCheck: Option[HttpHealthCheck])
+  extends Resource
+  with Namespaced
+  with Labeled {
+
+  protected def addPort(port: Application.Port): Application = {
+    ports
+      .find(_ == port)
+      .fold {
+        copy(ports = port :: ports)
+      } { port =>
+        throw new IllegalStateException(
+          s"Port ${port.show} is already defined."
+        )
+      }
+  }
+
+  def listensOn(number: Int): Application = {
+    addPort(Application.Port(number))
+  }
+
+  def listensOn(number: Int, name: String): Application = {
+    addPort(Application.Port(number, name.some))
+  }
+
+  def withConfiguration(configuration: Configuration): Application = {
+    copy(configurations = configuration :: configurations)
+  }
+
+  def labeled(ls: Label*): Application = {
+    copy(labels = labels ++ ls)
   }
 }

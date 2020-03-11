@@ -12,18 +12,20 @@ class GraphTest extends AnyFlatSpec with Matchers {
 //    type IPBlock = String // TODO a proper object, a CIDR
 //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
-    class Connection[A : Selectable, B : Selectable, C: Selectable](
+    class Connection[A: Selectable, B: Selectable, C: Selectable](
         namespace: Namespace,
         resourceSelector: Selector[A],
         ingress: Selector[B],
         egress: Selector[C])
 
     object Connection {
-      def apply[A : Selectable, B : Selectable, C: Selectable](
+      def apply[A: Selectable, B: Selectable, C: Selectable](
           resourceSelector: Selector[A],
           ingress: Selector[B] = EmptySelector(),
-          egress: Selector[C] = EmptySelector())
-      (implicit ns: Namespace): Connection[A, B, C] =
+          egress: Selector[C] = EmptySelector()
+        )(implicit
+          ns: Namespace
+        ): Connection[A, B, C] =
         new Connection(ns, resourceSelector, ingress, egress)
     }
 
@@ -40,21 +42,22 @@ class GraphTest extends AnyFlatSpec with Matchers {
 
     val frontend = Namespace("test")
       .labeled(frontendRoleLabel)
-      .inNamespace { implicit ns => {
-        val app1 = HttpApplication("app-one", "image-app-one")
+      .inNamespace { implicit ns =>
+        {
+          val app1 = Application("app-one", "image-app-one")
             .labeled(frontendRoleLabel)
             .listensOn(9090)
-        val app2 = HttpApplication("app-two", "image-app-two")
+          val app2 = Application("app-two", "image-app-two")
             .labeled(frontendRoleLabel)
             .listensOn(9090, "http-port")
 
-        val conn1 = Connection(
-          ApplicationSelector(Labels(backendRoleLabel)),
-          NamespaceSelector(Labels(frontendRoleLabel))
-        )
+          val conn1 = Connection(
+            ApplicationSelector(Labels(backendRoleLabel)),
+            NamespaceSelector(Labels(frontendRoleLabel))
+          )
 
-        NonEmptyList.of(app1, app2)
+          NonEmptyList.of(app1, app2)
+        }
       }
-    }
   }
 }

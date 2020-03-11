@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
 object OperatorMain extends AbstractMain with App {
-  import com.virtuslab.dsl.{ Configuration, HttpApplication, Namespace, System, SystemInterpreter }
+  import com.virtuslab.dsl.{ Application, Configuration, Namespace, System, SystemInterpreter }
 
   def deploy(): Unit = {
     val namespace = Namespace("test").inNamespace { implicit ns =>
@@ -31,7 +31,7 @@ object OperatorMain extends AbstractMain with App {
         )
       )
 
-      val app = HttpApplication(
+      val app = Application(
         name = "app",
         image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
         command = List("cloud-file-server"),
@@ -39,7 +39,15 @@ object OperatorMain extends AbstractMain with App {
         configurations = List(configuration)
       ).listensOn(8080)
 
-      NonEmptyList.of(configuration) :+ app
+      val second = Application(
+        name = "app",
+        image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+        command = List("cloud-file-server"),
+        args = List("--config", "/opt/config.yaml"),
+        configurations = List(configuration)
+      ).listensOn(8080)
+
+      NonEmptyList.of(configuration) :+ app :+ second
     }
 
     // Populate the namespace
