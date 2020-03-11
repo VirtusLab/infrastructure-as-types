@@ -12,6 +12,8 @@ trait Namespaced {
   def namespace: Namespace
 }
 
+case class NamespaceBuilder(connections: Connections, applications: Applications)
+
 trait Namespace extends Resource with Labeled
 
 object Namespace {
