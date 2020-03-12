@@ -1,6 +1,5 @@
 package com.virtuslab.graph
 
-import com.virtuslab.dsl.Namespace.NamespaceReference
 import com.virtuslab.dsl._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -45,10 +44,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
         import ns._
-//        val conn1 = Connection(
-//          ApplicationSelector(Labels(backendRoleLabel)),
-//          NamespaceSelector(Labels(frontendRoleLabel))
-//        )
 
         Applications(
           app1,

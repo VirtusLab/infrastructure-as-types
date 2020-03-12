@@ -22,6 +22,11 @@ case class NamespaceBuilder(namespace: Namespace) {
     this
   }
 
+  def Connections(defined: Connection[_, _, _]*): NamespaceBuilder = {
+    connections ++= defined
+    this
+  }
+
   //TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
     def communicatesWith(other: Application)(implicit ns: Namespace): Connection[_, _, _] = {

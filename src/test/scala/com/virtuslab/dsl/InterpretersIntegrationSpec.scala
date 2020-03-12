@@ -1,6 +1,5 @@
 package com.virtuslab.dsl
 
-import cats.data.NonEmptyList
 import com.stephenn.scalatest.playjson.JsonMatchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -10,10 +9,12 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 
   it should "create a system" in {
     val ns = Namespace("test").inNamespace { implicit ns =>
-      NonEmptyList.of(
-        Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil).bind(),
-        Application("app-two", "image-app-two", ports = Networked.Port(9090) :: Nil).bind()
-      )
+      import ns._
+
+      Applications {
+        Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil)
+        Application("app-two", "image-app-two", ports = Networked.Port(9090) :: Nil)
+      }
     }
 
     val system = System("test-system")
