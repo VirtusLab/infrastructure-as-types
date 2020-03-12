@@ -8,17 +8,21 @@ import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a system" in {
-    val ns = Namespace("test").inNamespace { implicit ns =>
-      import ns._
-
-      Applications {
-        Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil)
-        Application("app-two", "image-app-two", ports = Networked.Port(9090) :: Nil)
-      }
-    }
-
     val system = System("test-system")
-      .inSystem(ns)
+      .inSystem { implicit system =>
+        import system._
+
+        Namespaces(
+          Namespace("test").inNamespace { implicit ns =>
+            import ns._
+
+            Applications(
+              Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil),
+              Application("app-two", "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
+            )
+          }
+        )
+      }
 
     val systemInterpreter = SystemInterpreter.of(system)
 

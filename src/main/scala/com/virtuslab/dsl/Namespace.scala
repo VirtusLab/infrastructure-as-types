@@ -1,6 +1,6 @@
 package com.virtuslab.dsl
 
-import cats.data.NonEmptyList
+import com.virtuslab.dsl.Application.{ApplicationReference, DefinedApplication}
 import com.virtuslab.dsl.Namespace.NamespaceReference
 
 trait Namespaced {
@@ -20,6 +20,8 @@ case class NamespaceBuilder(namespace: Namespace) {
     connections ++= defined
     this
   }
+
+  def collect(): (Set[Application], Set[Connection[_, _, _]]) = (applications.toSet, connections.toSet)
 
   //TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
@@ -62,14 +64,20 @@ object Namespace {
 
     def inNamespace(f: NamespaceBuilder => NamespaceBuilder): DefinedNamespace = {
       val builder = f(NamespaceBuilder(this))
-      DefinedNamespace(name, labels, ???)
+      val (apps, conns) = builder.collect()
+      val members: Set[Namespaced] = apps.map {
+        case a: ApplicationReference => a.bind()(builder.namespace)
+        case a: DefinedApplication   => a
+      } ++ conns
+
+      DefinedNamespace(name, labels, members)
     }
   }
 
   final case class DefinedNamespace protected (
       name: String,
       labels: Set[Label],
-      members: NonEmptyList[Namespaced])
+      members: Set[Namespaced])
     extends Namespace
     with Labeled
 

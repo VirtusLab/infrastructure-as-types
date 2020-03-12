@@ -40,7 +40,7 @@ object OperatorMain extends AbstractMain with App {
         args = List("--config", "/opt/config.yaml"),
         configurations = List(configuration),
         ports = Networked.Port(8080) :: Nil
-      ).bind()
+      )
 
       val second = Application(
         name = "app",
@@ -49,20 +49,24 @@ object OperatorMain extends AbstractMain with App {
         args = List("--config", "/opt/config.yaml"),
         configurations = List(configuration),
         ports = Networked.Port(8080) :: Nil
-      ).bind()
+      )
 
       Applications(
         app,
         second
       )
-
-      ns
     }
 
     // Populate the namespace
 
     val system = System("test")
-      .inSystem(namespace)
+      .inSystem { implicit system =>
+        import system._
+
+        Namespaces(
+          namespace
+        )
+      }
 
     import skuber.apps.v1.Deployment
     import skuber.json.format._

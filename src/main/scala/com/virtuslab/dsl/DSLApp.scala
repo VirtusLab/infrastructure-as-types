@@ -2,12 +2,14 @@ package com.virtuslab.dsl
 
 import cats.syntax.either._
 import cats.syntax.option._
+import com.virtuslab.dsl.Namespace.DefinedNamespace
+import com.virtuslab.dsl.System.DefinedSystem
 import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
 import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
 
 class NamespaceInterpreter() {
-  def apply(namespace: Namespace): skuber.Namespace = {
+  def apply(namespace: DefinedNamespace): skuber.Namespace = {
     skuber.Namespace.from(ObjectMeta(name = namespace.name))
   }
 }
@@ -139,9 +141,9 @@ class SystemInterpreter(
     config: ConfigurationInterpreter,
     namespace: NamespaceInterpreter) {
 
-  def apply(system: System): Seq[ObjectResource] = {
+  def apply(system: DefinedSystem): Seq[ObjectResource] = {
     system.namespaces.flatMap { ns =>
-      Seq(namespace(ns)) ++ ns.members.toList.flatMap {
+      Seq(namespace(ns)) ++ ns.members.toSeq.flatMap {
         case app: Application.DefinedApplication =>
           if (applicationInterpreters.isDefinedAt(app)) {
             val (svc, dpl) = applicationInterpreters(app)(app)
@@ -155,7 +157,7 @@ class SystemInterpreter(
           Seq(config(cfg))
       }
     }
-  }
+  }.toSeq
 }
 
 object SystemInterpreter {

@@ -33,8 +33,9 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
           app3
         )
 
-        app3 communicatesWith frontendNsRef
-
+        Connections(
+          app3 communicatesWith frontendNsRef
+        )
         ns
       }
 
@@ -53,9 +54,9 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
         Connections(
           app1 communicatesWith app2,
           app1 communicatesWith backendNsRef
+//        app1 communicatesWith application(partition in (customerA, customerB), environment!=qa)
+//        app1 communicatesWith namespace(partition in (customerA, customerB), environment!=qa)
         )
-
-        ns
       }
   }
 }
