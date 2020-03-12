@@ -12,53 +12,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 //    type IPBlock = String // TODO a proper object, a CIDR
 //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
-    class Connection[A: Selectable, B: Selectable, C: Selectable](
-        namespace: Namespace,
-        resourceSelector: Selector[A],
-        ingress: Selector[B],
-        egress: Selector[C])
-
-    object Connection {
-      def apply[A: Selectable, B: Selectable, C: Selectable](
-          resourceSelector: Selector[A],
-          ingress: Selector[B] = EmptySelector,
-          egress: Selector[C] = EmptySelector
-        )(implicit
-          ns: Namespace
-        ): Connection[A, B, C] =
-        new Connection(ns, resourceSelector, ingress, egress)
-    }
-
-    case class Applications(defined: Set[Application], namespace: Namespace)
-    object Applications {
-      def apply(defined: Set[Application])(implicit ns: Namespace): Applications = {
-        Applications(defined, ns)
-      }
-    }
-
-    case class Connections(defined: Set[Connection[_, _, _]])
-    object Connections {
-
-      //TODO: extract to common place for implicits
-      implicit class ApplicationConnectionOps(app: Application) {
-        def communicatesWith(other: Application)(implicit ns: Namespace): Connection[_, _, _] = {
-          Connection(
-            resourceSelector = ApplicationSelector(app),
-            ingress = ApplicationSelector(other),
-            egress = ApplicationSelector(app)
-          )
-        }
-
-        def communicatesWith(namespace: NamespaceReference)(implicit ns: Namespace): Connection[_, _, _] = {
-          Connection(
-            resourceSelector = ApplicationSelector(app),
-            ingress = NamespaceSelector(namespace),
-            egress = ApplicationSelector(app)
-          )
-        }
-      }
-    }
-
     case class RoleLabel(value: Label#Value) extends Label {
       override def name: Key = "role"
     }
@@ -75,18 +28,13 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 
     val backend = backendNsRef
       .inNamespace { implicit ns =>
+        import ns._
 
-        Applications {
-          Set(app3)
-        }(ns)
+        Applications(
+          app3
+        )
 
-        Connections {
-          import Connections._
-
-          Set(
-            app3 communicatesWith frontendNsRef
-          )
-        }(ns)
+        app3 communicatesWith frontendNsRef
 
         ns
       }
@@ -96,25 +44,23 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
+        import ns._
 //        val conn1 = Connection(
 //          ApplicationSelector(Labels(backendRoleLabel)),
 //          NamespaceSelector(Labels(frontendRoleLabel))
 //        )
 
-        Applications {
-          Set(app1, app2)
-        }
+        Applications(
+          app1,
+          app2
+        )
 
-        Connections {
-          import Connections._
+        Connections(
+          app1 communicatesWith app2,
+          app1 communicatesWith backendNsRef
+        )
 
-          Set(
-            app1 communicatesWith app2,
-            app1 communicatesWith backendNsRef
-          )
-        }
-
-        ???
+        ns
       }
   }
 }

@@ -1,6 +1,5 @@
 package com.virtuslab
 
-import cats.data.NonEmptyList
 import com.virtuslab.dsl.Networked
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
@@ -13,6 +12,8 @@ object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
     val namespace = Namespace("test").inNamespace { implicit ns =>
+      import ns._
+
       val configuration = Configuration(
         name = "app",
         data = Map(
@@ -50,7 +51,12 @@ object OperatorMain extends AbstractMain with App {
         ports = Networked.Port(8080) :: Nil
       ).bind()
 
-      NonEmptyList.of(configuration) :+ app :+ second
+      Applications(
+        app,
+        second
+      )
+
+      ns
     }
 
     // Populate the namespace
@@ -58,9 +64,9 @@ object OperatorMain extends AbstractMain with App {
     val system = System("test")
       .inSystem(namespace)
 
-    import skuber.{ ConfigMap, Namespace, Service }
     import skuber.apps.v1.Deployment
     import skuber.json.format._
+    import skuber.{ ConfigMap, Namespace, Service }
 
     val systemInterpreter = SystemInterpreter.of(system)
     systemInterpreter(system).foreach {

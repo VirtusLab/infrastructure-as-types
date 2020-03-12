@@ -1,6 +1,7 @@
 package com.virtuslab.dsl
 
 import cats.data.NonEmptyList
+import com.virtuslab.dsl.Namespace.NamespaceReference
 
 trait Resource extends Named {}
 
@@ -12,7 +13,45 @@ trait Namespaced {
   def namespace: Namespace
 }
 
-case class NamespaceBuilder(connections: Connections, applications: Applications)
+case class NamespaceBuilder(namespace: Namespace) {
+  private val connections: scala.collection.mutable.Set[Connection[_, _, _]] = scala.collection.mutable.Set.empty
+  private val applications: scala.collection.mutable.Set[Application] = scala.collection.mutable.Set.empty
+
+  def Applications(defined: Application*): NamespaceBuilder = {
+    applications ++= defined
+    this
+  }
+
+  //TODO: extract to common place for implicits
+  implicit class ApplicationConnectionOps(app: Application) {
+    def communicatesWith(other: Application)(implicit ns: Namespace): Connection[_, _, _] = {
+      val connection = Connection(
+        resourceSelector = ApplicationSelector(app),
+        ingress = ApplicationSelector(other),
+        egress = ApplicationSelector(app)
+      )
+      connections += connection
+
+      connection
+    }
+
+    def communicatesWith(namespace: NamespaceReference)(implicit ns: Namespace): Connection[_, _, _] = {
+      val connection = Connection(
+        resourceSelector = ApplicationSelector(app),
+        ingress = NamespaceSelector(namespace),
+        egress = ApplicationSelector(app)
+      )
+      connections += connection
+
+      connection
+    }
+  }
+
+  implicit def nsBuilderToNs(implicit builder: NamespaceBuilder): Namespace = {
+    builder.namespace
+  }
+
+}
 
 trait Namespace extends Resource with Labeled
 
@@ -22,8 +61,9 @@ object Namespace {
       NamespaceReference(name, labels ++ ls)
     }
 
-    def inNamespace(f: Namespace => NonEmptyList[Namespaced]): DefinedNamespace = {
-      DefinedNamespace(name, labels, f(this))
+    def inNamespace(f: NamespaceBuilder => NamespaceBuilder): DefinedNamespace = {
+      val builder = f(NamespaceBuilder(this))
+      DefinedNamespace(name, labels, ???)
     }
   }
 
