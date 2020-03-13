@@ -4,33 +4,6 @@ import java.net.URL
 
 import cats.Show
 
-sealed trait PingAction
-case class HttpPing(url: URL) extends PingAction
-case class TCPPing(port: Int) extends PingAction
-
-sealed trait HealthCheckAction
-case class HttpHealthCheck(url: URL) extends HealthCheckAction
-case class TCPHealthCheck(port: Int) extends HealthCheckAction
-
-case class Configuration(
-    name: String,
-    namespace: Namespace,
-    labels: Set[Label],
-    data: Map[String, String])
-  extends Resource
-  with Namespaced
-  with Labeled {
-  def labeled(ls: Label*): Configuration = {
-    copy(labels = labels ++ ls)
-  }
-}
-
-object Configuration {
-  def apply(name: String, data: Map[String, String])(implicit ns: Namespace): Configuration = {
-    Configuration(name, ns, Set(NameLabel(name)), data)
-  }
-}
-
 trait Containerized {
   def image: String
   def command: List[String]
@@ -57,7 +30,33 @@ object Networked {
     }
   }
 }
-trait ResourceReference extends Resource with Labeled
+
+sealed trait PingAction
+case class HttpPing(url: URL) extends PingAction
+case class TCPPing(port: Int) extends PingAction
+
+sealed trait HealthCheckAction
+case class HttpHealthCheck(url: URL) extends HealthCheckAction
+case class TCPHealthCheck(port: Int) extends HealthCheckAction
+
+case class Configuration(
+    name: String,
+    namespace: Namespace,
+    labels: Set[Label],
+    data: Map[String, String])
+  extends Resource
+  with Namespaced
+  with Labeled {
+  def labeled(ls: Label*): Configuration = {
+    copy(labels = labels ++ ls)
+  }
+}
+
+object Configuration {
+  def apply(name: String, data: Map[String, String])(implicit ns: Namespace): Configuration = {
+    Configuration(name, ns, Set(NameLabel(name)), data)
+  }
+}
 
 trait Application extends ResourceReference with Containerized with Networked
 

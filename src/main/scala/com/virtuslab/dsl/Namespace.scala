@@ -1,6 +1,6 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.Application.{ApplicationReference, DefinedApplication}
+import com.virtuslab.dsl.Application.{ ApplicationReference, DefinedApplication }
 import com.virtuslab.dsl.Namespace.NamespaceReference
 
 trait Namespaced {
