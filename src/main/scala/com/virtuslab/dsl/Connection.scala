@@ -8,13 +8,12 @@ abstract class Connection[A: Selectable, B: Selectable, C: Selectable] extends N
 }
 
 object Connection {
-  final case class DefinedConnection[A: Selectable, B: Selectable, C: Selectable](
+  private case class DefinedConnection[A: Selectable, B: Selectable, C: Selectable](
       namespace: Namespace,
       resourceSelector: Selector[A],
       ingress: Selector[B],
       egress: Selector[C])
     extends Connection[A, B, C]
-    with Namespaced
 
   def apply[A: Selectable, B: Selectable, C: Selectable](
       resourceSelector: Selector[A],
@@ -22,7 +21,7 @@ object Connection {
       egress: Selector[C] = EmptySelector
     )(implicit
       builder: NamespaceBuilder
-    ): DefinedConnection[A, B, C] = {
+    ): Connection[A, B, C] = {
     val conn = DefinedConnection(builder.namespace, resourceSelector, ingress, egress)
     builder.connections(conn)
     conn

@@ -13,7 +13,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
         import sys._
 
         namespaces(
-          Namespace("test")(sys).inNamespace { implicit ns =>
+          Namespace("test").inNamespace { implicit ns =>
             import ns._
 
             applications(

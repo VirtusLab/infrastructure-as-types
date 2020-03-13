@@ -2,14 +2,15 @@ package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Application.{ ApplicationReference, DefinedApplication }
 import com.virtuslab.dsl.Namespace.{ DefinedNamespace, NamespaceReference }
+import scala.collection.mutable
 
 trait Namespaced {
   def namespace: Namespace
 }
 
 case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) {
-  private val connections: scala.collection.mutable.Set[Connection[_, _, _]] = scala.collection.mutable.Set.empty
-  private val applications: scala.collection.mutable.Set[Application] = scala.collection.mutable.Set.empty
+  private val connections: mutable.Set[Connection[_, _, _]] = mutable.Set.empty
+  private val applications: mutable.Set[Application] = mutable.Set.empty
 
   def references(rs: ResourceReference): SystemBuilder = systemBuilder.references(rs)
 
@@ -64,10 +65,10 @@ case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) 
 
 }
 
-trait Namespace extends ResourceReference with Labeled
+trait Namespace extends ResourceReference
 
 object Namespace {
-  final case class NamespaceReference protected (name: String, labels: Set[Label]) extends Namespace with Labeled {
+  final case class NamespaceReference protected (name: String, labels: Set[Label]) extends Namespace {
     def inNamespace(f: NamespaceBuilder => NamespaceBuilder)(implicit systemBuilder: SystemBuilder): DefinedNamespace = f(builder).build()
     def builder(implicit systemBuilder: SystemBuilder): NamespaceBuilder = NamespaceBuilder(this, systemBuilder)
   }
@@ -77,7 +78,6 @@ object Namespace {
       labels: Set[Label],
       members: Set[Namespaced])
     extends Namespace
-    with Labeled
 
   def ref(name: String, labels: Label*): NamespaceReference = {
     NamespaceReference(name, Set(NameLabel(name)) ++ labels)
