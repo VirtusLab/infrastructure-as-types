@@ -9,14 +9,14 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 
   it should "create a system" in {
     val system = System("test-system")
-      .inSystem { implicit system =>
-        import system._
+      .inSystem { implicit sys =>
+        import sys._
 
-        Namespaces(
-          Namespace("test").inNamespace { implicit ns =>
+        namespaces(
+          Namespace("test")(sys).inNamespace { implicit ns =>
             import ns._
 
-            Applications(
+            applications(
               Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil),
               Application("app-two", "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
             )

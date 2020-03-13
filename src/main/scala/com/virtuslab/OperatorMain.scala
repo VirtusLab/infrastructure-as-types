@@ -1,6 +1,6 @@
 package com.virtuslab
 
-import com.virtuslab.dsl.Networked
+import com.virtuslab.dsl.{ NamespaceBuilder, Networked, SystemBuilder }
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
@@ -11,69 +11,55 @@ object OperatorMain extends AbstractMain with App {
   import com.virtuslab.dsl.{ Application, Configuration, Namespace, System, SystemInterpreter }
 
   def deploy(): Unit = {
-    val namespace = Namespace("test").inNamespace { implicit ns =>
-      import ns._
-
-      val configuration = Configuration(
-        name = "app",
-        data = Map(
-          "config.yaml" ->
-            """
-              |listen: :8080
-              |logRequests: true
-              |connectors:
-              |- type: file
-              |  uri: file:///opt/test.txt
-              |  pathPrefix: /health
-              |""".stripMargin,
-          "test.txt" ->
-            """
-              |I'm testy tester, being tested ;-)
-              |""".stripMargin
-        )
-      )
-
-      val app = Application(
-        name = "app",
-        image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-        command = List("cloud-file-server"),
-        args = List("--config", "/opt/config.yaml"),
-        configurations = List(configuration),
-        ports = Networked.Port(8080) :: Nil
-      )
-
-      val second = Application(
-        name = "app",
-        image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-        command = List("cloud-file-server"),
-        args = List("--config", "/opt/config.yaml"),
-        configurations = List(configuration),
-        ports = Networked.Port(8080) :: Nil
-      )
-
-      Applications(
-        app,
-        second
-      )
-    }
-
-    // Populate the namespace
-
     val system = System("test")
-      .inSystem { implicit system =>
-        import system._
+    implicit val systemBuilder: SystemBuilder = system.builder
 
-        Namespaces(
-          namespace
-        )
-      }
+    val namespace = Namespace("test")
+    implicit val namespaceBuilder: NamespaceBuilder = namespace.builder
+
+    val configuration = Configuration(
+      name = "app",
+      data = Map(
+        "config.yaml" ->
+          """
+            |listen: :8080
+            |logRequests: true
+            |connectors:
+            |- type: file
+            |  uri: file:///opt/test.txt
+            |  pathPrefix: /health
+            |""".stripMargin,
+        "test.txt" ->
+          """
+            |I'm testy tester, being tested ;-)
+            |""".stripMargin
+      )
+    )
+
+    Application(
+      name = "app",
+      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+      command = List("cloud-file-server"),
+      args = List("--config", "/opt/config.yaml"),
+      configurations = List(configuration),
+      ports = Networked.Port(8080) :: Nil
+    )
+
+    Application(
+      name = "app",
+      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+      command = List("cloud-file-server"),
+      args = List("--config", "/opt/config.yaml"),
+      configurations = List(configuration),
+      ports = Networked.Port(8080) :: Nil
+    )
 
     import skuber.apps.v1.Deployment
     import skuber.json.format._
     import skuber.{ ConfigMap, Namespace, Service }
 
     val systemInterpreter = SystemInterpreter.of(system)
-    systemInterpreter(system).foreach {
+    systemInterpreter(systemBuilder.build()).foreach {
 
       case namespace: Namespace =>
         val createNamespace = createOrUpdate(client, namespace)

@@ -39,58 +39,49 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
-case class Configuration(
-    name: String,
-    namespace: Namespace,
-    labels: Set[Label],
-    data: Map[String, String])
-  extends Resource
-  with Namespaced
-  with Labeled {
-  def labeled(ls: Label*): Configuration = {
-    copy(labels = labels ++ ls)
-  }
-}
+trait Configuration extends ResourceReference
 
 object Configuration {
-  def apply(name: String, data: Map[String, String])(implicit ns: Namespace): Configuration = {
-    Configuration(name, ns, Set(NameLabel(name)), data)
+  final case class DefinedConfiguration(
+      name: String,
+      namespace: Namespace,
+      labels: Set[Label],
+      data: Map[String, String])
+    extends Configuration
+    with Namespaced
+
+  final case class ConfigurationReference(
+      name: String,
+      labels: Set[Label],
+      data: Map[String, String])
+    extends Configuration {
+    def define(implicit builder: NamespaceBuilder): DefinedConfiguration = {
+      DefinedConfiguration(
+        name = name,
+        namespace = builder.namespace,
+        labels = labels,
+        data = data
+      )
+    }
+  }
+
+  def ref(name: String, data: Map[String, String])(implicit builder: SystemBuilder): ConfigurationReference = {
+    val conf = ConfigurationReference(name, Set(NameLabel(name)), data)
+    builder.references(conf)
+    conf
+  }
+
+  def apply(name: String, data: Map[String, String])(implicit builder: NamespaceBuilder): DefinedConfiguration = {
+    val conf = ref(name, data)(builder.systemBuilder).define
+    builder.references(conf)
+    conf
   }
 }
 
 trait Application extends ResourceReference with Containerized with Networked
 
 object Application {
-  case class ApplicationReference(
-      name: String,
-      labels: Set[Label],
-      configurations: List[Configuration],
-      image: String,
-      command: List[String],
-      args: List[String],
-      envs: List[Containerized.EnvironmentVariable],
-      ports: List[Networked.Port],
-      ping: Option[HttpPing],
-      healthCheck: Option[HttpHealthCheck])
-    extends Application {
-    def bind()(implicit namespace: Namespace): DefinedApplication = {
-      DefinedApplication(
-        name = name,
-        labels = labels,
-        namespace = namespace,
-        configurations = configurations,
-        image = image,
-        command = command,
-        args = args,
-        envs = envs,
-        ports = ports,
-        ping = ping,
-        healthCheck = healthCheck
-      )
-    }
-  }
-
-  case class DefinedApplication(
+  final case class DefinedApplication private (
       name: String,
       labels: Set[Label],
       namespace: Namespace,
@@ -105,7 +96,36 @@ object Application {
     extends Application
     with Namespaced
 
-  def apply(
+  final case class ApplicationReference private (
+      name: String,
+      labels: Set[Label],
+      configurations: List[Configuration],
+      image: String,
+      command: List[String],
+      args: List[String],
+      envs: List[Containerized.EnvironmentVariable],
+      ports: List[Networked.Port],
+      ping: Option[HttpPing],
+      healthCheck: Option[HttpHealthCheck])
+    extends Application {
+    def define(implicit builder: NamespaceBuilder): DefinedApplication = {
+      DefinedApplication(
+        name = name,
+        labels = labels,
+        namespace = builder.namespace,
+        configurations = configurations,
+        image = image,
+        command = command,
+        args = args,
+        envs = envs,
+        ports = ports,
+        ping = ping,
+        healthCheck = healthCheck
+      )
+    }
+  }
+
+  def ref(
       name: String,
       image: String,
       labels: Set[Label] = Set.empty,
@@ -116,8 +136,10 @@ object Application {
       ports: List[Networked.Port] = Nil,
       ping: Option[HttpPing] = None,
       healthCheck: Option[HttpHealthCheck] = None
+    )(implicit
+      builder: SystemBuilder
     ): ApplicationReference = {
-    ApplicationReference(
+    val app = ApplicationReference(
       name = name,
       labels = Set(NameLabel(name)) ++ labels,
       configurations = configurations,
@@ -129,5 +151,37 @@ object Application {
       ping = ping,
       healthCheck = healthCheck
     )
+    builder.references(app)
+    app
+  }
+
+  def apply(
+      name: String,
+      image: String,
+      labels: Set[Label] = Set.empty,
+      configurations: List[Configuration] = Nil,
+      command: List[String] = Nil,
+      args: List[String] = Nil,
+      envs: List[Containerized.EnvironmentVariable] = Nil,
+      ports: List[Networked.Port] = Nil,
+      ping: Option[HttpPing] = None,
+      healthCheck: Option[HttpHealthCheck] = None
+    )(implicit
+      builder: NamespaceBuilder
+    ): DefinedApplication = {
+    val app = ref(
+      name = name,
+      labels = labels,
+      configurations = configurations,
+      image = image,
+      command = command,
+      args = args,
+      envs = envs,
+      ports = ports,
+      ping = ping,
+      healthCheck = healthCheck
+    )(builder.systemBuilder).define
+    builder.applications(app)
+    app
   }
 }

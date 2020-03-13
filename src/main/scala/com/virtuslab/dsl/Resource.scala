@@ -1,8 +1,8 @@
 package com.virtuslab.dsl
 
-trait Resource extends Named {}
-
-trait ResourceReference extends Resource with Labeled
+trait Resource extends Named
+trait Reference extends Labeled
+trait ResourceReference extends Resource with Reference
 
 trait Named {
   def name: String // TODO create a proper type

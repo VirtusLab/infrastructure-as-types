@@ -15,43 +15,44 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
       override def name: Key = "role"
     }
 
+    val system = System("test")
+    implicit val systemBuilder: SystemBuilder = system.builder
+
     val frontendRoleLabel = RoleLabel("frontend")
-    val frontendNsRef = Namespace("test")
-      .labeled(frontendRoleLabel)
+    val frontendNsRef = Namespace.ref("test", frontendRoleLabel)
 
     val backendRoleLabel = RoleLabel("backend")
-    val backendNsRef = Namespace("backend")
-      .labeled(backendRoleLabel)
+    val backendNsRef = Namespace.ref("backend", backendRoleLabel)
 
-    val app3 = Application("app-two", "app-two-image")
+    val app3 = Application.ref("app-two", "app-two-image")
 
     val backend = backendNsRef
       .inNamespace { implicit ns =>
         import ns._
 
-        Applications(
+        applications(
           app3
         )
 
-        Connections(
+        connections(
           app3 communicatesWith frontendNsRef
         )
         ns
       }
 
-    val app1 = Application("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
-    val app2 = Application("app-two", "image-app-two", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
+    val app1 = Application.ref("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
+    val app2 = Application.ref("app-two", "image-app-two", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
 
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
         import ns._
 
-        Applications(
+        applications(
           app1,
           app2
         )
 
-        Connections(
+        connections(
           app1 communicatesWith app2,
           app1 communicatesWith backendNsRef
 //        app1 communicatesWith application(partition in (customerA, customerB), environment!=qa)

@@ -11,6 +11,7 @@ class NamespaceSpec extends AnyFlatSpec with Matchers with JsonMatchers {
   import skuber.json.format._
 
   it should "serialize Namespace to JSON" in {
+    implicit val system: SystemBuilder = System("test").builder
     val namespace = Namespace("test").inNamespace(identity)
     val ns = new NamespaceInterpreter().apply(namespace)
 

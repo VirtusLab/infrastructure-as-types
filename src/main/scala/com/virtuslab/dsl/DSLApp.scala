@@ -2,6 +2,8 @@ package com.virtuslab.dsl
 
 import cats.syntax.either._
 import cats.syntax.option._
+import com.virtuslab.dsl.Application.DefinedApplication
+import com.virtuslab.dsl.Configuration.DefinedConfiguration
 import com.virtuslab.dsl.Namespace.DefinedNamespace
 import com.virtuslab.dsl.System.DefinedSystem
 import skuber.Volume.ConfigMapVolumeSource
@@ -15,7 +17,7 @@ class NamespaceInterpreter() {
 }
 
 class ConfigurationInterpreter() {
-  def apply(configuration: Configuration): ConfigMap = {
+  def apply(configuration: DefinedConfiguration): ConfigMap = {
     ConfigMap(
       metadata = ObjectMeta(name = configuration.name, namespace = configuration.namespace.name),
       data = configuration.data
@@ -23,7 +25,7 @@ class ConfigurationInterpreter() {
   }
 }
 
-trait ApplicationInterpreter[A <: Application.DefinedApplication] {
+trait ApplicationInterpreter[A <: DefinedApplication] {
   def system: System
 
   def portForward: PartialFunction[Int, Int]
@@ -94,9 +96,9 @@ trait ApplicationInterpreter[A <: Application.DefinedApplication] {
 }
 
 class HttpApplicationInterpreter(val system: System, val portForward: PartialFunction[Int, Int] = PartialFunction.empty)
-  extends ApplicationInterpreter[Application.DefinedApplication] {
+  extends ApplicationInterpreter[DefinedApplication] {
 
-  def apply(app: Application.DefinedApplication): (Service, Deployment) = {
+  def apply(app: DefinedApplication): (Service, Deployment) = {
     val svc = generateService(app)
 
     val env = app.envs.map { env =>
@@ -135,8 +137,8 @@ class HttpApplicationInterpreter(val system: System, val portForward: PartialFun
 
 class SystemInterpreter(
     applicationInterpreters: PartialFunction[
-      Application.DefinedApplication,
-      ApplicationInterpreter[Application.DefinedApplication]
+      DefinedApplication,
+      ApplicationInterpreter[DefinedApplication]
     ],
     config: ConfigurationInterpreter,
     namespace: NamespaceInterpreter) {
@@ -144,7 +146,7 @@ class SystemInterpreter(
   def apply(system: DefinedSystem): Seq[ObjectResource] = {
     system.namespaces.flatMap { ns =>
       Seq(namespace(ns)) ++ ns.members.toSeq.flatMap {
-        case app: Application.DefinedApplication =>
+        case app: DefinedApplication =>
           if (applicationInterpreters.isDefinedAt(app)) {
             val (svc, dpl) = applicationInterpreters(app)(app)
             Seq(svc, dpl)
@@ -153,7 +155,7 @@ class SystemInterpreter(
               s"Application $app is not suitable for the interpreter."
             )
           }
-        case cfg: Configuration =>
+        case cfg: DefinedConfiguration =>
           Seq(config(cfg))
       }
     }
@@ -163,17 +165,17 @@ class SystemInterpreter(
 object SystemInterpreter {
   def apply(
       applicationInterpreters: PartialFunction[
-        Application.DefinedApplication,
-        ApplicationInterpreter[Application.DefinedApplication]
+        DefinedApplication,
+        ApplicationInterpreter[DefinedApplication]
       ],
       configurationInterpreter: ConfigurationInterpreter,
       namespaceInterpreter: NamespaceInterpreter
     ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter, namespaceInterpreter)
 
   def of(system: System): SystemInterpreter = {
-    val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[Application.DefinedApplication]] // FIXME
+    val httpApplicationInterpreter = new HttpApplicationInterpreter(system).asInstanceOf[ApplicationInterpreter[DefinedApplication]] // FIXME
     new SystemInterpreter({
-      case _: Application.DefinedApplication => httpApplicationInterpreter
+      case _: DefinedApplication => httpApplicationInterpreter
     }, new ConfigurationInterpreter, new NamespaceInterpreter)
   }
 }
