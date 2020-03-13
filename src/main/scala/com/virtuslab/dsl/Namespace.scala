@@ -38,27 +38,35 @@ case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) 
     DefinedNamespace(namespace.name, namespace.labels, members)
   }
 
-  //TODO: extract to common place for implicits
+  // TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
     def communicatesWith(other: Application)(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+      communicatesWith(ApplicationSelector(other))
+    }
+
+    def communicatesWith(other: Namespace)(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+      communicatesWith(NamespaceSelector(other))
+    }
+
+    def communicatesWith[S: Selectable](other: ApplicationSelector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
       val connection = Connection(
         resourceSelector = ApplicationSelector(app),
-        ingress = ApplicationSelector(other),
+        ingress = other,
         egress = ApplicationSelector(app)
       )
-      connections += connection
 
+      connections += connection
       connection
     }
 
-    def communicatesWith(namespace: NamespaceReference)(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith[S: Selectable](other: NamespaceSelector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
       val connection = Connection(
         resourceSelector = ApplicationSelector(app),
-        ingress = NamespaceSelector(namespace),
+        ingress = other,
         egress = ApplicationSelector(app)
       )
-      connections += connection
 
+      connections += connection
       connection
     }
   }

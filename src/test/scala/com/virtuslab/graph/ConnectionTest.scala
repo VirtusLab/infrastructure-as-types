@@ -11,8 +11,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
 //    type IPBlock = String // TODO a proper object, a CIDR
 //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
-    case class RoleLabel(value: Label#Value) extends Label {
-      override def name: Key = "role"
+    case class RoleLabel(value: Label.Value) extends Label {
+      override def name: Label.Key = "role"
     }
 
     val system = System("test")
@@ -37,7 +37,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
         connections(
           app3 communicatesWith frontendNsRef
         )
-        ns
       }
 
     val app1 = Application.ref("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
@@ -46,6 +45,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
         import ns._
+        import LabelExpressions._
 
         applications(
           app1,
@@ -55,8 +55,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
         connections(
           app1 communicatesWith app2,
           app1 communicatesWith backendNsRef
-//        app1 communicatesWith application(partition in (customerA, customerB), environment!=qa)
-//        app1 communicatesWith namespace(partition in (customerA, customerB), environment!=qa)
+//          app1 communicatesWith applicationLabeled("partition" in ("customerA, customerB"), "environment" is "qa", "live" doesNotExist),
+//          app1 communicatesWith namespaceLabeled("partition" in ("customerA", "customerB"), "environment" isNot "qa")
         )
       }
   }
