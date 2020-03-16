@@ -1,9 +1,9 @@
 package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Namespace.DefinedNamespace
-import com.virtuslab.dsl.System.DefinedSystem
+import com.virtuslab.dsl.SystemDef.DefinedSystemDef
 
-case class SystemBuilder(system: System) {
+case class SystemBuilder(system: SystemDef) {
   private val references: scala.collection.mutable.Set[Reference] = scala.collection.mutable.Set.empty
   private val namespaces: scala.collection.mutable.Set[DefinedNamespace] = scala.collection.mutable.Set.empty
 
@@ -22,18 +22,18 @@ case class SystemBuilder(system: System) {
     namespaces.toSet
   }
 
-  def build(): DefinedSystem = DefinedSystem(system.name, collect())
+  def build(): DefinedSystemDef = DefinedSystemDef(system.name, collect())
 }
 
-trait System extends Named
+trait SystemDef extends Named
 
-object System {
-  final case class SystemReference protected (name: String) extends System {
-    def inSystem(f: SystemBuilder => SystemBuilder): DefinedSystem = f(builder).build()
+object SystemDef {
+  final case class SystemDefReference protected (name: String) extends SystemDef {
+    def inSystem(f: SystemBuilder => SystemBuilder): DefinedSystemDef = f(builder).build()
     def builder: SystemBuilder = SystemBuilder(this)
   }
 
-  final case class DefinedSystem protected (name: String, namespaces: Set[DefinedNamespace]) extends System
+  final case class DefinedSystemDef protected (name: String, namespaces: Set[DefinedNamespace]) extends SystemDef
 
-  def apply(name: String): SystemReference = SystemReference(name)
+  def apply(name: String): SystemDefReference = SystemDefReference(name)
 }

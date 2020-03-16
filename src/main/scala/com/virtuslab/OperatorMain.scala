@@ -1,5 +1,6 @@
 package com.virtuslab
 
+import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.dsl.{ NamespaceBuilder, Networked, SystemBuilder }
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
@@ -8,11 +9,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
 object OperatorMain extends AbstractMain with App {
-  import com.virtuslab.dsl.{ Application, Configuration, Namespace, System, SystemInterpreter }
+  import com.virtuslab.dsl.{ Application, Configuration, Namespace, SystemDef }
 
   def deploy(): Unit = {
-    val system = System("test")
-    implicit val systemBuilder: SystemBuilder = system.builder
+    implicit val systemBuilder: SystemBuilder = SystemDef("test").builder
 
     val namespace = Namespace("test")
     implicit val namespaceBuilder: NamespaceBuilder = namespace.builder
@@ -58,6 +58,7 @@ object OperatorMain extends AbstractMain with App {
     import skuber.json.format._
     import skuber.{ ConfigMap, Namespace, Service }
 
+    val system = systemBuilder.build()
     val systemInterpreter = SystemInterpreter.of(system)
     systemInterpreter(systemBuilder.build()).foreach {
 

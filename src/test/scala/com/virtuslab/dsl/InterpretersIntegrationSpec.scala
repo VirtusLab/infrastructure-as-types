@@ -1,6 +1,7 @@
 package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
+import com.virtuslab.dsl.interpreter.SystemInterpreter
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
@@ -8,7 +9,7 @@ import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a system" in {
-    val system = System("test-system")
+    val system = SystemDef("test-system")
       .inSystem { implicit sys =>
         import sys._
 
