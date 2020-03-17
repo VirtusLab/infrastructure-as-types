@@ -9,7 +9,7 @@ import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a system" in {
-    val system = SystemDef("test-system")
+    val system = DistributedSystem("test-system")
       .inSystem { implicit sys =>
         import sys._
 

@@ -1,6 +1,6 @@
 package com.virtuslab.internal
 
-import com.virtuslab.dsl.SystemDef.DefinedSystemDef
+import com.virtuslab.dsl.DistributedSystem.DefinedDistributedSystem
 import com.virtuslab.dsl.interpreter.SystemInterpreter
 import play.api.libs.json.{ JsValue, Json }
 
@@ -13,7 +13,7 @@ case class ShortMeta(
 class SkuberConverter(interpreter: SystemInterpreter) {
   import skuber.json.format._
 
-  def toMetaAndJson(system: DefinedSystemDef): Seq[(ShortMeta, JsValue)] = {
+  def toMetaAndJson(system: DefinedDistributedSystem): Seq[(ShortMeta, JsValue)] = {
     interpreter(system).map {
       case namespace: skuber.Namespace =>
         ShortMeta(namespace.apiVersion, namespace.kind, namespace.ns, namespace.name) -> Json.toJson(namespace)

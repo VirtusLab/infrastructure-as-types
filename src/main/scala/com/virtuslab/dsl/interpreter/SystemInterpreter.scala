@@ -2,7 +2,7 @@ package com.virtuslab.dsl.interpreter
 
 import com.virtuslab.dsl.Application.DefinedApplication
 import com.virtuslab.dsl.Configuration.DefinedConfiguration
-import com.virtuslab.dsl.SystemDef.DefinedSystemDef
+import com.virtuslab.dsl.DistributedSystem.DefinedDistributedSystem
 import skuber.ObjectResource
 
 class SystemInterpreter(
@@ -13,7 +13,7 @@ class SystemInterpreter(
     config: ConfigurationInterpreter,
     namespace: NamespaceInterpreter) {
 
-  def apply(system: DefinedSystemDef): Seq[ObjectResource] = {
+  def apply(system: DefinedDistributedSystem): Seq[ObjectResource] = {
     system.namespaces.flatMap { ns =>
       Seq(namespace(ns)) ++ ns.members.toSeq.flatMap {
         case app: DefinedApplication =>
@@ -42,7 +42,7 @@ object SystemInterpreter {
       namespaceInterpreter: NamespaceInterpreter
     ): SystemInterpreter = new SystemInterpreter(applicationInterpreters, configurationInterpreter, namespaceInterpreter)
 
-  def of(system: DefinedSystemDef): SystemInterpreter = {
+  def of(system: DefinedDistributedSystem): SystemInterpreter = {
     val applicationInterpreter = new ApplicationInterpreter(system)
     new SystemInterpreter({
       case _: DefinedApplication => applicationInterpreter

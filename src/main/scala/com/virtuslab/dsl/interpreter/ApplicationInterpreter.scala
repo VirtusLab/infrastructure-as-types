@@ -3,12 +3,12 @@ package com.virtuslab.dsl.interpreter
 import cats.syntax.either._
 import cats.syntax.option._
 import com.virtuslab.dsl.Application.DefinedApplication
-import com.virtuslab.dsl.{ Configuration, SystemDef }
+import com.virtuslab.dsl.{ Configuration, DistributedSystem }
 import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
 
-class ApplicationInterpreter(val system: SystemDef, val portForward: PartialFunction[Int, Int] = PartialFunction.empty) {
+class ApplicationInterpreter(val system: DistributedSystem, val portForward: PartialFunction[Int, Int] = PartialFunction.empty) {
 
   protected def generateService(app: DefinedApplication): Service = {
     app.ports

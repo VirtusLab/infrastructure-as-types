@@ -9,10 +9,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 
 object OperatorMain extends AbstractMain with App {
-  import com.virtuslab.dsl.{ Application, Configuration, Namespace, SystemDef }
+  import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace }
 
   def deploy(): Unit = {
-    implicit val systemBuilder: SystemBuilder = SystemDef("test").builder
+    implicit val systemBuilder: SystemBuilder = DistributedSystem("test").builder
 
     val namespace = Namespace("test")
     implicit val namespaceBuilder: NamespaceBuilder = namespace.builder

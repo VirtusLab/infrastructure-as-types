@@ -15,7 +15,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
       override def name: Label.Key = "role"
     }
 
-    val system = SystemDef("test")
+    val system = DistributedSystem("test")
     implicit val systemBuilder: SystemBuilder = system.builder
 
     val frontendRoleLabel = RoleLabel("frontend")
