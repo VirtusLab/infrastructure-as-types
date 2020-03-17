@@ -59,9 +59,8 @@ object OperatorMain extends AbstractMain with App {
     import skuber.{ ConfigMap, Namespace, Service }
 
     val system = systemBuilder.build()
-    val systemInterpreter = SystemInterpreter.of(system)
-    systemInterpreter(systemBuilder.build()).foreach {
-
+    val resources: Seq[ObjectResource] = SystemInterpreter.of(system)(system) // FIXME what happened here?
+    resources.foreach {
       case namespace: Namespace =>
         val createNamespace = createOrUpdate(client, namespace)
         val ns = Await.result(createNamespace, 1.minute)
