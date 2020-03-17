@@ -16,45 +16,6 @@ trait Label {
 object Label {
   type Key = String // "[prefix/]name" where name is required (same format as value) and prefix is optional (DNS Subdomain Name format)
   type Value = String // 63 characters, [a-z0-9A-Z] with (-_.), basically DNS Label Names with dots and underscores allowed
-
-  sealed trait Expression {
-    val key: Key
-  }
-
-  sealed trait ExistenceExpression extends Expression
-
-  sealed trait EqualityExpression extends Expression {
-    val value: Value
-  }
-
-  sealed trait SetExpression extends Expression {
-    val values: List[Value]
-    def valuesAsString: String = "(" + values.mkString(",") + ")"
-  }
-
-  case class ExistsExpression(key: String) extends ExistenceExpression {
-    override def toString: String = key
-  }
-
-  case class NotExistsExpression(key: String) extends Expression {
-    override def toString: String = "!" + key
-  }
-
-  case class IsEqualExpression(key: String, value: String) extends EqualityExpression {
-    override def toString: String = key + "=" + value
-  }
-
-  case class IsNotEqualExpression(key: String, value: String) extends EqualityExpression {
-    override def toString: String = key + "!=" + value
-  }
-
-  case class InExpression(key: String, values: List[String]) extends SetExpression {
-    override def toString: String = key + " in " + valuesAsString
-  }
-  case class NotInExpression(key: String, values: List[String]) extends SetExpression {
-    override def toString: String = key + " notin " + valuesAsString
-  }
-
 }
 
 case class NameLabel(value: Label.Value) extends Label {
@@ -108,22 +69,62 @@ case object EmptySelector extends EmptySelector {
 }
 
 trait LabelExpressions {
-  def expressions: Set[Label.Expression]
+  def expressions: Set[LabelExpressions.Expression]
   def matches(labels: Set[Label]): Boolean
+  override def toString: String = expressions.mkString(",")
 }
 
 object LabelExpressions {
-  final case class DefinedLabelExpressions(expressions: Set[Label.Expression]) extends LabelExpressions {
+  final case class DefinedLabelExpressions(expressions: Set[Expression]) extends LabelExpressions {
     override def matches(labels: Set[Label]): Boolean = ???
   }
 
-  def apply(expressions: Label.Expression*): LabelExpressions = DefinedLabelExpressions(expressions.toSet)
+  def apply(expressions: Expression*): LabelExpressions = DefinedLabelExpressions(expressions.toSet)
 
-  // TODO: extract to common place for implicits
-  def applicationLabeled(expressions: Label.Expression*): ApplicationSelector[LabelExpressions] =
+  def applicationLabeled(expressions: Expression*): ApplicationSelector[LabelExpressions] =
     ApplicationSelector(LabelExpressions(expressions: _*))
-  def namespaceLabeled(expressions: Label.Expression*): NamespaceSelector[LabelExpressions] =
+  def namespaceLabeled(expressions: Expression*): NamespaceSelector[LabelExpressions] =
     NamespaceSelector(LabelExpressions(expressions: _*))
+
+  sealed trait Expression {
+    val key: String
+  }
+
+  sealed trait ExistenceExpression extends Expression
+
+  sealed trait EqualityExpression extends Expression {
+    val value: String
+  }
+
+  sealed trait SetExpression extends Expression {
+    val values: List[String]
+    def valuesAsString: String = "(" + values.mkString(",") + ")"
+  }
+
+  case class ExistsExpression(key: String) extends ExistenceExpression {
+    override def toString: String = key
+  }
+
+  case class NotExistsExpression(key: String) extends Expression {
+    override def toString: String = "!" + key
+  }
+
+  case class IsEqualExpression(key: String, value: String) extends EqualityExpression {
+    override def toString: String = key + "=" + value
+  }
+
+  case class IsNotEqualExpression(key: String, value: String) extends EqualityExpression {
+    override def toString: String = key + "!=" + value
+  }
+
+  case class InExpression(key: String, values: List[String]) extends SetExpression {
+    override def toString: String = key + " in " + valuesAsString
+  }
+  case class NotInExpression(key: String, values: List[String]) extends SetExpression {
+    override def toString: String = key + " notin " + valuesAsString
+  }
+
+  import scala.language.implicitConversions
 
   // this DSL enables equality and set based selector expressions analogous to the Kubernetes API
   // The following illustrates mappings from this DSL to k8s selector expressions syntax:
@@ -133,11 +134,12 @@ object LabelExpressions {
   // "status" isNot "release" -> "status!=release"
   // "env" isIn List("staging", "production") -> "env in (staging,release)"
   // "env" isNotIn List("local", "dev") -> "env notin (local,dev)"
-  implicit def stringToExpression(key: String): Label.ExistsExpression = new Label.ExistsExpression(key) {
-    def doesNotExist: Label.NotExistsExpression = Label.NotExistsExpression(key)
-    def is(value: String): Label.IsEqualExpression = Label.IsEqualExpression(key, value)
-    def isNot(value: String): Label.IsNotEqualExpression = Label.IsNotEqualExpression(key, value)
-    def isIn(values: List[String]): Label.InExpression = Label.InExpression(key, values)
-    def isNotIn(values: List[String]): Label.NotInExpression = Label.NotInExpression(key, values)
+  implicit def stringToExpression(key: String): ExistsExpression = new ExistsExpression(key) {
+    def doesNotExist: NotExistsExpression = NotExistsExpression(key)
+    def is(value: String): IsEqualExpression = IsEqualExpression(key, value)
+    def isNot(value: String): IsNotEqualExpression = IsNotEqualExpression(key, value)
+    def isIn(values: List[String]): InExpression = InExpression(key, values)
+    def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
+  implicit def expressionToLabelExpressions(expr: Expression): LabelExpressions = LabelExpressions(expr)
 }

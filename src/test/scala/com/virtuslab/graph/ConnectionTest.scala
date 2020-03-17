@@ -45,7 +45,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
     val frontend = frontendNsRef
       .inNamespace { implicit ns =>
         import ns._
-        import LabelExpressions._
 
         applications(
           app1,
@@ -55,8 +54,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers {
         connections(
           app1 communicatesWith app2,
           app1 communicatesWith backendNsRef
-//          app1 communicatesWith applicationLabeled("partition" in ("customerA, customerB"), "environment" is "qa", "live" doesNotExist),
-//          app1 communicatesWith namespaceLabeled("partition" in ("customerA", "customerB"), "environment" isNot "qa")
         )
       }
   }
