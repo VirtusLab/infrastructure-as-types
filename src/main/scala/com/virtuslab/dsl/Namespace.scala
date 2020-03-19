@@ -1,22 +1,26 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.Application.{ ApplicationReference, DefinedApplication }
-import com.virtuslab.dsl.Namespace.{ DefinedNamespace, NamespaceReference }
+import com.virtuslab.dsl.Application.{ ApplicationDefinition, ApplicationReference }
+import com.virtuslab.dsl.Namespace.{ NamespaceDefinition, NamespaceReference }
+
 import scala.collection.mutable
 
 trait Namespaced {
   def namespace: Namespace
 }
 
-case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) {
-  private val connections: mutable.Set[Connection[_, _, _]] = mutable.Set.empty
-  private val applications: mutable.Set[Application] = mutable.Set.empty
+case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: SystemBuilder) {
+  private[this] val connections: mutable.Set[Connection[_, _, _]] = mutable.Set.empty
+  private[this] val applications: mutable.Set[ApplicationDefinition] = mutable.Set.empty
 
   def references(rs: ResourceReference): SystemBuilder = systemBuilder.references(rs)
 
   def applications(defined: Application*): NamespaceBuilder = {
     systemBuilder.references(defined: _*)
-    applications ++= defined
+    applications ++= defined.map {
+      case a: ApplicationReference  => a.define(this)
+      case a: ApplicationDefinition => a
+    }
     this
   }
 
@@ -26,16 +30,15 @@ case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) 
     this
   }
 
-  def collect(): (Set[Application], Set[Connection[_, _, _]]) = (applications.toSet, connections.toSet)
+  def collect(): (Set[ApplicationDefinition], Set[Connection[_, _, _]]) = (applications.toSet, connections.toSet)
 
-  def build(): DefinedNamespace = {
+  def build(): NamespaceDefinition = {
     val (as, cs) = collect()
-    val members: Set[Namespaced] = as.map {
-      case a: ApplicationReference => a.define(this)
-      case a: DefinedApplication   => a
-    } ++ cs
+    val members: Set[Namespaced] = as ++ cs
 
-    DefinedNamespace(namespace.name, namespace.labels, members)
+    val ns = NamespaceDefinition(namespace.name, namespace.labels, members)
+    systemBuilder.namespaces(ns)
+    ns
   }
 
   // TODO: extract to common place for implicits
@@ -48,52 +51,58 @@ case class NamespaceBuilder(namespace: Namespace, systemBuilder: SystemBuilder) 
       communicatesWith(NamespaceSelector(other))
     }
 
-    def communicatesWith[S: Selectable](other: ApplicationSelector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith[S: Selectable](other: Selector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
       val connection = Connection(
         resourceSelector = ApplicationSelector(app),
         ingress = other,
         egress = ApplicationSelector(app)
       )
 
-      connections += connection
-      connection
-    }
-
-    def communicatesWith[S: Selectable](other: NamespaceSelector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
-      val connection = Connection(
-        resourceSelector = ApplicationSelector(app),
-        ingress = other,
-        egress = ApplicationSelector(app)
-      )
-
-      connections += connection
+      builder.applications(app)
+      builder.connections(connection)
       connection
     }
   }
-
 }
 
 trait Namespace extends ResourceReference
 
 object Namespace {
   final case class NamespaceReference protected (name: String, labels: Set[Label]) extends Namespace {
-    def inNamespace(f: NamespaceBuilder => NamespaceBuilder)(implicit systemBuilder: SystemBuilder): DefinedNamespace = f(builder).build()
+    def inNamespace(f: NamespaceBuilder => NamespaceBuilder)(implicit systemBuilder: SystemBuilder): NamespaceDefinition = f(builder).build()
     def builder(implicit systemBuilder: SystemBuilder): NamespaceBuilder = NamespaceBuilder(this, systemBuilder)
   }
 
-  final case class DefinedNamespace protected (
+  final case class NamespaceDefinition protected (
       name: String,
       labels: Set[Label],
       members: Set[Namespaced])
     extends Namespace
 
-  def ref(name: String, labels: Label*): NamespaceReference = {
-    NamespaceReference(name, Set(NameLabel(name)) ++ labels)
-  }
-
-  def apply(name: String, labels: Label*)(implicit builder: SystemBuilder): NamespaceReference = {
-    val ns = NamespaceReference(name, Set(NameLabel(name)))
+  def ref(
+      name: String,
+      labels: Label*
+    )(implicit
+      builder: SystemBuilder
+    ): NamespaceReference = {
+    val ns = NamespaceReference(
+      name = name,
+      labels = Set(NameLabel(name)) ++ labels
+    )
     builder.references(ns)
     ns
+  }
+
+  def apply(
+      name: String,
+      labels: Set[Label],
+      members: Set[Namespaced]
+    )(implicit
+      builder: SystemBuilder
+    ): NamespaceDefinition = {
+    ref(
+      name = name,
+      labels = NameLabel(name)
+    )(builder).builder.build()
   }
 }

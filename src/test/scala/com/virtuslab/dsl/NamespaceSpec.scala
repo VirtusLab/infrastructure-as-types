@@ -1,6 +1,5 @@
 package com.virtuslab.dsl
 
-import cats.data.NonEmptyList
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.interpreter.NamespaceInterpreter
 import org.scalatest.flatspec.AnyFlatSpec
@@ -13,16 +12,19 @@ class NamespaceSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "serialize Namespace to JSON" in {
     implicit val system: SystemBuilder = DistributedSystem("test").builder
-    val namespace = Namespace("test").inNamespace(identity)
-    val ns = new NamespaceInterpreter().apply(namespace)
+    val namespace = Namespace.ref("test").inNamespace(identity)
+    val resource = new NamespaceInterpreter().apply(namespace)
 
-    val json = Json.toJson(ns)
+    val json = Json.toJson(resource)
     json should matchJsonString("""
 {
   "kind":"Namespace",
   "apiVersion":"v1",
   "metadata": {
-    "name":"test"
+    "name":"test",
+    "labels": {
+      "name":"test"
+    }
   }
 }
 """)

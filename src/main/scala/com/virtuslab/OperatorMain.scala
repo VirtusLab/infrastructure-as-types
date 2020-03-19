@@ -14,7 +14,7 @@ object OperatorMain extends AbstractMain with App {
   def deploy(): Unit = {
     implicit val systemBuilder: SystemBuilder = DistributedSystem("test").builder
 
-    val namespace = Namespace("test")
+    val namespace = Namespace.ref("test")
     implicit val namespaceBuilder: NamespaceBuilder = namespace.builder
 
     val configuration = Configuration(
@@ -58,8 +58,7 @@ object OperatorMain extends AbstractMain with App {
     import skuber.json.format._
     import skuber.{ ConfigMap, Namespace, Service }
 
-    val system = systemBuilder.build()
-    val resources: Seq[ObjectResource] = SystemInterpreter.of(system)(system) // FIXME what happened here?
+    val resources: Seq[ObjectResource] = SystemInterpreter.of(systemBuilder).resources
     resources.foreach {
       case namespace: Namespace =>
         val createNamespace = createOrUpdate(client, namespace)

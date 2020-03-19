@@ -2,15 +2,15 @@ package com.virtuslab.dsl.interpreter
 
 import cats.syntax.either._
 import cats.syntax.option._
-import com.virtuslab.dsl.Application.DefinedApplication
+import com.virtuslab.dsl.Application.ApplicationDefinition
 import com.virtuslab.dsl.{ Configuration, DistributedSystem }
-import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
+import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 
 class ApplicationInterpreter(val system: DistributedSystem, val portForward: PartialFunction[Int, Int] = PartialFunction.empty) {
 
-  protected def generateService(app: DefinedApplication): Service = {
+  protected def generateService(app: ApplicationDefinition): Service = {
     app.ports
       .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = app.namespace.name))) {
         case (svc, port) =>
@@ -24,16 +24,10 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
           svc.exposeOnPort(servicePort)
       }
       .withSelector(
-        Map(
-          "system" -> system.name,
-          "app" -> app.name
-        )
+        app.labels.map(l => l.name -> l.value).toMap
       )
       .addLabels(
-        Map(
-          "system" -> system.name,
-          "app" -> app.name
-        )
+        app.labels.map(l => l.name -> l.value).toMap
       )
   }
 
@@ -41,7 +35,7 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
     s"config-${configuration.name}"
   }
 
-  protected def generateDeployment(app: DefinedApplication, container: Container): Deployment = {
+  protected def generateDeployment(app: ApplicationDefinition, container: Container): Deployment = {
     val podSpec = Pod.Spec(
       containers = container :: Nil,
       volumes = app.configurations.map { cfg =>
@@ -53,26 +47,26 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
         spec = podSpec.some
       )
       .addLabels(
-        Map(
-          "system" -> system.name,
-          "app" -> app.name
-        )
+        app.labels.map(l => l.name -> l.value).toMap
       )
     val dplSpec = Deployment.Spec(
       selector = LabelSelector(
-        LabelSelector.IsEqualRequirement("system", system.name),
-        LabelSelector.IsEqualRequirement("app", app.name)
+        app.labels.map(l => LabelSelector.IsEqualRequirement(l.name, l.value)).toSeq: _*
       ),
       template = podTemplateSpec
     )
 
     Deployment(
-      metadata = ObjectMeta(name = app.name, namespace = app.namespace.name),
+      metadata = ObjectMeta(
+        name = app.name,
+        namespace = app.namespace.name,
+        labels = app.labels.map(l => l.name -> l.value).toMap
+      ),
       spec = dplSpec.some
     )
   }
 
-  def apply(app: DefinedApplication): (Service, Deployment) = {
+  def apply(app: ApplicationDefinition): (Service, Deployment) = {
     val svc = generateService(app)
 
     val env = app.envs.map { env =>

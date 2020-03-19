@@ -2,19 +2,19 @@ package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.interpreter.SystemInterpreter
+import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a system" in {
-    val system = DistributedSystem("test-system")
+    val system = DistributedSystem(this.getClass.getCanonicalName)
       .inSystem { implicit sys =>
         import sys._
 
         namespaces(
-          Namespace("test").inNamespace { implicit ns =>
+          Namespace.ref("test").inNamespace { implicit ns =>
             import ns._
 
             applications(
@@ -27,7 +27,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 
     val systemInterpreter = SystemInterpreter.of(system)
 
-    SkuberConverter(systemInterpreter).toMetaAndJson(system) foreach {
+    SkuberConverter(systemInterpreter).toMetaAndJson foreach {
       case (ShortMeta(_, "Service", _, "app-one"), json) => json should matchJsonString("""
 {
   "apiVersion":"v1",
@@ -36,15 +36,13 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
     "name":"app-one",
     "namespace":"test",
     "labels":{
-      "system":"test-system",
-      "app":"app-one"
+      "name":"app-one"
     }
   },
   "spec":{
     "type":"ClusterIP",
     "selector":{
-      "system":"test-system",
-      "app":"app-one"
+      "name":"app-one"
     },
     "ports":[
       {"protocol":"TCP","port":9090,"targetPort":9090}
@@ -60,21 +58,22 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
   "kind":"Deployment",
   "metadata":{
     "name": "app-one",
-    "namespace":"test"
+    "namespace":"test",
+    "labels":{
+      "name":"app-one"
+    }
   },
   "spec":{
     "selector":{
       "matchLabels":{
-        "system":"test-system",
-        "app":"app-one"
+        "name":"app-one"
       }
     },
     "replicas":1,
     "template":{
       "metadata":{
         "labels":{
-          "system":"test-system",
-          "app":"app-one"
+          "name":"app-one"
         }
       },
       "spec":{
@@ -104,8 +103,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
     "name":"app-two",
     "namespace":"test",
     "labels":{
-      "system":"test-system",
-      "app":"app-two"
+      "name":"app-two"
     }
   },
   "spec":{
@@ -115,8 +113,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
       {"name":"http-port","protocol":"TCP","port":9090,"targetPort":9090}
     ],
     "selector":{
-      "system":"test-system",
-      "app":"app-two"
+      "name":"app-two"
     }
   }
 }
@@ -128,21 +125,22 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
   "apiVersion":"apps/v1",
   "metadata":{
     "name": "app-two",
-    "namespace":"test"
+    "namespace":"test",
+    "labels":{
+      "name":"app-two"
+    }
   },
   "spec":{
     "selector":{
       "matchLabels":{
-        "system":"test-system",
-        "app":"app-two"
+        "name":"app-two"
       }
     },
     "replicas":1,
     "template":{
       "metadata":{
         "labels":{
-          "system":"test-system",
-          "app":"app-two"
+          "name":"app-two"
         }
       },
       "spec":{
@@ -168,7 +166,10 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
   "kind":"Namespace",
   "apiVersion":"v1",
   "metadata": {
-    "name":"test"
+    "name":"test",
+    "labels":{
+      "name":"test"
+    }
   }
 }
 """)

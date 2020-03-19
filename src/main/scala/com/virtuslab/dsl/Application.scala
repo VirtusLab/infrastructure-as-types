@@ -42,7 +42,7 @@ case class TCPHealthCheck(port: Int) extends HealthCheckAction
 trait Configuration extends ResourceReference
 
 object Configuration {
-  final case class DefinedConfiguration(
+  final case class ConfigurationDefinition(
       name: String,
       namespace: Namespace,
       labels: Set[Label],
@@ -55,8 +55,8 @@ object Configuration {
       labels: Set[Label],
       data: Map[String, String])
     extends Configuration {
-    def define(implicit builder: NamespaceBuilder): DefinedConfiguration = {
-      DefinedConfiguration(
+    def define(implicit builder: NamespaceBuilder): ConfigurationDefinition = {
+      ConfigurationDefinition(
         name = name,
         namespace = builder.namespace,
         labels = labels,
@@ -65,14 +65,34 @@ object Configuration {
     }
   }
 
-  def ref(name: String, data: Map[String, String])(implicit builder: SystemBuilder): ConfigurationReference = {
-    val conf = ConfigurationReference(name, Set(NameLabel(name)), data)
+  def ref(
+      name: String,
+      data: Map[String, String],
+      labels: Set[Label] = Set.empty
+    )(implicit
+      builder: SystemBuilder
+    ): ConfigurationReference = {
+    val conf = ConfigurationReference(
+      name = name,
+      labels = Set(NameLabel(name)) ++ labels,
+      data = data
+    )
     builder.references(conf)
     conf
   }
 
-  def apply(name: String, data: Map[String, String])(implicit builder: NamespaceBuilder): DefinedConfiguration = {
-    val conf = ref(name, data)(builder.systemBuilder).define
+  def apply(
+      name: String,
+      data: Map[String, String],
+      labels: Set[Label] = Set.empty
+    )(implicit
+      builder: NamespaceBuilder
+    ): ConfigurationDefinition = {
+    val conf = ref(
+      name = name,
+      labels = Set(NameLabel(name)) ++ labels,
+      data = data
+    )(builder.systemBuilder).define
     builder.references(conf)
     conf
   }
@@ -81,7 +101,7 @@ object Configuration {
 trait Application extends ResourceReference with Containerized with Networked
 
 object Application {
-  final case class DefinedApplication private (
+  final case class ApplicationDefinition private (
       name: String,
       labels: Set[Label],
       namespace: Namespace,
@@ -108,8 +128,8 @@ object Application {
       ping: Option[HttpPing],
       healthCheck: Option[HttpHealthCheck])
     extends Application {
-    def define(implicit builder: NamespaceBuilder): DefinedApplication = {
-      DefinedApplication(
+    def define(implicit builder: NamespaceBuilder): ApplicationDefinition = {
+      ApplicationDefinition(
         name = name,
         labels = labels,
         namespace = builder.namespace,
@@ -168,7 +188,7 @@ object Application {
       healthCheck: Option[HttpHealthCheck] = None
     )(implicit
       builder: NamespaceBuilder
-    ): DefinedApplication = {
+    ): ApplicationDefinition = {
     val app = ref(
       name = name,
       labels = labels,

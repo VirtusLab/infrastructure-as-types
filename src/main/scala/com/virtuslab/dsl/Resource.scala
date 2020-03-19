@@ -24,6 +24,12 @@ case class NameLabel(value: Label.Value) extends Label {
 
 trait Labeled {
   def labels: Set[Label]
+
+  override def hashCode(): Int = labels.hashCode()
+  override def equals(obj: Any): Boolean = obj match {
+    case other: Labeled => labels.equals(other.labels)
+    case _              => false
+  }
 }
 
 object Labels {
