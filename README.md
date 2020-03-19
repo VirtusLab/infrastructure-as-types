@@ -1,5 +1,5 @@
-# infrastructure-as-types
-DEMO repository for Infrastructure as Types project, providing tools for custom microsystem control planes
+# Infrastructure as Types
+Infrastructure as Types project provides tools for custom microsystem control planes development.
 
 ## Vision
 
