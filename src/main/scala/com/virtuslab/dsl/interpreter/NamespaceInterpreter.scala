@@ -8,7 +8,7 @@ class NamespaceInterpreter() {
     skuber.Namespace.from(
       ObjectMeta(
         name = namespace.name,
-        labels = namespace.labels.map(l => l.name -> l.value).toMap
+        labels = namespace.labels.toMap
       )
     )
   }

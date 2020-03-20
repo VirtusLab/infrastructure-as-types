@@ -9,7 +9,7 @@ class ConfigurationInterpreter() {
       metadata = ObjectMeta(
         name = configuration.name,
         namespace = configuration.namespace.name,
-        labels = configuration.labels.map(l => l.name -> l.value).toMap
+        labels = configuration.labels.toMap
       ),
       data = configuration.data
     )

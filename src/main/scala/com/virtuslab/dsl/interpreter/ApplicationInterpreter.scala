@@ -24,10 +24,10 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
           svc.exposeOnPort(servicePort)
       }
       .withSelector(
-        app.labels.map(l => l.name -> l.value).toMap
+        app.labels.toMap
       )
       .addLabels(
-        app.labels.map(l => l.name -> l.value).toMap
+        app.labels.toMap
       )
   }
 
@@ -47,11 +47,11 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
         spec = podSpec.some
       )
       .addLabels(
-        app.labels.map(l => l.name -> l.value).toMap
+        app.labels.toMap
       )
     val dplSpec = Deployment.Spec(
       selector = LabelSelector(
-        app.labels.map(l => LabelSelector.IsEqualRequirement(l.name, l.value)).toSeq: _*
+        app.labels.map(l => LabelSelector.IsEqualRequirement(l.key, l.value)).toSeq: _*
       ),
       template = podTemplateSpec
     )
@@ -60,7 +60,7 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
       metadata = ObjectMeta(
         name = app.name,
         namespace = app.namespace.name,
-        labels = app.labels.map(l => l.name -> l.value).toMap
+        labels = app.labels.toMap
       ),
       spec = dplSpec.some
     )

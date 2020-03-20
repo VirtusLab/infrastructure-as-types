@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
-  it should "create a system" in {
+  it should "create a simple system" in {
     val system = DistributedSystem(this.getClass.getCanonicalName)
       .inSystem { implicit sys =>
         import sys._
@@ -18,8 +18,8 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
             import ns._
 
             applications(
-              Application("app-one", "image-app-one", ports = Networked.Port(9090) :: Nil),
-              Application("app-two", "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
+              Application(Labels(Name("app-one")), "image-app-one", ports = Networked.Port(9090) :: Nil),
+              Application(Labels(Name("app-two")), "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
             )
           }
         )
@@ -161,7 +161,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
   }
 }
 """)
-      case (ShortMeta(_, "Namespace", _, _), json)          => json should matchJsonString("""
+      case (ShortMeta(_, "Namespace", _, "test"), json)     => json should matchJsonString("""
 {
   "kind":"Namespace",
   "apiVersion":"v1",

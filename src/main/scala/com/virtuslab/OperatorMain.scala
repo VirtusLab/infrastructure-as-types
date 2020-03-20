@@ -1,7 +1,7 @@
 package com.virtuslab
 
 import com.virtuslab.dsl.interpreter.SystemInterpreter
-import com.virtuslab.dsl.{ NamespaceBuilder, Networked, SystemBuilder }
+import com.virtuslab.dsl.{ Labels, Name, NamespaceBuilder, Networked, SystemBuilder }
 import play.api.libs.json.Format
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
@@ -18,7 +18,7 @@ object OperatorMain extends AbstractMain with App {
     implicit val namespaceBuilder: NamespaceBuilder = namespace.builder
 
     val configuration = Configuration(
-      name = "app",
+      labels = Labels(Name("app")),
       data = Map(
         "config.yaml" ->
           """
@@ -37,7 +37,7 @@ object OperatorMain extends AbstractMain with App {
     )
 
     Application(
-      name = "app",
+      labels = Labels(Name("app")),
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
       args = List("--config", "/opt/config.yaml"),
@@ -46,7 +46,7 @@ object OperatorMain extends AbstractMain with App {
     )
 
     Application(
-      name = "app",
+      labels = Labels(Name("app")),
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
       args = List("--config", "/opt/config.yaml"),

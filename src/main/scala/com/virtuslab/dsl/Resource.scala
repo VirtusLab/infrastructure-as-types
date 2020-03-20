@@ -1,29 +1,26 @@
 package com.virtuslab.dsl
 
-trait Resource extends Named
+import com.virtuslab.dsl.Expressions.Expression
+
 trait Reference extends Labeled
-trait ResourceReference extends Resource with Reference
 
-trait Named {
-  def name: String // TODO create a proper type
+abstract class Selectable {
+  def matches(labels: Labels): Boolean
+  def asShortString: String
 }
 
-trait Label {
-  def name: Label.Key
-  def value: Label.Value
+sealed trait Unselected extends Selectable
+case object Unselected extends Unselected {
+  override def matches(labels: Labels): Boolean = false
+  override def asShortString: String = "unselected"
 }
 
-object Label {
-  type Key = String // "[prefix/]name" where name is required (same format as value) and prefix is optional (DNS Subdomain Name format)
-  type Value = String // 63 characters, [a-z0-9A-Z] with (-_.), basically DNS Label Names with dots and underscores allowed
-}
+trait Labeled extends Selectable {
+  def name: String = labels.name.value
+  def labels: Labels
 
-case class NameLabel(value: Label.Value) extends Label {
-  override def name: Label.Key = "name"
-}
-
-trait Labeled {
-  def labels: Set[Label]
+  override def matches(labels: Labels): Boolean = labels.matches(labels)
+  override def asShortString: String = labels.asShortString
 
   override def hashCode(): Int = labels.hashCode()
   override def equals(obj: Any): Boolean = obj match {
@@ -32,65 +29,44 @@ trait Labeled {
   }
 }
 
-object Labels {
-  def apply(values: Label*): Labeled = apply(values.toSet)
-  def apply(values: Set[Label]): Labeled = new Labeled {
-    override def labels: Set[Label] = values
-  }
+abstract class Selector[S <: Selectable] {
+  def selectable: S
 }
 
-sealed trait Unselected
-case object Unselected extends Unselected
-
-class Selectable[-T]
-object Selectable {
-  implicit object UnselectedWitness extends Selectable[Unselected]
-  implicit object LabelWitness extends Selectable[Labeled] // k8s API: "matchLabels"
-  implicit object LabelExpressionsWitness extends Selectable[LabelExpressions] // k8s API: "matchExpressions"
-}
-
-abstract class PlaceholderSelector[-A, S >: A: Selectable]
-abstract class Selector[A: Selectable] extends PlaceholderSelector[A, A] {
-  def selectable: A
-}
-
-case class NamespaceSelector[S: Selectable](selectable: S) extends Selector[S] {
+case class NamespaceSelector[S <: Selectable](selectable: S) extends Selector[S] {
   def matches[R <: Namespace with Labeled](resource: R): Boolean = selectable match {
-    case labeled: Labeled              => resource.asInstanceOf[Labeled].labels == labeled.labels
-    case expressions: LabelExpressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
+    case labels: Labels           => resource.asInstanceOf[Labeled].labels == labels
+    case labeled: Labeled         => resource.asInstanceOf[Labeled].labels == labeled.labels
+    case expressions: Expressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
   }
 }
 
-case class ApplicationSelector[S: Selectable](selectable: S) extends Selector[S] {
+case class ApplicationSelector[S <: Selectable](selectable: S) extends Selector[S] {
   def matches[R <: Application with Labeled](resource: R): Boolean = selectable match {
-    case labeled: Labeled              => resource.asInstanceOf[Labeled].labels == labeled.labels
-    case expressions: LabelExpressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
+    case labels: Labels           => resource.asInstanceOf[Labeled].labels == labels
+    case labeled: Labeled         => resource.asInstanceOf[Labeled].labels == labeled.labels
+    case expressions: Expressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
   }
 }
 
 sealed trait EmptySelector extends Selector[Unselected]
 case object EmptySelector extends EmptySelector {
   override def selectable: Unselected = Unselected
-  def matches[R <: Resource with Labeled](resource: Resource) = false
+  def matches(unused: Labeled) = false
 }
 
-trait LabelExpressions {
-  def expressions: Set[LabelExpressions.Expression]
-  def matches(labels: Set[Label]): Boolean
-  override def toString: String = expressions.mkString(",")
+trait Expressions extends Selectable {
+  def expressions: Set[Expression]
 }
 
-object LabelExpressions {
-  final case class DefinedLabelExpressions(expressions: Set[Expression]) extends LabelExpressions {
-    override def matches(labels: Set[Label]): Boolean = ???
+object Expressions {
+  def apply(expressions: Expression*): Expressions = ExpressionsDefinition(expressions.toSet)
+
+  final case class ExpressionsDefinition(expressions: Set[Expression]) extends Expressions {
+    override def toString: String = expressions.mkString(",")
+    override def matches(labels: Labels): Boolean = ???
+    override def asShortString: String = toString.take(20)
   }
-
-  def apply(expressions: Expression*): LabelExpressions = DefinedLabelExpressions(expressions.toSet)
-
-  def applicationLabeled(expressions: Expression*): ApplicationSelector[LabelExpressions] =
-    ApplicationSelector(LabelExpressions(expressions: _*))
-  def namespaceLabeled(expressions: Expression*): NamespaceSelector[LabelExpressions] =
-    NamespaceSelector(LabelExpressions(expressions: _*))
 
   sealed trait Expression {
     val key: String
@@ -126,6 +102,7 @@ object LabelExpressions {
   case class InExpression(key: String, values: List[String]) extends SetExpression {
     override def toString: String = key + " in " + valuesAsString
   }
+
   case class NotInExpression(key: String, values: List[String]) extends SetExpression {
     override def toString: String = key + " notin " + valuesAsString
   }
@@ -147,5 +124,60 @@ object LabelExpressions {
     def isIn(values: List[String]): InExpression = InExpression(key, values)
     def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
-  implicit def expressionToLabelExpressions(expr: Expression): LabelExpressions = LabelExpressions(expr)
+  implicit def expressionToExpressions(expr: Expression*): Expressions = Expressions(expr: _*)
+}
+
+trait Label extends Expressions.EqualityExpression {
+  override def toString: String = key + "=" + value
+}
+
+final case class Name(value: String) extends Label {
+  val key: String = "name"
+}
+
+case class Labels(name: Name, values: Set[Label]) extends Expressions {
+  import scala.collection.generic.CanBuildFrom
+
+  def all: Set[Label] = Set(name) ++ values
+  def toMap: Map[String, String] = all.map(l => l.key -> l.value).toMap
+  def map[B, That](f: Label => B)(implicit bf: CanBuildFrom[Set[Label], B, That]): That = all.map(f)(bf)
+
+  override def expressions: Set[Expression] = all.map(l => l)
+  override def matches(labels: Labels): Boolean = ???
+  override def asShortString: String = name.value.take(20)
+}
+
+object Labels {
+  def apply(name: Name, values: Label*): Labels = Labels(name, values.toSet)
+
+  def applicationLabeled(expressions: Expression*): ApplicationSelector[Expressions] =
+    ApplicationSelector(Expressions(expressions: _*))
+  def namespaceLabeled(expressions: Expression*): NamespaceSelector[Expressions] =
+    NamespaceSelector(Expressions(expressions: _*))
+}
+
+object Validation {
+  // From Kubernetes:
+  // https://github.com/kubernetes/kubernetes/blob/v1.18.0-rc.1/staging/src/k8s.io/apimachinery/pkg/util/validation/validation.go
+  import scala.util.matching.Regex
+
+  val qualifiedNameCharFmt: String = "[A-Za-z0-9]"
+  val qualifiedNameExtCharFmt: String = "[-A-Za-z0-9_.]"
+  val qualifiedNameFmt: String = "(" + qualifiedNameCharFmt + qualifiedNameExtCharFmt + "*)?" + qualifiedNameCharFmt
+  val qualifiedNameMaxLength: Int = 63
+
+  val qualifiedNameRegexp: Regex = ("^" + qualifiedNameFmt + "$").r
+
+  def IsQualifiedName(value: String): (Boolean, String) = {
+    if (value.length == 0) {
+      return (false, "value is empty")
+    }
+    if (value.length > qualifiedNameMaxLength) {
+      return (false, "value length exceeds " + qualifiedNameMaxLength + " characters")
+    }
+    if (!qualifiedNameRegexp.pattern.matcher(value).matches) {
+      return (false, s"value doesn not match pattern '$qualifiedNameRegexp'")
+    }
+    (true, "")
+  }
 }

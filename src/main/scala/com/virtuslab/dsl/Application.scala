@@ -39,42 +39,34 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
-trait Configuration extends ResourceReference
+trait Configuration extends Reference
 
 object Configuration {
   final case class ConfigurationDefinition(
-      name: String,
+      labels: Labels,
       namespace: Namespace,
-      labels: Set[Label],
       data: Map[String, String])
     extends Configuration
     with Namespaced
 
-  final case class ConfigurationReference(
-      name: String,
-      labels: Set[Label],
-      data: Map[String, String])
-    extends Configuration {
+  final case class ConfigurationReference(labels: Labels, data: Map[String, String]) extends Configuration {
     def define(implicit builder: NamespaceBuilder): ConfigurationDefinition = {
       ConfigurationDefinition(
-        name = name,
-        namespace = builder.namespace,
         labels = labels,
+        namespace = builder.namespace,
         data = data
       )
     }
   }
 
   def ref(
-      name: String,
-      data: Map[String, String],
-      labels: Set[Label] = Set.empty
+      labels: Labels,
+      data: Map[String, String]
     )(implicit
       builder: SystemBuilder
     ): ConfigurationReference = {
     val conf = ConfigurationReference(
-      name = name,
-      labels = Set(NameLabel(name)) ++ labels,
+      labels = labels,
       data = data
     )
     builder.references(conf)
@@ -82,15 +74,13 @@ object Configuration {
   }
 
   def apply(
-      name: String,
-      data: Map[String, String],
-      labels: Set[Label] = Set.empty
+      labels: Labels,
+      data: Map[String, String]
     )(implicit
       builder: NamespaceBuilder
     ): ConfigurationDefinition = {
     val conf = ref(
-      name = name,
-      labels = Set(NameLabel(name)) ++ labels,
+      labels = labels,
       data = data
     )(builder.systemBuilder).define
     builder.references(conf)
@@ -98,12 +88,11 @@ object Configuration {
   }
 }
 
-trait Application extends ResourceReference with Containerized with Networked
+trait Application extends Reference with Containerized with Networked
 
 object Application {
   final case class ApplicationDefinition private (
-      name: String,
-      labels: Set[Label],
+      labels: Labels,
       namespace: Namespace,
       configurations: List[Configuration],
       image: String,
@@ -117,8 +106,7 @@ object Application {
     with Namespaced
 
   final case class ApplicationReference private (
-      name: String,
-      labels: Set[Label],
+      labels: Labels,
       configurations: List[Configuration],
       image: String,
       command: List[String],
@@ -130,7 +118,6 @@ object Application {
     extends Application {
     def define(implicit builder: NamespaceBuilder): ApplicationDefinition = {
       ApplicationDefinition(
-        name = name,
         labels = labels,
         namespace = builder.namespace,
         configurations = configurations,
@@ -146,9 +133,8 @@ object Application {
   }
 
   def ref(
-      name: String,
+      labels: Labels,
       image: String,
-      labels: Set[Label] = Set.empty,
       configurations: List[Configuration] = Nil,
       command: List[String] = Nil,
       args: List[String] = Nil,
@@ -160,8 +146,7 @@ object Application {
       builder: SystemBuilder
     ): ApplicationReference = {
     val app = ApplicationReference(
-      name = name,
-      labels = Set(NameLabel(name)) ++ labels,
+      labels = labels,
       configurations = configurations,
       image = image,
       command = command,
@@ -176,9 +161,8 @@ object Application {
   }
 
   def apply(
-      name: String,
+      labels: Labels,
       image: String,
-      labels: Set[Label] = Set.empty,
       configurations: List[Configuration] = Nil,
       command: List[String] = Nil,
       args: List[String] = Nil,
@@ -190,7 +174,6 @@ object Application {
       builder: NamespaceBuilder
     ): ApplicationDefinition = {
     val app = ref(
-      name = name,
       labels = labels,
       configurations = configurations,
       image = image,

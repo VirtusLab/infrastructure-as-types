@@ -18,6 +18,7 @@ case class SystemBuilder(system: DistributedSystem) {
     this
   }
 
+  // TODO should interpreters take over at least the most of validation?
   def validateState(): Unit = {
     val ms = nss.flatten((ns: NamespaceDefinition) => ns.members)
     println(s"[${system.name}] ms: $ms")
@@ -48,20 +49,21 @@ case class SystemBuilder(system: DistributedSystem) {
     nss.toSet
   }
 
-  def build(): DefinedDistributedSystem = DefinedDistributedSystem(system.name, collect())
+  def build(): DefinedDistributedSystem = DefinedDistributedSystem(system.labels, collect())
 }
 
-trait DistributedSystem extends Named
+trait DistributedSystem extends Labeled
 
 object DistributedSystem {
 
-  final case class DistributedSystemReference protected (name: String) extends DistributedSystem {
+  final case class DistributedSystemReference protected (labels: Labels) extends DistributedSystem {
     def inSystem(f: SystemBuilder => SystemBuilder): DefinedDistributedSystem = f(builder).build()
 
     def builder: SystemBuilder = SystemBuilder(this)
   }
 
-  final case class DefinedDistributedSystem protected (name: String, namespaces: Set[NamespaceDefinition]) extends DistributedSystem
+  final case class DefinedDistributedSystem protected (labels: Labels, namespaces: Set[NamespaceDefinition]) extends DistributedSystem
 
-  def apply(name: String): DistributedSystemReference = DistributedSystemReference(name)
+  def apply(labels: Labels): DistributedSystemReference = DistributedSystemReference(labels)
+  def apply(name: String): DistributedSystemReference = DistributedSystemReference(Labels(Name(name)))
 }

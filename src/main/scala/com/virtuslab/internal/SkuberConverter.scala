@@ -20,6 +20,8 @@ class SkuberConverter(interpreter: SystemInterpreter) {
         ShortMeta(deployment.apiVersion, deployment.kind, deployment.ns, deployment.name) -> Json.toJson(deployment)
       case service: skuber.Service =>
         ShortMeta(service.apiVersion, service.kind, service.ns, service.name) -> Json.toJson(service)
+      case netpol: skuber.networking.NetworkPolicy =>
+        ShortMeta(netpol.apiVersion, netpol.kind, netpol.ns, netpol.name) -> Json.toJson(netpol)
       case r => throw new IllegalArgumentException(s"Resource $r was not expected")
     }.toList
   }

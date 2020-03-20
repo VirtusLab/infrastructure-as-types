@@ -13,20 +13,20 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     //    type IPBlock = String // TODO a proper object, a CIDR
     //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
 
-    case class RoleLabel(value: Label.Value) extends Label {
-      override def name: Label.Key = "role"
+    case class RoleLabel(value: String) extends Label {
+      override val key: String = "role"
     }
 
     val system = DistributedSystem(this.getClass.getCanonicalName)
     implicit val systemBuilder: SystemBuilder = system.builder
 
     val frontendRoleLabel = RoleLabel("frontend")
-    val frontendNsRef = Namespace.ref("frontend", frontendRoleLabel)
+    val frontendNsRef = Namespace.ref(Labels(Name("frontend"), frontendRoleLabel))
 
     val backendRoleLabel = RoleLabel("backend")
-    val backendNsRef = Namespace.ref("backend", backendRoleLabel)
+    val backendNsRef = Namespace.ref(Labels(Name("backend"), backendRoleLabel))
 
-    val app3 = Application.ref("app-three", "image-app-three", labels = Set(backendRoleLabel))
+    val app3 = Application.ref(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
 
     backendNsRef
       .inNamespace { implicit ns =>
@@ -41,8 +41,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
         )
       }
 
-    val app1 = Application.ref("app-one", "image-app-one", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
-    val app2 = Application.ref("app-two", "image-app-two", labels = Set(frontendRoleLabel), ports = Networked.Port(9090) :: Nil)
+    val app1 = Application.ref(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Networked.Port(9090) :: Nil)
+    val app2 = Application.ref(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Networked.Port(9090) :: Nil)
 
     frontendNsRef
       .inNamespace { implicit ns =>
@@ -62,9 +62,9 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     val systemInterpreter = SystemInterpreter.of(systemBuilder)
     val resources = SkuberConverter(systemInterpreter).toMetaAndJson
 
-    resources should have length 8
+    resources should have length 11
     resources foreach {
-      case (ShortMeta(_, "Namespace", _, "frontend"), json)           => json should matchJsonString("""
+      case (ShortMeta(_, "Namespace", _, "frontend"), json)                             => json should matchJsonString("""
 {
   "kind":"Namespace",
   "apiVersion":"v1",
@@ -77,7 +77,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Namespace", _, "backend"), json)            => json should matchJsonString("""
+      case (ShortMeta(_, "Namespace", _, "backend"), json)                              => json should matchJsonString("""
 {
   "kind":"Namespace",
   "apiVersion":"v1",
@@ -90,7 +90,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Service", "frontend", "app-one"), json)     => json should matchJsonString("""
+      case (ShortMeta(_, "Service", "frontend", "app-one"), json)                       => json should matchJsonString("""
 {
   "kind":"Service",
   "apiVersion":"v1",
@@ -115,7 +115,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Service", "frontend", "app-two"), json)     => json should matchJsonString("""
+      case (ShortMeta(_, "Service", "frontend", "app-two"), json)                       => json should matchJsonString("""
 {
   "kind":"Service",
   "apiVersion":"v1",
@@ -140,7 +140,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Service", "backend", "app-three"), json)    => json should matchJsonString("""
+      case (ShortMeta(_, "Service", "backend", "app-three"), json)                      => json should matchJsonString("""
 {
   "kind":"Service",
   "apiVersion":"v1",
@@ -162,7 +162,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Deployment", "backend", "app-three"), json) => json should matchJsonString("""
+      case (ShortMeta(_, "Deployment", "backend", "app-three"), json)                   => json should matchJsonString("""
 {
   "kind":"Deployment",
   "apiVersion":"apps/v1",
@@ -204,7 +204,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Deployment", "frontend", "app-two"), json)  => json should matchJsonString("""
+      case (ShortMeta(_, "Deployment", "frontend", "app-two"), json)                    => json should matchJsonString("""
 {
   "kind":"Deployment",
   "apiVersion":"apps/v1",
@@ -249,7 +249,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (ShortMeta(_, "Deployment", "frontend", "app-one"), json)  => json should matchJsonString("""
+      case (ShortMeta(_, "Deployment", "frontend", "app-one"), json)                    => json should matchJsonString("""
 {
   "kind":"Deployment",
   "apiVersion":"apps/v1",
@@ -294,8 +294,47 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      // TODO add connection expressions, e.g. NetworkPolicy
-      case (m, _) => throw new IllegalArgumentException(s"Resource $m was not matched")
+      case (ShortMeta(_, "NetworkPolicy", "frontend", "app-one-backend-app-one"), json) => json should matchJsonString("""
+{
+  "kind":"NetworkPolicy",
+  "apiVersion":"networking.k8s.io/v1",
+  "metadata":{
+    "name":"app-one-backend-app-one",
+    "namespace":"frontend",
+    "labels":{
+      "name":"app-one-backend-app-one"
+    }
+  }
+}
+""")
+      case (ShortMeta(_, "NetworkPolicy", "backend", "app-three-frontend-app-three"), json) =>
+        json should matchJsonString("""
+{
+  "kind":"NetworkPolicy",
+  "apiVersion":"networking.k8s.io/v1",
+  "metadata":{
+    "name":"app-three-frontend-app-three",
+    "namespace":"backend",
+    "labels":{
+      "name":"app-three-frontend-app-three"
+    }
+  }
+}
+""")
+      case (ShortMeta(_, "NetworkPolicy", "frontend", "app-one-app-two-app-one"), json) => json should matchJsonString("""
+{
+  "kind":"NetworkPolicy",
+  "apiVersion":"networking.k8s.io/v1",
+  "metadata":{
+    "name":"app-one-app-two-app-one",
+    "namespace":"frontend",
+    "labels":{
+      "name":"app-one-app-two-app-one"
+    }
+  }
+}
+""")
+      case (m, _)                                                                       => throw new IllegalArgumentException(s"Resource $m was not matched")
     }
   }
 }

@@ -13,7 +13,7 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
   private[this] val connections: mutable.Set[Connection[_, _, _]] = mutable.Set.empty
   private[this] val applications: mutable.Set[ApplicationDefinition] = mutable.Set.empty
 
-  def references(rs: ResourceReference): SystemBuilder = systemBuilder.references(rs)
+  def references(rs: Reference): SystemBuilder = systemBuilder.references(rs)
 
   def applications(defined: Application*): NamespaceBuilder = {
     systemBuilder.references(defined: _*)
@@ -36,7 +36,7 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
     val (as, cs) = collect()
     val members: Set[Namespaced] = as ++ cs
 
-    val ns = NamespaceDefinition(namespace.name, namespace.labels, members)
+    val ns = NamespaceDefinition(namespace.labels, members)
     systemBuilder.namespaces(ns)
     ns
   }
@@ -51,7 +51,7 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
       communicatesWith(NamespaceSelector(other))
     }
 
-    def communicatesWith[S: Selectable](other: Selector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith[S <: Selectable](other: Selector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
       val connection = Connection(
         resourceSelector = ApplicationSelector(app),
         ingress = other,
@@ -65,44 +65,40 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
   }
 }
 
-trait Namespace extends ResourceReference
+trait Namespace extends Reference
 
 object Namespace {
-  final case class NamespaceReference protected (name: String, labels: Set[Label]) extends Namespace {
+  final case class NamespaceReference protected (labels: Labels) extends Namespace {
     def inNamespace(f: NamespaceBuilder => NamespaceBuilder)(implicit systemBuilder: SystemBuilder): NamespaceDefinition = f(builder).build()
     def builder(implicit systemBuilder: SystemBuilder): NamespaceBuilder = NamespaceBuilder(this, systemBuilder)
   }
 
-  final case class NamespaceDefinition protected (
-      name: String,
-      labels: Set[Label],
-      members: Set[Namespaced])
-    extends Namespace
+  final case class NamespaceDefinition protected (labels: Labels, members: Set[Namespaced]) extends Namespace
 
   def ref(
-      name: String,
-      labels: Label*
+      name: String
     )(implicit
       builder: SystemBuilder
     ): NamespaceReference = {
-    val ns = NamespaceReference(
-      name = name,
-      labels = Set(NameLabel(name)) ++ labels
-    )
+    ref(Labels(Name(name)))
+  }
+
+  def ref(
+      labels: Labels
+    )(implicit
+      builder: SystemBuilder
+    ): NamespaceReference = {
+    val ns = NamespaceReference(labels)
     builder.references(ns)
     ns
   }
 
   def apply(
-      name: String,
-      labels: Set[Label],
+      labels: Labels,
       members: Set[Namespaced]
     )(implicit
       builder: SystemBuilder
     ): NamespaceDefinition = {
-    ref(
-      name = name,
-      labels = NameLabel(name)
-    )(builder).builder.build()
+    ref(labels)(builder).builder.build()
   }
 }
