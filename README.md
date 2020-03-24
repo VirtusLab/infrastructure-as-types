@@ -20,6 +20,7 @@ The plan is simple, provide a set of tools for **custom microsystem control plan
 Additional opportunities:
 - Unit and integrations test framewroks (with dry-run capability)
 - Custom deployment and release strategies library
+- Custom control plane for a service mesh (e.g. Envoy based)
 - Knative serverless support
 - GraalVM container support
 - self-deployment pattern support
