@@ -304,6 +304,36 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     "labels":{
       "name":"app-one-backend-app-one"
     }
+  },
+  "spec":{
+    "podSelector":{
+      "matchLabels":{"role":"frontend"}
+    },
+    "ingress":[
+      {
+        "from":[
+          {
+            "namespaceSelector":{
+              "matchLabels":{"role":"backend"}
+            }
+          }
+        ]
+      }
+    ],
+    "egress":[
+      {
+        "to":[
+          {
+            "namespaceSelector":{
+              "matchLabels":{
+                "role":"backend"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "policyTypes":["Ingress","Egress"]
   }
 }
 """)
@@ -318,6 +348,34 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     "labels":{
       "name":"app-three-frontend-app-three"
     }
+  },
+  "spec":{
+    "podSelector":{
+      "matchLabels":{"role":"backend"}
+    },
+    "ingress":[
+      {
+        "from":[
+          {
+            "namespaceSelector":{
+              "matchLabels":{"role":"frontend"}
+            }
+          }
+        ]
+      }
+    ],
+    "egress":[
+      {
+        "to":[
+          {
+            "namespaceSelector":{
+              "matchLabels":{"role":"frontend"}
+            }
+          }
+        ]
+      }
+    ],
+    "policyTypes":["Ingress","Egress"]
   }
 }
 """)
@@ -331,6 +389,34 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     "labels":{
       "name":"app-one-app-two-app-one"
     }
+  },
+  "spec":{
+    "podSelector":{
+      "matchLabels":{"role":"frontend"}
+    },
+    "ingress":[
+      {
+        "from":[
+          {
+            "podSelector":{
+              "matchLabels":{"role":"frontend"}
+            }
+          }
+        ]
+      }
+    ],
+    "egress":[
+      {
+        "to":[
+          {
+            "podSelector":{
+              "matchLabels":{"role":"frontend"}
+            }
+          }
+        ]
+      }
+    ],
+    "policyTypes":["Ingress","Egress"]
   }
 }
 """)

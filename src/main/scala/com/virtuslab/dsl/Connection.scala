@@ -1,20 +1,20 @@
 package com.virtuslab.dsl
 
-case class Connection[A <: Selectable, B <: Selectable, C <: Selectable](
+case class Connection(
     namespace: Namespace,
     labels: Labels,
-    resourceSelector: Selector[A],
-    ingress: Selector[B],
-    egress: Selector[C])
+    resourceSelector: Selector,
+    ingress: Selector,
+    egress: Selector)
   extends Labeled
   with Namespaced
 
 object Connection {
 
-  def defaultName[A <: Selectable, B <: Selectable, C <: Selectable](
-      resourceSelector: Selector[A],
-      ingress: Selector[B],
-      egress: Selector[C]
+  def defaultName(
+      resourceSelector: Selector,
+      ingress: Selector,
+      egress: Selector
     ): String = {
     val name = resourceSelector.selectable.asShortString +
       "-" + ingress.selectable.asShortString +
@@ -26,14 +26,14 @@ object Connection {
     name
   }
 
-  def apply[A <: Selectable, B <: Selectable, C <: Selectable](
-      resourceSelector: Selector[A],
-      ingress: Selector[B] = EmptySelector,
-      egress: Selector[C] = EmptySelector
+  def apply(
+      resourceSelector: Selector,
+      ingress: Selector = EmptySelector,
+      egress: Selector = EmptySelector
     )(implicit
       builder: NamespaceBuilder
-    ): Connection[A, B, C] = {
-    val name = defaultName[A, B, C](resourceSelector, ingress, egress)
+    ): Connection = {
+    val name = defaultName(resourceSelector, ingress, egress)
     val conn = Connection(
       namespace = builder.namespace,
       labels = Labels(Name(name)),

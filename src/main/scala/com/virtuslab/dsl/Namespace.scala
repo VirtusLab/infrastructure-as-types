@@ -10,7 +10,7 @@ trait Namespaced {
 }
 
 case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: SystemBuilder) {
-  private[this] val connections: mutable.Set[Connection[_, _, _]] = mutable.Set.empty
+  private[this] val connections: mutable.Set[Connection] = mutable.Set.empty
   private[this] val applications: mutable.Set[ApplicationDefinition] = mutable.Set.empty
 
   def references(rs: Reference): SystemBuilder = systemBuilder.references(rs)
@@ -24,13 +24,13 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
     this
   }
 
-  def connections(defined: Connection[_, _, _]*): NamespaceBuilder = {
+  def connections(defined: Connection*): NamespaceBuilder = {
     // we don't have a ConnectionReference, so we don't add it to the SystemBuilder
     connections ++= defined
     this
   }
 
-  def collect(): (Set[ApplicationDefinition], Set[Connection[_, _, _]]) = (applications.toSet, connections.toSet)
+  def collect(): (Set[ApplicationDefinition], Set[Connection]) = (applications.toSet, connections.toSet)
 
   def build(): NamespaceDefinition = {
     val (as, cs) = collect()
@@ -43,15 +43,15 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
 
   // TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
-    def communicatesWith(other: Application)(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith(other: Application)(implicit builder: NamespaceBuilder): Connection = {
       communicatesWith(ApplicationSelector(other))
     }
 
-    def communicatesWith(other: Namespace)(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith(other: Namespace)(implicit builder: NamespaceBuilder): Connection = {
       communicatesWith(NamespaceSelector(other))
     }
 
-    def communicatesWith[S <: Selectable](other: Selector[S])(implicit builder: NamespaceBuilder): Connection[_, _, _] = {
+    def communicatesWith(other: Selector)(implicit builder: NamespaceBuilder): Connection = {
       val connection = Connection(
         resourceSelector = ApplicationSelector(app),
         ingress = other,

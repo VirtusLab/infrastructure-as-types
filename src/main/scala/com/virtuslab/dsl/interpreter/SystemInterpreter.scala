@@ -29,7 +29,7 @@ class SystemInterpreter(
           }
         case cfg: ConfigurationDefinition =>
           Seq(config(cfg))
-        case cnn: Connection[_, _, _] =>
+        case cnn: Connection =>
           Seq(connection(cnn))
         case o =>
           println("No interpreter for: " + o)

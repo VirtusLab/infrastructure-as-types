@@ -5,13 +5,13 @@ import com.virtuslab.dsl.Expressions.Expression
 trait Reference extends Labeled
 
 abstract class Selectable {
-  def matches(labels: Labels): Boolean
+  def expressions: Set[_ <: Expression]
   def asShortString: String
 }
 
 sealed trait Unselected extends Selectable
 case object Unselected extends Unselected {
-  override def matches(labels: Labels): Boolean = false
+  override def expressions: Set[_ <: Expression] = Set()
   override def asShortString: String = "unselected"
 }
 
@@ -19,7 +19,7 @@ trait Labeled extends Selectable {
   def name: String = labels.name.value
   def labels: Labels
 
-  override def matches(labels: Labels): Boolean = labels.matches(labels)
+  override def expressions: Set[_ <: Expression] = labels.values
   override def asShortString: String = labels.asShortString
 
   override def hashCode(): Int = labels.hashCode()
@@ -29,34 +29,8 @@ trait Labeled extends Selectable {
   }
 }
 
-abstract class Selector[S <: Selectable] {
-  def selectable: S
-}
-
-case class NamespaceSelector[S <: Selectable](selectable: S) extends Selector[S] {
-  def matches[R <: Namespace with Labeled](resource: R): Boolean = selectable match {
-    case labels: Labels           => resource.asInstanceOf[Labeled].labels == labels
-    case labeled: Labeled         => resource.asInstanceOf[Labeled].labels == labeled.labels
-    case expressions: Expressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
-  }
-}
-
-case class ApplicationSelector[S <: Selectable](selectable: S) extends Selector[S] {
-  def matches[R <: Application with Labeled](resource: R): Boolean = selectable match {
-    case labels: Labels           => resource.asInstanceOf[Labeled].labels == labels
-    case labeled: Labeled         => resource.asInstanceOf[Labeled].labels == labeled.labels
-    case expressions: Expressions => expressions.matches(resource.asInstanceOf[Labeled].labels)
-  }
-}
-
-sealed trait EmptySelector extends Selector[Unselected]
-case object EmptySelector extends EmptySelector {
-  override def selectable: Unselected = Unselected
-  def matches(unused: Labeled) = false
-}
-
 trait Expressions extends Selectable {
-  def expressions: Set[Expression]
+  override def expressions: Set[_ <: Expression]
 }
 
 object Expressions {
@@ -64,7 +38,6 @@ object Expressions {
 
   final case class ExpressionsDefinition(expressions: Set[Expression]) extends Expressions {
     override def toString: String = expressions.mkString(",")
-    override def matches(labels: Labels): Boolean = ???
     override def asShortString: String = toString.take(20)
   }
 
@@ -142,18 +115,29 @@ case class Labels(name: Name, values: Set[Label]) extends Expressions {
   def toMap: Map[String, String] = all.map(l => l.key -> l.value).toMap
   def map[B, That](f: Label => B)(implicit bf: CanBuildFrom[Set[Label], B, That]): That = all.map(f)(bf)
 
-  override def expressions: Set[Expression] = all.map(l => l)
-  override def matches(labels: Labels): Boolean = ???
+  override def expressions: Set[_ <: Expression] = all.map(l => l)
   override def asShortString: String = name.value.take(20)
 }
 
 object Labels {
   def apply(name: Name, values: Label*): Labels = Labels(name, values.toSet)
 
-  def applicationLabeled(expressions: Expression*): ApplicationSelector[Expressions] =
+  def applicationLabeled(expressions: Expression*): ApplicationSelector =
     ApplicationSelector(Expressions(expressions: _*))
-  def namespaceLabeled(expressions: Expression*): NamespaceSelector[Expressions] =
+  def namespaceLabeled(expressions: Expression*): NamespaceSelector =
     NamespaceSelector(Expressions(expressions: _*))
+}
+
+abstract class Selector {
+  def selectable: Selectable
+}
+
+case class NamespaceSelector(selectable: Selectable) extends Selector
+case class ApplicationSelector(selectable: Selectable) extends Selector
+
+sealed trait EmptySelector extends Selector
+case object EmptySelector extends EmptySelector {
+  override def selectable: Unselected = Unselected
 }
 
 object Validation {
