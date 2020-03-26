@@ -14,55 +14,56 @@ object OperatorMain extends AbstractMain with App {
   import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace }
 
   def deploy(): Unit = {
-    implicit val systemBuilder: SystemBuilder = DistributedSystem("test").builder
+    val system = DistributedSystem("test").inSystem { implicit ds =>
+      import ds._
+      namespaces(
+        Namespace.ref("test").inNamespace { implicit ns =>
+          import ns._
 
-    val namespace = Namespace.ref("test")
-    implicit val namespaceBuilder: NamespaceBuilder = namespace.builder
+          val configuration = Configuration(
+            labels = Labels(Name("app")),
+            data = Map(
+              "config.yaml" ->
+                """
+                |listen: :8080
+                |logRequests: true
+                |connectors:
+                |- type: file
+                |  uri: file:///opt/test.txt
+                |  pathPrefix: /health
+                |""".stripMargin,
+              "test.txt" ->
+                """
+                |I'm testy tester, being tested ;-)
+                |""".stripMargin
+            )
+          )
 
-    val configuration = Configuration(
-      labels = Labels(Name("app")),
-      data = Map(
-        "config.yaml" ->
-          """
-            |listen: :8080
-            |logRequests: true
-            |connectors:
-            |- type: file
-            |  uri: file:///opt/test.txt
-            |  pathPrefix: /health
-            |""".stripMargin,
-        "test.txt" ->
-          """
-            |I'm testy tester, being tested ;-)
-            |""".stripMargin
+          applications(
+            Application(
+              labels = Labels(Name("app")),
+              image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+              command = List("cloud-file-server"),
+              args = List("--config", "/opt/config.yaml"),
+              configurations = List(configuration),
+              ports = Networked.Port(8080) :: Nil
+            )
+          )
+        }
       )
-    )
-
-    Application(
-      labels = Labels(Name("app")),
-      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-      command = List("cloud-file-server"),
-      args = List("--config", "/opt/config.yaml"),
-      configurations = List(configuration),
-      ports = Networked.Port(8080) :: Nil
-    )
-
-    Application(
-      labels = Labels(Name("app")),
-      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-      command = List("cloud-file-server"),
-      args = List("--config", "/opt/config.yaml"),
-      configurations = List(configuration),
-      ports = Networked.Port(8080) :: Nil
-    )
-
-    val resources: Seq[Resource[ObjectResource]] = SystemInterpreter.of(systemBuilder).resources
-    resources.foreach { resource: Resource[ObjectResource] =>
-      val createNamespace = createOrUpdate(client, resource)
-      val ns = Await.result(createNamespace, 1.minute)
-      println(s"Successfully created '$ns' on Kubernetes cluster")
     }
+
+    val resources: Seq[Resource[ObjectResource]] = SystemInterpreter.of(system).resources
+    resources.map(createOrUpdate(client))
   }
+
+  def createOrUpdate(client: K8SRequestContext): Resource[ObjectResource] => ObjectResource =
+    (resource: Resource[ObjectResource]) => {
+      val future = createOrUpdate(client, resource)
+      val result = Await.result(future, 1.minute)
+      println(s"Successfully created '$result' on Kubernetes cluster")
+      result
+    }
 
   def createOrUpdate(client: K8SRequestContext, resource: Resource[ObjectResource]): Future[ObjectResource] = {
     import skuber._

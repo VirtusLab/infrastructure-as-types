@@ -9,21 +9,20 @@ import org.scalatest.matchers.should.Matchers
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a simple system" in {
-    val system = DistributedSystem(this.getClass.getCanonicalName)
-      .inSystem { implicit sys =>
-        import sys._
+    val system = DistributedSystem(this.getClass.getCanonicalName).inSystem { implicit ds =>
+      import ds._
 
-        namespaces(
-          Namespace.ref("test").inNamespace { implicit ns =>
-            import ns._
+      namespaces(
+        Namespace.ref("test").inNamespace { implicit ns =>
+          import ns._
 
-            applications(
-              Application(Labels(Name("app-one")), "image-app-one", ports = Networked.Port(9090) :: Nil),
-              Application(Labels(Name("app-two")), "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
-            )
-          }
-        )
-      }
+          applications(
+            Application(Labels(Name("app-one")), "image-app-one", ports = Networked.Port(9090) :: Nil),
+            Application(Labels(Name("app-two")), "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
+          )
+        }
+      )
+    }
 
     val systemInterpreter = SystemInterpreter.of(system)
 
