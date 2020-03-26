@@ -1,7 +1,8 @@
 package com.virtuslab.internal
 
 import com.virtuslab.dsl.interpreter.SystemInterpreter
-import play.api.libs.json.{ JsValue, Json }
+import play.api.libs.json.{ Format, JsValue, Json }
+import skuber.{ ObjectResource, ResourceDefinition }
 
 case class ShortMeta(
     apiVersion: String,
@@ -10,23 +11,18 @@ case class ShortMeta(
     name: String)
 
 class SkuberConverter(interpreter: SystemInterpreter) {
-  import skuber.json.format._
-
   def toMetaAndJson: Seq[(ShortMeta, JsValue)] = {
-    interpreter.resources.map {
-      case namespace: skuber.Namespace =>
-        ShortMeta(namespace.apiVersion, namespace.kind, namespace.ns, namespace.name) -> Json.toJson(namespace)
-      case deployment: skuber.apps.v1.Deployment =>
-        ShortMeta(deployment.apiVersion, deployment.kind, deployment.ns, deployment.name) -> Json.toJson(deployment)
-      case service: skuber.Service =>
-        ShortMeta(service.apiVersion, service.kind, service.ns, service.name) -> Json.toJson(service)
-      case netpol: skuber.networking.NetworkPolicy =>
-        ShortMeta(netpol.apiVersion, netpol.kind, netpol.ns, netpol.name) -> Json.toJson(netpol)
-      case r => throw new IllegalArgumentException(s"Resource $r was not expected")
-    }.toList
+    interpreter.resources.map { resource =>
+      val r = resource.obj
+      ShortMeta(r.apiVersion, r.kind, r.ns, r.name) -> Json.toJson(resource.obj)(resource.format)
+    }
   }
 }
 
 object SkuberConverter {
+  case class Resource[A <: ObjectResource: Format: ResourceDefinition](obj: A) {
+    def format: Format[A] = implicitly[Format[A]]
+    def definition: ResourceDefinition[A] = implicitly[ResourceDefinition[A]]
+  }
   def apply(interpreter: SystemInterpreter): SkuberConverter = new SkuberConverter(interpreter)
 }

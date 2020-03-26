@@ -1,8 +1,10 @@
 package com.virtuslab
 
 import com.virtuslab.dsl.interpreter.SystemInterpreter
-import com.virtuslab.dsl.{ Labels, Name, NamespaceBuilder, Networked, SystemBuilder }
+import com.virtuslab.dsl._
+import com.virtuslab.internal.SkuberConverter.Resource
 import play.api.libs.json.Format
+import skuber.api.client.LoggingContext
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 
 import scala.concurrent.duration._
@@ -54,41 +56,19 @@ object OperatorMain extends AbstractMain with App {
       ports = Networked.Port(8080) :: Nil
     )
 
-    import skuber.apps.v1.Deployment
-    import skuber.json.format._
-    import skuber.{ ConfigMap, Namespace, Service }
-
-    val resources: Seq[ObjectResource] = SystemInterpreter.of(systemBuilder).resources
-    resources.foreach {
-      case namespace: Namespace =>
-        val createNamespace = createOrUpdate(client, namespace)
-        val ns = Await.result(createNamespace, 1.minute)
-        println(s"Successfully created '$ns' on Kubernetes cluster")
-
-      case config: ConfigMap =>
-        val createConfig = createOrUpdate(client, config)
-        val cfg = Await.result(createConfig, 1.minute)
-        println(s"Successfully created '$cfg' on Kubernetes cluster")
-
-      case service: Service =>
-        val createService = createOrUpdate(client, service)
-        val svc = Await.result(createService, 1.minute)
-        println(s"Successfully created '$svc' on Kubernetes cluster")
-
-      case deployment: Deployment =>
-        val createDeployment = createOrUpdate(client, deployment)
-        val dpl = Await.result(createDeployment, 1.minute)
-        println(s"Successfully created '$dpl' on Kubernetes cluster")
-
-      case o => throw new UnsupportedOperationException(s"unexpected resource $o")
+    val resources: Seq[Resource[ObjectResource]] = SystemInterpreter.of(systemBuilder).resources
+    resources.foreach { resource: Resource[ObjectResource] =>
+      val createNamespace = createOrUpdate(client, resource)
+      val ns = Await.result(createNamespace, 1.minute)
+      println(s"Successfully created '$ns' on Kubernetes cluster")
     }
   }
 
-  def createOrUpdate[O <: ObjectResource](client: K8SRequestContext, o: O)(implicit fmt: Format[O], rd: ResourceDefinition[O]): Future[O] = {
+  def createOrUpdate(client: K8SRequestContext, resource: Resource[ObjectResource]): Future[ObjectResource] = {
     import skuber._
 
-    client.create(o) recoverWith {
-      case ex: K8SException if ex.status.code.contains(409) => client.update(o)
+    client.create(resource.obj)(resource.format, resource.definition, LoggingContext.lc) recoverWith {
+      case ex: K8SException if ex.status.code.contains(409) => client.update(resource.obj)(resource.format, resource.definition, LoggingContext.lc)
     }
   }
 
