@@ -67,7 +67,7 @@ object SystemInterpreter {
         case _: ApplicationDefinition => new ApplicationInterpreter(system)
       },
       new ConfigurationInterpreter,
-      new ConnectionInterpreter(system),
+      new ConnectionInterpreter(new LabelExpressionInterpreter()),
       new NamespaceInterpreter
     )
   }

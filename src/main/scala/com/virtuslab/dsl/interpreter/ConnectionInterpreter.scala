@@ -1,12 +1,11 @@
 package com.virtuslab.dsl.interpreter
 
-import com.virtuslab.dsl.interpreter.LabelExpressionInterpreter.expressionsToRequirements
-import com.virtuslab.dsl.{ ApplicationSelector, Connection, DistributedSystem, EmptySelector, Expressions, NamespaceSelector, Selectable, Selector }
+import com.virtuslab.dsl.{ ApplicationSelector, Connection, EmptySelector, Expressions, Label, NamespaceSelector, Selector }
 import skuber.{ LabelSelector, ObjectMeta }
 import skuber.networking.NetworkPolicy
 import skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Spec }
 
-class ConnectionInterpreter(system: DistributedSystem) {
+class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
 
   def apply(connection: Connection): NetworkPolicy = {
     NetworkPolicy(
@@ -20,7 +19,7 @@ class ConnectionInterpreter(system: DistributedSystem) {
           podSelector = connection.resourceSelector match {
             case s: Selector =>
               LabelSelector(
-                expressionsToRequirements(s.selectable.expressions): _*
+                expressions(s.selectable.expressions): _*
               )
           },
           ingress = connection.ingress match {
@@ -32,7 +31,7 @@ class ConnectionInterpreter(system: DistributedSystem) {
                     Peer(
                       podSelector = Some(
                         LabelSelector(
-                          expressionsToRequirements(s.selectable.expressions): _*
+                          expressions(s.selectable.expressions): _*
                         )
                       )
                     )
@@ -46,7 +45,7 @@ class ConnectionInterpreter(system: DistributedSystem) {
                     Peer(
                       namespaceSelector = Some(
                         LabelSelector(
-                          expressionsToRequirements(s.selectable.expressions): _*
+                          expressions(s.selectable.expressions): _*
                         )
                       )
                     )
@@ -63,7 +62,7 @@ class ConnectionInterpreter(system: DistributedSystem) {
                     Peer(
                       podSelector = Some(
                         LabelSelector(
-                          expressionsToRequirements(s.selectable.expressions): _*
+                          expressions(s.selectable.expressions): _*
                         )
                       )
                     )
@@ -77,7 +76,7 @@ class ConnectionInterpreter(system: DistributedSystem) {
                     Peer(
                       namespaceSelector = Some(
                         LabelSelector(
-                          expressionsToRequirements(s.selectable.expressions): _*
+                          expressions(s.selectable.expressions): _*
                         )
                       )
                     )
@@ -92,12 +91,21 @@ class ConnectionInterpreter(system: DistributedSystem) {
   }
 }
 
-object LabelExpressionInterpreter {
-  import com.virtuslab.dsl.Expressions.Expression
+class LabelExpressionInterpreter {
+  import com.virtuslab.dsl.Expressions._
 
-  def expressionsToRequirements(es: Set[_ <: Expression]): Seq[LabelSelector.Requirement] = {
+  def apply(es: Expressions): Seq[LabelSelector.Requirement] =
+    apply(es.expressions)
+
+  def apply(es: Set[Expression]): Seq[LabelSelector.Requirement] = {
     es.map {
-      case e: Expressions.EqualityExpression => LabelSelector.IsEqualRequirement(e.key, e.value)
+      case l: Label                => LabelSelector.IsEqualRequirement(l.key, l.value)
+      case e: ExistsExpression     => LabelSelector.ExistsRequirement(e.key)
+      case e: NotExistsExpression  => LabelSelector.NotExistsRequirement(e.key)
+      case e: IsEqualExpression    => LabelSelector.IsEqualRequirement(e.key, e.value)
+      case e: IsNotEqualExpression => LabelSelector.IsNotEqualRequirement(e.key, e.value)
+      case e: InExpression         => LabelSelector.InRequirement(e.key, e.values.toList)
+      case e: NotInExpression      => LabelSelector.NotInRequirement(e.key, e.values.toList)
     }.toSeq
   }
 }

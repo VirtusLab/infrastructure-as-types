@@ -1,6 +1,7 @@
 package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Application.{ ApplicationDefinition, ApplicationReference }
+import com.virtuslab.dsl.Expressions.Expression
 import com.virtuslab.dsl.Namespace.{ NamespaceDefinition, NamespaceReference }
 
 import scala.collection.mutable
@@ -62,6 +63,11 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
       builder.connections(connection)
       connection
     }
+
+    def applicationLabeled(expressions: Expression*): ApplicationSelector =
+      ApplicationSelector(Expressions(expressions: _*))
+    def namespaceLabeled(expressions: Expression*): NamespaceSelector =
+      NamespaceSelector(Expressions(expressions: _*))
   }
 }
 

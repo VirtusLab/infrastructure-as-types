@@ -5,13 +5,13 @@ import com.virtuslab.dsl.Expressions.Expression
 trait Reference extends Labeled
 
 abstract class Selectable {
-  def expressions: Set[_ <: Expression]
+  def expressions: Set[Expression]
   def asShortString: String
 }
 
 sealed trait Unselected extends Selectable
 case object Unselected extends Unselected {
-  override def expressions: Set[_ <: Expression] = Set()
+  override def expressions: Set[Expression] = Set()
   override def asShortString: String = "unselected"
 }
 
@@ -19,7 +19,7 @@ trait Labeled extends Selectable {
   def name: String = labels.name.value
   def labels: Labels
 
-  override def expressions: Set[_ <: Expression] = labels.values
+  override def expressions: Set[Expression] = labels.values.toSet[Expression]
   override def asShortString: String = labels.asShortString
 
   override def hashCode(): Int = labels.hashCode()
@@ -30,11 +30,12 @@ trait Labeled extends Selectable {
 }
 
 trait Expressions extends Selectable {
-  override def expressions: Set[_ <: Expression]
+  override def expressions: Set[Expression]
 }
 
 object Expressions {
   def apply(expressions: Expression*): Expressions = ExpressionsDefinition(expressions.toSet)
+  def apply(expressions: Set[Expression]): Expressions = ExpressionsDefinition(expressions)
 
   final case class ExpressionsDefinition(expressions: Set[Expression]) extends Expressions {
     override def toString: String = expressions.mkString(",")
@@ -45,8 +46,6 @@ object Expressions {
     val key: String
   }
 
-  sealed trait ExistenceExpression extends Expression
-
   sealed trait EqualityExpression extends Expression {
     val value: String
   }
@@ -56,7 +55,7 @@ object Expressions {
     def valuesAsString: String = "(" + values.mkString(",") + ")"
   }
 
-  case class ExistsExpression(key: String) extends ExistenceExpression {
+  case class ExistsExpression(key: String) extends Expression {
     override def toString: String = key
   }
 
@@ -76,7 +75,7 @@ object Expressions {
     override def toString: String = key + " in " + valuesAsString
   }
 
-  case class NotInExpression(key: String, values: List[String]) extends SetExpression {
+  case class NotInExpression(key: String, values: Seq[String]) extends SetExpression {
     override def toString: String = key + " notin " + valuesAsString
   }
 
@@ -97,7 +96,6 @@ object Expressions {
     def in(values: String*): InExpression = InExpression(key, values)
     def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
-  implicit def expressionToExpressions(expr: Expression*): Expressions = Expressions(expr: _*)
 }
 
 trait Label extends Expressions.EqualityExpression {
@@ -115,17 +113,12 @@ case class Labels(name: Name, values: Set[Label]) extends Expressions {
   def toMap: Map[String, String] = all.map(l => l.key -> l.value).toMap
   def map[B, That](f: Label => B)(implicit bf: CanBuildFrom[Set[Label], B, That]): That = all.map(f)(bf)
 
-  override def expressions: Set[_ <: Expression] = all.map(l => l)
+  override def expressions: Set[Expression] = all.map(l => l)
   override def asShortString: String = name.value.take(20)
 }
 
 object Labels {
   def apply(name: Name, values: Label*): Labels = Labels(name, values.toSet)
-
-  def applicationLabeled(expressions: Expression*): ApplicationSelector =
-    ApplicationSelector(Expressions(expressions: _*))
-  def namespaceLabeled(expressions: Expression*): NamespaceSelector =
-    NamespaceSelector(Expressions(expressions: _*))
 }
 
 abstract class Selector {
