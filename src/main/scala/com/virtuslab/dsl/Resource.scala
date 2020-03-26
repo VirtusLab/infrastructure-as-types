@@ -52,7 +52,7 @@ object Expressions {
   }
 
   sealed trait SetExpression extends Expression {
-    val values: List[String]
+    val values: Seq[String]
     def valuesAsString: String = "(" + values.mkString(",") + ")"
   }
 
@@ -72,7 +72,7 @@ object Expressions {
     override def toString: String = key + "!=" + value
   }
 
-  case class InExpression(key: String, values: List[String]) extends SetExpression {
+  case class InExpression(key: String, values: Seq[String]) extends SetExpression {
     override def toString: String = key + " in " + valuesAsString
   }
 
@@ -90,11 +90,11 @@ object Expressions {
   // "status" isNot "release" -> "status!=release"
   // "env" isIn List("staging", "production") -> "env in (staging,release)"
   // "env" isNotIn List("local", "dev") -> "env notin (local,dev)"
-  implicit def stringToExpression(key: String): ExistsExpression = new ExistsExpression(key) {
+  implicit def stringToExpression(key: String) = new ExistsExpression(key) {
     def doesNotExist: NotExistsExpression = NotExistsExpression(key)
     def is(value: String): IsEqualExpression = IsEqualExpression(key, value)
     def isNot(value: String): IsNotEqualExpression = IsNotEqualExpression(key, value)
-    def isIn(values: List[String]): InExpression = InExpression(key, values)
+    def in(values: String*): InExpression = InExpression(key, values)
     def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
   implicit def expressionToExpressions(expr: Expression*): Expressions = Expressions(expr: _*)
