@@ -2,9 +2,15 @@ package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Expressions.Expression
 
-trait Reference extends Labeled
+trait Named { self: Labeled =>
+  def name: String = labels.name.value
+}
 
-abstract class Selectable {
+trait Transformable[A] { self: A =>
+  def transform(f: A => A): A = f(self)
+}
+
+trait Selectable {
   def expressions: Set[Expression]
   def asShortString: String
 }
@@ -15,11 +21,10 @@ case object Unselected extends Unselected {
   override def asShortString: String = "unselected"
 }
 
-trait Labeled extends Selectable {
-  def name: String = labels.name.value
+trait Labeled extends Named with Selectable {
   def labels: Labels
 
-  override def expressions: Set[Expression] = labels.values.toSet[Expression]
+  override def expressions: Set[Expression] = labels.all.toSet[Expression]
   override def asShortString: String = labels.asShortString
 
   override def hashCode(): Int = labels.hashCode()
@@ -39,7 +44,7 @@ object Expressions {
 
   final case class ExpressionsDefinition(expressions: Set[Expression]) extends Expressions {
     override def toString: String = expressions.mkString(",")
-    override def asShortString: String = toString.take(20)
+    override def asShortString: String = toString.replaceAll("[!@#$%^&*()+=<>|/\\\\_,.]*", "-").take(20)
   }
 
   sealed trait Expression {
@@ -96,6 +101,12 @@ object Expressions {
     def in(values: String*): InExpression = InExpression(key, values)
     def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
+
+  def applicationLabeled(expressions: Expression*): ApplicationSelector =
+    ApplicationSelector(Expressions(expressions: _*))
+
+  def namespaceLabeled(expressions: Expression*): NamespaceSelector =
+    NamespaceSelector(Expressions(expressions: _*))
 }
 
 trait Label extends Expressions.EqualityExpression {
@@ -106,10 +117,13 @@ final case class Name(value: String) extends Label {
   val key: String = "name"
 }
 
-case class Labels(name: Name, values: Set[Label]) extends Expressions {
+final case class UntypedLabel(key: String, value: String) extends Label
+
+case class Labels(name: Name, private val values: Set[Label]) extends Expressions {
   import scala.collection.generic.CanBuildFrom
 
   def all: Set[Label] = Set(name) ++ values
+  def tail: Set[Label] = values
   def toMap: Map[String, String] = all.map(l => l.key -> l.value).toMap
   def map[B, That](f: Label => B)(implicit bf: CanBuildFrom[Set[Label], B, That]): That = all.map(f)(bf)
 

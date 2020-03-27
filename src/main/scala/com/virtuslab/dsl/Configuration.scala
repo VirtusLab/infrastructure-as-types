@@ -1,6 +1,6 @@
 package com.virtuslab.dsl
 
-trait Configuration extends Reference
+trait Configuration extends Labeled
 
 object Configuration {
   final case class ConfigurationDefinition(
@@ -10,7 +10,10 @@ object Configuration {
     extends Configuration
     with Namespaced
 
-  final case class ConfigurationReference(labels: Labels, data: Map[String, String]) extends Configuration {
+  final case class ConfigurationReference(labels: Labels, data: Map[String, String])
+    extends Configuration
+    with Transformable[ConfigurationReference]
+    with Definable[Configuration, ConfigurationReference, ConfigurationDefinition] {
     def define(implicit builder: NamespaceBuilder): ConfigurationDefinition = {
       ConfigurationDefinition(
         labels = labels,

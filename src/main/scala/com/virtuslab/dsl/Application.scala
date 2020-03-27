@@ -10,10 +10,10 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
-trait Application extends Reference with Containerized with Networked
+trait Application extends Labeled with Containerized with Networked
 
 object Application {
-  final case class ApplicationDefinition private (
+  final case class ApplicationDefinition(
       labels: Labels,
       namespace: Namespace,
       configurations: List[Configuration],
@@ -27,7 +27,7 @@ object Application {
     extends Application
     with Namespaced
 
-  final case class ApplicationReference private (
+  final case class ApplicationReference(
       labels: Labels,
       configurations: List[Configuration],
       image: String,
@@ -37,7 +37,9 @@ object Application {
       ports: List[Networked.Port],
       ping: Option[HttpPing],
       healthCheck: Option[HttpHealthCheck])
-    extends Application {
+    extends Application
+    with Transformable[ApplicationReference]
+    with Definable[Application, ApplicationReference, ApplicationDefinition] {
     def define(implicit builder: NamespaceBuilder): ApplicationDefinition = {
       ApplicationDefinition(
         labels = labels,
@@ -95,7 +97,7 @@ object Application {
     )(implicit
       builder: NamespaceBuilder
     ): ApplicationDefinition = {
-    val app = ref(
+    ref(
       labels = labels,
       configurations = configurations,
       image = image,
@@ -106,7 +108,5 @@ object Application {
       ping = ping,
       healthCheck = healthCheck
     )(builder.systemBuilder).define
-    builder.applications(app)
-    app
   }
 }

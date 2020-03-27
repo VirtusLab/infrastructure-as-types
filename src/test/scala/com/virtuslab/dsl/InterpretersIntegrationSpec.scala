@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
   it should "create a simple system" in {
-    val system = DistributedSystem(this.getClass.getCanonicalName).inSystem { implicit ds =>
+    val system = DistributedSystem.ref(this.getClass.getCanonicalName).inSystem { implicit ds =>
       import ds._
 
       namespaces(

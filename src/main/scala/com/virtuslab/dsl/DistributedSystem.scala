@@ -1,7 +1,7 @@
 package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Application.{ ApplicationDefinition, ApplicationReference }
-import com.virtuslab.dsl.DistributedSystem.DefinedDistributedSystem
+import com.virtuslab.dsl.DistributedSystem.DistributedSystemDefinition
 import com.virtuslab.dsl.Namespace.{ NamespaceDefinition, NamespaceReference }
 
 case class SystemBuilder(system: DistributedSystem) {
@@ -49,7 +49,7 @@ case class SystemBuilder(system: DistributedSystem) {
     nss.toSet
   }
 
-  def build(): DefinedDistributedSystem = DefinedDistributedSystem(system.labels, collect())
+  def build(): DistributedSystemDefinition = DistributedSystemDefinition(system.labels, collect())
 }
 
 trait DistributedSystem extends Labeled
@@ -57,13 +57,12 @@ trait DistributedSystem extends Labeled
 object DistributedSystem {
 
   final case class DistributedSystemReference protected (labels: Labels) extends DistributedSystem {
-    def inSystem(f: SystemBuilder => SystemBuilder): DefinedDistributedSystem = f(builder).build()
-
+    def inSystem(f: SystemBuilder => SystemBuilder): DistributedSystemDefinition = f(builder).build()
     def builder: SystemBuilder = SystemBuilder(this)
   }
 
-  final case class DefinedDistributedSystem protected (labels: Labels, namespaces: Set[NamespaceDefinition]) extends DistributedSystem
+  final case class DistributedSystemDefinition protected (labels: Labels, namespaces: Set[NamespaceDefinition]) extends DistributedSystem
 
-  def apply(labels: Labels): DistributedSystemReference = DistributedSystemReference(labels)
-  def apply(name: String): DistributedSystemReference = DistributedSystemReference(Labels(Name(name)))
+  def ref(labels: Labels): DistributedSystemReference = DistributedSystemReference(labels)
+  def ref(name: String): DistributedSystemReference = DistributedSystemReference(Labels(Name(name)))
 }

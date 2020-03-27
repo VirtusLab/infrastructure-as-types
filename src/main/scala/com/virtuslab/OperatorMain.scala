@@ -1,11 +1,10 @@
 package com.virtuslab
 
-import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.dsl._
+import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.internal.SkuberConverter.Resource
-import play.api.libs.json.Format
 import skuber.api.client.LoggingContext
-import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
+import skuber.{ K8SRequestContext, ObjectResource }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
@@ -14,7 +13,7 @@ object OperatorMain extends AbstractMain with App {
   import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace }
 
   def deploy(): Unit = {
-    val system = DistributedSystem("test").inSystem { implicit ds =>
+    val system = DistributedSystem.ref("test").inSystem { implicit ds =>
       import ds._
       namespaces(
         Namespace.ref("test").inNamespace { implicit ns =>

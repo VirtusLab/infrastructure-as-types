@@ -2,13 +2,14 @@ package com.virtuslab.dsl.interpreter
 
 import com.virtuslab.dsl.Application.ApplicationDefinition
 import com.virtuslab.dsl.Configuration.ConfigurationDefinition
-import com.virtuslab.dsl.DistributedSystem.DefinedDistributedSystem
-import com.virtuslab.dsl.{ Connection, SystemBuilder }
+import com.virtuslab.dsl.Connection.ConnectionDefinition
+import com.virtuslab.dsl.DistributedSystem.DistributedSystemDefinition
+import com.virtuslab.dsl.SystemBuilder
 import com.virtuslab.internal.SkuberConverter.Resource
 import skuber.ObjectResource
 
 class SystemInterpreter(
-    system: DefinedDistributedSystem,
+    system: DistributedSystemDefinition,
     applicationInterpreters: PartialFunction[
       ApplicationDefinition,
       ApplicationInterpreter
@@ -33,7 +34,7 @@ class SystemInterpreter(
             }
           case cfg: ConfigurationDefinition =>
             Seq(Resource(config(cfg)))
-          case cnn: Connection =>
+          case cnn: ConnectionDefinition =>
             Seq(Resource(connection(cnn)))
           case o =>
             println("No interpreter for: " + o)
@@ -45,7 +46,7 @@ class SystemInterpreter(
 
 object SystemInterpreter {
   def apply(
-      system: DefinedDistributedSystem,
+      system: DistributedSystemDefinition,
       applicationInterpreters: PartialFunction[
         ApplicationDefinition,
         ApplicationInterpreter
@@ -61,7 +62,7 @@ object SystemInterpreter {
     namespaceInterpreter
   )
 
-  def of(system: DefinedDistributedSystem): SystemInterpreter = {
+  def of(system: DistributedSystemDefinition): SystemInterpreter = {
     new SystemInterpreter(
       system, {
         case _: ApplicationDefinition => new ApplicationInterpreter(system)

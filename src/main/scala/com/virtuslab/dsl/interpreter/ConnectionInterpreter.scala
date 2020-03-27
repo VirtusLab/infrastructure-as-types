@@ -1,13 +1,14 @@
 package com.virtuslab.dsl.interpreter
 
-import com.virtuslab.dsl.{ ApplicationSelector, Connection, EmptySelector, Expressions, Label, NamespaceSelector, Selector }
-import skuber.{ LabelSelector, ObjectMeta }
+import com.virtuslab.dsl.Connection.ConnectionDefinition
+import com.virtuslab.dsl._
 import skuber.networking.NetworkPolicy
 import skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Spec }
+import skuber.{ LabelSelector, ObjectMeta }
 
 class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
 
-  def apply(connection: Connection): NetworkPolicy = {
+  def apply(connection: ConnectionDefinition): NetworkPolicy = {
     NetworkPolicy(
       metadata = ObjectMeta(
         name = connection.name,
