@@ -10,10 +10,6 @@ import org.scalatest.matchers.should.Matchers
 class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   it should "allow to express connections between two namespaces" in {
 
-    //    type IP = String // TODO a proper object
-    //    type IPBlock = String // TODO a proper object, a CIDR
-    //    def matches(s: IPBlock): IP => Boolean = ??? // specific to NetworkPolicyPeer
-
     case class RoleLabel(value: String) extends Label {
       override val key: String = "role"
     }
@@ -344,10 +340,10 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
       {
         "to":[
           {
-            "namespaceSelector":{
+            "podSelector":{
               "matchLabels":{
-                "name":"backend",
-                "role":"backend"
+                "name":"app-one",
+                "role":"frontend"
               }
             }
           }
@@ -395,10 +391,10 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
       {
         "to":[
           {
-            "namespaceSelector":{
+            "podSelector":{
               "matchLabels":{
-                "name":"frontend",
-                "role":"frontend"
+                "name":"app-three",
+                "role":"backend"
               }
             }
           }
@@ -447,7 +443,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
           {
             "podSelector":{
               "matchLabels":{
-                "name":"app-two",
+                "name":"app-one",
                 "role":"frontend"
               }
             }
@@ -482,9 +478,18 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
       .communicatesWith(namespaceLabeled("role".is("backend")))
       .transform({ c =>
         c.copy(
-          resourceSelector = ApplicationSelector(c.resourceSelector.selectable),
-          ingress = ApplicationSelector(c.ingress.selectable),
-          egress = ApplicationSelector(c.egress.selectable)
+          resourceSelector = ApplicationSelector(
+            c.resourceSelector.expressions,
+            c.resourceSelector.protocols
+          ),
+          ingress = ApplicationSelector(
+            c.ingress.expressions,
+            c.ingress.protocols
+          ),
+          egress = ApplicationSelector(
+            c.egress.expressions,
+            c.egress.protocols
+          )
         )
       })
       .define({ c =>
@@ -540,7 +545,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
         "to":[
           {
             "podSelector":{
-              "matchLabels":{"role":"backend"}
+              "matchLabels":{"name":"app-one"}
             }
           }
         ]
@@ -550,7 +555,121 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   }
 }
 """)
-      case (m, _) => println(s"ignored $m")
+      case (m, _) => info(s"ignored $m")
+    }
+  }
+
+  it should "allow for external connections" in {
+    implicit val ds: SystemBuilder =
+      DistributedSystem.ref(this.getClass.getCanonicalName).builder
+    implicit val ns: NamespaceBuilder =
+      Namespace.ref(this.getClass.getCanonicalName).builder
+
+    import ds._
+    import ns._
+    import Expressions._
+
+    connections(
+      Connection(
+        name = "allow-all-ingress",
+        resourceSelector = NoSelector,
+        ingress = AllowSelector,
+        egress = NoSelector
+      ),
+      Connection(
+        name = "default-deny-ingress",
+        resourceSelector = NoSelector,
+        ingress = DenySelector,
+        egress = NoSelector
+      ),
+      Connection(
+        name = "allow-dns-access",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = NamespaceSelector(
+          expressions = Labels(Name("kube-system")),
+          protocols = Protocols(UDP(53))
+        )
+      )
+    )
+
+    namespaces(ns.build())
+
+    val systemInterpreter = SystemInterpreter.of(systemBuilder)
+    val resources = SkuberConverter(systemInterpreter).toMetaAndJson
+    resources foreach {
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-all-ingress"), json) =>
+        json should matchJsonString("""
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "NetworkPolicy",
+  "metadata": {
+    "name": "allow-all-ingress",
+    "namespace": "com.virtuslab.dsl.ConnectionTest",
+    "labels": {
+      "name": "allow-all-ingress"
+    }
+  },
+  "spec": {
+    "podSelector": {},
+    "ingress": [{}],
+    "policyTypes": ["Ingress"]
+  }
+}
+""")
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-ingress"), json) =>
+        json should matchJsonString("""
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "NetworkPolicy",
+  "metadata": {
+    "name": "default-deny-ingress",
+    "namespace": "com.virtuslab.dsl.ConnectionTest",
+    "labels": {
+      "name": "default-deny-ingress"
+    }
+  },
+  "spec": {
+    "podSelector": {},
+    "policyTypes": ["Ingress"]
+  }
+}
+""")
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-dns-access"), json) =>
+        json should matchJsonString("""
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "NetworkPolicy",
+  "metadata": {
+    "name": "allow-dns-access",
+    "namespace": "com.virtuslab.dsl.ConnectionTest",
+    "labels": {
+      "name": "allow-dns-access"
+    }
+  },
+  "spec": {
+    "podSelector": {},
+    "egress": [
+      {
+        "to": [
+          {
+            "namespaceSelector": {
+              "matchLabels": {
+                "name": "kube-system"
+              }
+            }
+          }
+        ],
+        "ports": [
+          { "protocol": "UDP", "port": 53 }
+        ]
+      }
+    ],
+    "policyTypes": ["Egress"]
+  }
+}
+""")
+      case (m, _) => info(s"ignored $m")
     }
   }
 }

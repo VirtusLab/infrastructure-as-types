@@ -81,9 +81,9 @@ object Connection {
       ingress: Selector,
       egress: Selector
     ): String = {
-    val name = resourceSelector.selectable.asShortString +
-      "-" + ingress.selectable.asShortString +
-      "-" + egress.selectable.asShortString // 20*3 + 2 < 64
+    val name = resourceSelector.asShortString +
+      "-" + ingress.asShortString +
+      "-" + egress.asShortString // 20*3 + 2 < 64
     val (isValid, msg) = Validation.IsQualifiedName(name)
     if (!isValid) {
       throw new IllegalStateException(s"Generated name '$name' is invalid: $msg")

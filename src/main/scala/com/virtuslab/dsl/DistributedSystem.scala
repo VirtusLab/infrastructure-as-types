@@ -21,7 +21,7 @@ case class SystemBuilder(system: DistributedSystem) {
   // TODO should interpreters take over at least the most of validation?
   def validateState(): Unit = {
     val ms = nss.flatten((ns: NamespaceDefinition) => ns.members)
-    println(s"[${system.name}] ms: $ms")
+//    println(s"[${system.name}] ms: $ms")
     refs.foreach {
       case nref: NamespaceReference =>
         if (!nss.exists((ndef: NamespaceDefinition) => nref.labels == ndef.labels)) {

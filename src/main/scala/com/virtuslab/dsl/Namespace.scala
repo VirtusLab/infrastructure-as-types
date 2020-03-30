@@ -53,18 +53,28 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
   // TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
     def communicatesWith(other: Application): ConnectionDraft = {
-      communicatesWith(ApplicationSelector(other))
+      communicatesWith(
+        ApplicationSelector(
+          other,
+          AllProtocols
+        )
+      )
     }
 
     def communicatesWith(other: Namespace): ConnectionDraft = {
-      communicatesWith(NamespaceSelector(other))
+      communicatesWith(
+        NamespaceSelector(
+          other,
+          AllProtocols
+        )
+      )
     }
 
     def communicatesWith(other: Selector): ConnectionDraft = {
       ConnectionDraft(
-        resourceSelector = ApplicationSelector(app),
+        resourceSelector = ApplicationSelector(app, AllProtocols),
         ingress = other,
-        egress = ApplicationSelector(app)
+        egress = ApplicationSelector(app, AllProtocols)
       )
     }
   }

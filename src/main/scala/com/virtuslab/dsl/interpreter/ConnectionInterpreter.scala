@@ -3,10 +3,10 @@ package com.virtuslab.dsl.interpreter
 import com.virtuslab.dsl.Connection.ConnectionDefinition
 import com.virtuslab.dsl._
 import skuber.networking.NetworkPolicy
-import skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Spec }
+import skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Port, Spec }
 import skuber.{ LabelSelector, ObjectMeta }
 
-class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
+class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: NetworkPortsInterpreter) {
 
   def apply(connection: ConnectionDefinition): NetworkPolicy = {
     NetworkPolicy(
@@ -18,13 +18,16 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
       spec = Some(
         Spec(
           podSelector = connection.resourceSelector match {
+            // NoSelector and AllowSelector are interchangeable here
             case s: Selector =>
               LabelSelector(
-                expressions(s.selectable.expressions): _*
+                expressions(s.expressions.expressions): _*
               )
           },
           ingress = connection.ingress match {
-            case _: EmptySelector => List()
+            case NoSelector    => List()
+            case DenySelector  => List() // the difference is in 'policyTypes'
+            case AllowSelector => List(IngressRule())
             case s: ApplicationSelector =>
               List(
                 IngressRule(
@@ -32,11 +35,13 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
                     Peer(
                       podSelector = Some(
                         LabelSelector(
-                          expressions(s.selectable.expressions): _*
+                          expressions(s.expressions): _*
                         )
-                      )
+                      ),
+                      ipBlock = None // TODO
                     )
-                  )
+                  ),
+                  ports = ports(s.protocols)
                 )
               )
             case s: NamespaceSelector =>
@@ -46,16 +51,20 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
                     Peer(
                       namespaceSelector = Some(
                         LabelSelector(
-                          expressions(s.selectable.expressions): _*
+                          expressions(s.expressions): _*
                         )
-                      )
+                      ),
+                      ipBlock = None // TODO
                     )
-                  )
+                  ),
+                  ports = ports(s.protocols)
                 )
               )
           },
-          egress = connection.ingress match {
-            case _: EmptySelector => List()
+          egress = connection.egress match {
+            case NoSelector    => List()
+            case DenySelector  => List() // the difference is in 'policyTypes'
+            case AllowSelector => List(EgressRule())
             case s: ApplicationSelector =>
               List(
                 EgressRule(
@@ -63,11 +72,13 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
                     Peer(
                       podSelector = Some(
                         LabelSelector(
-                          expressions(s.selectable.expressions): _*
+                          expressions(s.expressions): _*
                         )
-                      )
+                      ),
+                      ipBlock = None // TODO
                     )
-                  )
+                  ),
+                  ports = ports(s.protocols)
                 )
               )
             case s: NamespaceSelector =>
@@ -77,15 +88,22 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter) {
                     Peer(
                       namespaceSelector = Some(
                         LabelSelector(
-                          expressions(s.selectable.expressions): _*
+                          expressions(s.expressions): _*
                         )
-                      )
+                      ),
+                      ipBlock = None // TODO
                     )
-                  )
+                  ),
+                  ports = ports(s.protocols)
                 )
               )
           },
-          policyTypes = List("Ingress", "Egress")
+          policyTypes = (connection.ingress, connection.egress) match {
+            case (NoSelector, NoSelector) => List()
+            case (_, NoSelector)          => List("Ingress")
+            case (NoSelector, _)          => List("Egress")
+            case (_, _)                   => List("Ingress", "Egress")
+          }
         )
       )
     )
@@ -108,5 +126,19 @@ class LabelExpressionInterpreter {
       case e: InExpression         => LabelSelector.InRequirement(e.key, e.values.toList)
       case e: NotInExpression      => LabelSelector.NotInRequirement(e.key, e.values.toList)
     }.toSeq
+  }
+}
+
+class NetworkPortsInterpreter {
+  def apply(ps: Protocols): List[Port] = apply(ps.protocols)
+  def apply(ps: Set[Protocol]): List[Port] = apply(ps.toSeq)
+  def apply(ps: Seq[Protocol]): List[Port] = ps.map(apply).flatten.toList
+
+  @scala.annotation.tailrec
+  final def apply(p: Protocol): Option[Port] = p match {
+    case UDP(port, _)                         => Some(Port(port.numberOrName, skuber.Protocol.UDP))
+    case TCP(port, _)                         => Some(Port(port.numberOrName, skuber.Protocol.TCP))
+    case p: Protocol if p.down != AnyProtocol => apply(p)
+    case _                                    => None
   }
 }
