@@ -1,21 +1,18 @@
 package com.virtuslab.dsl
 
-trait Configuration extends KeyValue
+trait Secret extends KeyValue
 
-object Configuration {
-  final case class ConfigurationDefinition(
+object Secret {
+
+  final case class SecretDefinition(
       labels: Labels,
       namespace: Namespace,
       data: Map[String, String])
-    extends Configuration
-    with Namespaced
+    extends Secret
 
-  final case class ConfigurationReference(labels: Labels, data: Map[String, String])
-    extends Configuration
-    with Transformable[ConfigurationReference]
-    with Definable[Configuration, ConfigurationReference, ConfigurationDefinition] {
-    def define(implicit builder: NamespaceBuilder): ConfigurationDefinition = {
-      ConfigurationDefinition(
+  final case class SecretReference(labels: Labels, data: Map[String, String]) extends Secret with Definable[Secret, SecretReference, SecretDefinition] {
+    def define(implicit builder: NamespaceBuilder): SecretDefinition = {
+      SecretDefinition(
         labels = labels,
         namespace = builder.namespace,
         data = data
@@ -28,8 +25,8 @@ object Configuration {
       data: Map[String, String]
     )(implicit
       builder: SystemBuilder
-    ): ConfigurationReference = {
-    val conf = ConfigurationReference(
+    ): SecretReference = {
+    val conf = SecretReference(
       labels = labels,
       data = data
     )
@@ -42,7 +39,7 @@ object Configuration {
       data: Map[String, String]
     )(implicit
       builder: NamespaceBuilder
-    ): ConfigurationDefinition = {
+    ): SecretDefinition = {
     val conf = ref(
       labels = labels,
       data = data

@@ -10,7 +10,10 @@ sealed trait HealthCheckAction
 case class HttpHealthCheck(url: URL) extends HealthCheckAction
 case class TCPHealthCheck(port: Int) extends HealthCheckAction
 
-trait Application extends Labeled with Containerized with Networked
+trait Application extends Labeled with Containerized with Networked with Mounts {
+  def configurations: List[Configuration]
+  def secrets: List[Secret]
+}
 
 object Application {
   final case class ApplicationDefinition(
@@ -23,7 +26,9 @@ object Application {
       envs: List[Containerized.EnvironmentVariable],
       ports: List[Networked.Port],
       ping: Option[HttpPing],
-      healthCheck: Option[HttpHealthCheck])
+      healthCheck: Option[HttpHealthCheck],
+      mounts: List[Mount],
+      secrets: List[Secret])
     extends Application
     with Namespaced
 
@@ -36,7 +41,9 @@ object Application {
       envs: List[Containerized.EnvironmentVariable],
       ports: List[Networked.Port],
       ping: Option[HttpPing],
-      healthCheck: Option[HttpHealthCheck])
+      healthCheck: Option[HttpHealthCheck],
+      mounts: List[Mount],
+      secrets: List[Secret])
     extends Application
     with Transformable[ApplicationReference]
     with Definable[Application, ApplicationReference, ApplicationDefinition] {
@@ -51,7 +58,9 @@ object Application {
         envs = envs,
         ports = ports,
         ping = ping,
-        healthCheck = healthCheck
+        healthCheck = healthCheck,
+        mounts = mounts,
+        secrets = secrets
       )
     }
   }
@@ -65,7 +74,9 @@ object Application {
       envs: List[Containerized.EnvironmentVariable] = Nil,
       ports: List[Networked.Port] = Nil,
       ping: Option[HttpPing] = None,
-      healthCheck: Option[HttpHealthCheck] = None
+      healthCheck: Option[HttpHealthCheck] = None,
+      mounts: List[Mount] = Nil,
+      secrets: List[Secret] = Nil
     )(implicit
       builder: SystemBuilder
     ): ApplicationReference = {
@@ -78,7 +89,9 @@ object Application {
       envs = envs,
       ports = ports,
       ping = ping,
-      healthCheck = healthCheck
+      healthCheck = healthCheck,
+      mounts = mounts,
+      secrets = secrets
     )
     builder.references(app)
     app
@@ -93,7 +106,9 @@ object Application {
       envs: List[Containerized.EnvironmentVariable] = Nil,
       ports: List[Networked.Port] = Nil,
       ping: Option[HttpPing] = None,
-      healthCheck: Option[HttpHealthCheck] = None
+      healthCheck: Option[HttpHealthCheck] = None,
+      mounts: List[Mount] = Nil,
+      secrets: List[Secret] = Nil
     )(implicit
       builder: NamespaceBuilder
     ): ApplicationDefinition = {
@@ -106,7 +121,9 @@ object Application {
       envs = envs,
       ports = ports,
       ping = ping,
-      healthCheck = healthCheck
+      healthCheck = healthCheck,
+      mounts = mounts,
+      secrets = secrets
     )(builder.systemBuilder).define
   }
 }
