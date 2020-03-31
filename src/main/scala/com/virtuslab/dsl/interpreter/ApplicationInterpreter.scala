@@ -8,7 +8,10 @@ import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
 import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 
-class ApplicationInterpreter(val system: DistributedSystem, val portForward: PartialFunction[Int, Int] = PartialFunction.empty) {
+class ApplicationInterpreter(
+    mountInterpreter: MountInterpreter,
+    system: DistributedSystem,
+    portForward: PartialFunction[Int, Int] = PartialFunction.empty) {
 
   protected def generateService(app: ApplicationDefinition): Service = {
     app.ports
@@ -35,12 +38,14 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
     s"config-${configuration.name}"
   }
 
-  protected def generateDeployment(app: ApplicationDefinition, container: Container): Deployment = {
+  protected def generateDeployment(
+      app: ApplicationDefinition,
+      container: Container,
+      mountedVolumes: List[Volume]
+    ): Deployment = {
     val podSpec = Pod.Spec(
       containers = container :: Nil,
-      volumes = app.configurations.map { cfg =>
-        Volume(volumeName(cfg), ConfigMapVolumeSource(name = cfg.name))
-      }
+      volumes = mountedVolumes
     )
     val podTemplateSpec = Pod.Template
       .Spec(
@@ -72,6 +77,9 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
     val env = app.envs.map { env =>
       EnvVar(env.key, EnvVar.StringValue(env.value))
     }
+
+    val mounts = app.mounts.map(mountInterpreter)
+
     val container = Container(
       name = app.name,
       image = app.image,
@@ -88,16 +96,10 @@ class ApplicationInterpreter(val system: DistributedSystem, val portForward: Par
       readinessProbe = app.healthCheck.map(
         healthCheck => Probe(action = HTTPGetAction(healthCheck.url))
       ),
-      volumeMounts = app.configurations.map { cfg =>
-        Volume.Mount(
-          name = volumeName(cfg),
-          mountPath = "/opt", // TODO
-          readOnly = true // TODO
-        )
-      }
+      volumeMounts = mounts.map(_._2)
     )
 
-    val dpl = generateDeployment(app, container)
+    val dpl = generateDeployment(app, container, mounts.map(_._1))
 
     (svc, dpl)
   }

@@ -1,5 +1,7 @@
 package com.virtuslab
 
+import java.nio.file.Path
+
 import com.virtuslab.dsl._
 import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.internal.SkuberConverter.Resource
@@ -38,6 +40,7 @@ object OperatorMain extends AbstractMain with App {
             )
           )
 
+          import com.virtuslab.dsl.Mountable._
           applications(
             Application(
               labels = Labels(Name("app")),
@@ -45,7 +48,8 @@ object OperatorMain extends AbstractMain with App {
               command = List("cloud-file-server"),
               args = List("--config", "/opt/config.yaml"),
               configurations = List(configuration),
-              ports = Networked.Port(8080) :: Nil
+              ports = Networked.Port(8080) :: Nil,
+              mounts = configuration.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
             )
           )
         }

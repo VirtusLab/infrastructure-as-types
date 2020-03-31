@@ -53,7 +53,7 @@ object SystemInterpreter {
   def of(system: DistributedSystemDefinition): SystemInterpreter = {
     new SystemInterpreter(
       system,
-      new ApplicationInterpreter(system),
+      new ApplicationInterpreter(MountInterpreter, system),
       ConfigurationInterpreter,
       new ConnectionInterpreter(
         new LabelExpressionInterpreter(),
