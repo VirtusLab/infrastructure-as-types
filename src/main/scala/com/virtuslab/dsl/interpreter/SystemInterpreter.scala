@@ -10,10 +10,7 @@ import skuber.ObjectResource
 
 class SystemInterpreter(
     system: DistributedSystemDefinition,
-    applicationInterpreters: PartialFunction[
-      ApplicationDefinition,
-      ApplicationInterpreter
-    ],
+    applicationInterpreter: ApplicationInterpreter,
     config: ConfigurationInterpreter,
     connection: ConnectionInterpreter,
     namespace: NamespaceInterpreter) {
@@ -24,14 +21,8 @@ class SystemInterpreter(
       Seq(Resource(namespace(ns))) ++ ns.members.toSeq
         .flatMap {
           case app: ApplicationDefinition =>
-            if (applicationInterpreters.isDefinedAt(app)) {
-              val (svc, dpl) = applicationInterpreters(app)(app)
-              Seq(Resource(svc), Resource(dpl))
-            } else {
-              throw new IllegalArgumentException(
-                s"Application $app is not suitable for the interpreter."
-              )
-            }
+            val (svc, dpl) = applicationInterpreter(app)
+            Seq(Resource(svc), Resource(dpl))
           case cfg: ConfigurationDefinition =>
             Seq(Resource(config(cfg)))
           case cnn: ConnectionDefinition =>
@@ -47,16 +38,13 @@ class SystemInterpreter(
 object SystemInterpreter {
   def apply(
       system: DistributedSystemDefinition,
-      applicationInterpreters: PartialFunction[
-        ApplicationDefinition,
-        ApplicationInterpreter
-      ],
+      applicationInterpreter: ApplicationInterpreter,
       configurationInterpreter: ConfigurationInterpreter,
       connectionInterpreter: ConnectionInterpreter,
       namespaceInterpreter: NamespaceInterpreter
     ): SystemInterpreter = new SystemInterpreter(
     system,
-    applicationInterpreters,
+    applicationInterpreter,
     configurationInterpreter,
     connectionInterpreter,
     namespaceInterpreter
@@ -64,15 +52,14 @@ object SystemInterpreter {
 
   def of(system: DistributedSystemDefinition): SystemInterpreter = {
     new SystemInterpreter(
-      system, {
-        case _: ApplicationDefinition => new ApplicationInterpreter(system)
-      },
-      new ConfigurationInterpreter,
+      system,
+      new ApplicationInterpreter(system),
+      ConfigurationInterpreter,
       new ConnectionInterpreter(
         new LabelExpressionInterpreter(),
         new NetworkPortsInterpreter()
       ),
-      new NamespaceInterpreter
+      NamespaceInterpreter
     )
   }
 

@@ -3,7 +3,7 @@ package com.virtuslab.dsl.interpreter
 import com.virtuslab.dsl.Configuration.ConfigurationDefinition
 import skuber.{ ConfigMap, ObjectMeta }
 
-class ConfigurationInterpreter() {
+trait ConfigurationInterpreter {
   def apply(configuration: ConfigurationDefinition): ConfigMap = {
     ConfigMap(
       metadata = ObjectMeta(
@@ -15,3 +15,5 @@ class ConfigurationInterpreter() {
     )
   }
 }
+
+object ConfigurationInterpreter extends ConfigurationInterpreter

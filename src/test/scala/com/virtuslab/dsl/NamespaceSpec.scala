@@ -13,7 +13,7 @@ class NamespaceSpec extends AnyFlatSpec with Matchers with JsonMatchers {
   it should "serialize Namespace to JSON" in {
     implicit val system: SystemBuilder = DistributedSystem.ref("test").builder
     val namespace = Namespace.ref("test").inNamespace(identity)
-    val resource = new NamespaceInterpreter().apply(namespace)
+    val resource = NamespaceInterpreter(namespace)
 
     val json = Json.toJson(resource)
     json should matchJsonString("""

@@ -3,7 +3,7 @@ package com.virtuslab.dsl.interpreter
 import com.virtuslab.dsl.Namespace.NamespaceDefinition
 import skuber.ObjectMeta
 
-class NamespaceInterpreter() {
+trait NamespaceInterpreter {
   def apply(namespace: NamespaceDefinition): skuber.Namespace = {
     skuber.Namespace.from(
       ObjectMeta(
@@ -13,3 +13,5 @@ class NamespaceInterpreter() {
     )
   }
 }
+
+object NamespaceInterpreter extends NamespaceInterpreter
