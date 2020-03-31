@@ -2,17 +2,11 @@ package com.virtuslab
 
 import java.nio.file.Path
 
-import com.virtuslab.dsl._
+import com.virtuslab.deployer.skuber.SimpleDeployer
 import com.virtuslab.dsl.interpreter.SystemInterpreter
-import com.virtuslab.internal.SkuberConverter.Resource
-import skuber.api.client.LoggingContext
-import skuber.{ K8SRequestContext, ObjectResource }
-
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
 
 object OperatorMain extends AbstractMain with App {
-  import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace }
 
   def deploy(): Unit = {
     val system = DistributedSystem.ref("test").inSystem { implicit ds =>
@@ -56,24 +50,7 @@ object OperatorMain extends AbstractMain with App {
       )
     }
 
-    val resources: Seq[Resource[ObjectResource]] = SystemInterpreter.of(system).resources
-    resources.map(createOrUpdate(client))
-  }
-
-  def createOrUpdate(client: K8SRequestContext): Resource[ObjectResource] => ObjectResource =
-    (resource: Resource[ObjectResource]) => {
-      val future = createOrUpdate(client, resource)
-      val result = Await.result(future, 1.minute)
-      println(s"Successfully created '$result' on Kubernetes cluster")
-      result
-    }
-
-  def createOrUpdate(client: K8SRequestContext, resource: Resource[ObjectResource]): Future[ObjectResource] = {
-    import skuber._
-
-    client.create(resource.obj)(resource.format, resource.definition, LoggingContext.lc) recoverWith {
-      case ex: K8SException if ex.status.code.contains(409) => client.update(resource.obj)(resource.format, resource.definition, LoggingContext.lc)
-    }
+    SimpleDeployer.createOrUpdate(client, SystemInterpreter.of(system))
   }
 
   // Run

@@ -26,7 +26,7 @@ class InterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMat
 
     val systemInterpreter = SystemInterpreter.of(system)
 
-    SkuberConverter(systemInterpreter).toMetaAndJson foreach {
+    SkuberConverter(systemInterpreter).toMetaAndJsValue foreach {
       case (ShortMeta(_, "Service", _, "app-one"), json) => json should matchJsonString("""
 {
   "apiVersion":"v1",

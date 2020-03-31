@@ -5,8 +5,8 @@ import akka.stream.ActorMaterializer
 import skuber.api.Configuration
 import skuber.api.client.Context
 
-import scala.concurrent.{ Await, ExecutionContextExecutor }
 import scala.concurrent.duration._
+import scala.concurrent.{ Await, ExecutionContextExecutor }
 
 abstract class AbstractMain {
 

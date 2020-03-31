@@ -2,10 +2,13 @@ package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Connection.ConnectionDefinition
+import com.virtuslab.dsl.Converters.yamlToJson
 import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
+import com.virtuslab.yaml.Yaml
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import play.api.libs.json.Json
 
 class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
   it should "allow to express connections between two namespaces" in {
@@ -57,7 +60,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
       }
 
     val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJson
+    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
 
     val keys = resources.toMap.keys
 
@@ -510,7 +513,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     namespaces(ns.build())
 
     val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJson
+    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
     resources foreach {
       case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "custom-name"), json) =>
         json should matchJsonString("""
@@ -596,27 +599,25 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
     namespaces(ns.build())
 
     val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJson
+    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
     resources foreach {
       case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-all-ingress"), json) =>
-        json should matchJsonString("""
-{
-  "apiVersion": "networking.k8s.io/v1",
-  "kind": "NetworkPolicy",
-  "metadata": {
-    "name": "allow-all-ingress",
-    "namespace": "com.virtuslab.dsl.ConnectionTest",
-    "labels": {
-      "name": "allow-all-ingress"
-    }
-  },
-  "spec": {
-    "podSelector": {},
-    "ingress": [{}],
-    "policyTypes": ["Ingress"]
-  }
-}
-""")
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-ingress
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: allow-all-ingress
+spec:
+  podSelector: {}
+  ingress:
+  - {}
+  policyTypes:
+  - Ingress
+"""))
       case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-ingress"), json) =>
         json should matchJsonString("""
 {
@@ -671,5 +672,11 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
 """)
       case (m, _) => info(s"ignored $m")
     }
+  }
+}
+
+object Converters {
+  def yamlToJson(yaml: String): String = {
+    Json.prettyPrint(Yaml.parse(yaml))
   }
 }

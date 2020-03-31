@@ -5,7 +5,7 @@ import com.virtuslab.dsl.Configuration.ConfigurationDefinition
 import com.virtuslab.dsl.Connection.ConnectionDefinition
 import com.virtuslab.dsl.DistributedSystem.DistributedSystemDefinition
 import com.virtuslab.dsl.SystemBuilder
-import com.virtuslab.internal.SkuberConverter.Resource
+import com.virtuslab.exporter.skuber.Resource
 import skuber.ObjectResource
 
 class SystemInterpreter(
