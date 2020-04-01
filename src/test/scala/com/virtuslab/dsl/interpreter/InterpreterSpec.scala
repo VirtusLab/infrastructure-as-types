@@ -1,7 +1,7 @@
 package com.virtuslab.dsl.interpreter
 
 import com.stephenn.scalatest.playjson.JsonMatchers
-import com.virtuslab.dsl.{ DistributedSystem, Namespace }
+import com.virtuslab.dsl.{ DistributedSystem, Namespace, NamespaceBuilder, SystemBuilder }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -13,7 +13,21 @@ abstract class InterpreterSpec extends AnyFlatSpec with Matchers with JsonMatche
     final val systemName = s"system-${Random.alphanumeric.take(max).mkString}"
     final val namespaceName = s"namespace-${Random.alphanumeric.take(max).mkString}"
 
-    implicit val systemBuilder = DistributedSystem.ref(systemName).builder
-    implicit val namespaceBuilder = Namespace.ref(namespaceName).builder
+    implicit val systemBuilder: SystemBuilder = DistributedSystem.ref(systemName).builder
+    implicit val namespaceBuilder: NamespaceBuilder = Namespace.ref(namespaceName).builder
+  }
+
+  def builders(names: => (String, String) = namesGenerator(5)): (SystemBuilder, NamespaceBuilder) = {
+    val (systemName, namespaceName) = names
+
+    implicit val systemBuilder: SystemBuilder = DistributedSystem.ref(systemName).builder
+    val namespaceBuilder: NamespaceBuilder = Namespace.ref(namespaceName).builder
+    (systemBuilder, namespaceBuilder)
+  }
+
+  def namesGenerator(maxRandomSuffix: Int): (String, String) = {
+    val systemName = s"system-${Random.alphanumeric.take(maxRandomSuffix).mkString}"
+    val namespaceName = s"namespace-${Random.alphanumeric.take(maxRandomSuffix).mkString}"
+    (systemName, namespaceName)
   }
 }
