@@ -2,7 +2,8 @@ package com.virtuslab.dsl.interpreter
 
 import java.nio.file.Path
 
-import com.virtuslab.dsl.{ Configuration, Labels, Name }
+import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
+import com.virtuslab.dsl.Mountable._
 import play.api.libs.json.Json
 import skuber.json.format._
 
@@ -16,7 +17,6 @@ class MountInterpreterSpec extends InterpreterSpec {
         |I'm testy tester, being tested ;-)
         |""".stripMargin
                                ))
-    import com.virtuslab.dsl.Mountable._
     val mount = config.mount("test-mount", "test.txt", Path.of("/opt/foo.txt"))
 
     val (volume, volumeMount) = MountInterpreter(mount)
@@ -39,8 +39,34 @@ class MountInterpreterSpec extends InterpreterSpec {
         |""".stripMargin)
   }
 
-  ignore should "generate volume mount based on secret entry" in new Builders {
-    ???
+  it should "generate volume mount based on secret entry" in new Builders {
+    val secret = Secret(labels = Labels(Name("top-secret")),
+                        data = Map(
+                          "test.txt" ->
+                            """
+               |I'm testy tester, being tested ;-)
+               |""".stripMargin
+                        ))
+
+    val mount = secret.mount(name = "test-secret-mount", key = "test.txt", as = Path.of("/opt/test-secret.txt"))
+
+    val (volume, volumeMount) = MountInterpreter(mount)
+
+    Json.toJson(volume) should matchJsonString("""
+        |{
+        |  "name" : "test-secret-mount",
+        |  "secret" : {
+        |    "secretName" : "top-secret"
+        |  }
+        |}
+        |""".stripMargin)
+    Json.toJson(volumeMount) should matchJsonString("""
+        |{
+        |  "name" : "test-secret-mount",
+        |  "mountPath" : "/opt/test-secret.txt",
+        |  "subPath" : "test.txt"
+        |}
+        |""".stripMargin)
   }
 
   //TODO: PV/PVC

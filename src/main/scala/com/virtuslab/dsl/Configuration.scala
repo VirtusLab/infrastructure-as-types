@@ -1,5 +1,9 @@
 package com.virtuslab.dsl
 
+import com.virtuslab.dsl.Mountable.MountSource
+import skuber.Volume
+import skuber.Volume.ConfigMapVolumeSource
+
 trait Configuration extends KeyValue
 
 object Configuration {
@@ -9,6 +13,14 @@ object Configuration {
       data: Map[String, String])
     extends Configuration
     with Namespaced
+
+  object ConfigurationDefinition {
+    implicit val mountSource = new MountSource[ConfigurationDefinition] {
+      override def source(obj: ConfigurationDefinition): Volume.Source = {
+        ConfigMapVolumeSource(name = obj.name)
+      }
+    }
+  }
 
   final case class ConfigurationReference(labels: Labels, data: Map[String, String])
     extends Configuration
