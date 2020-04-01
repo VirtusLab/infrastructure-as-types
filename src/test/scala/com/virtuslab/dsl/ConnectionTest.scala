@@ -496,6 +496,24 @@ spec:
           expressions = Labels(Name("kube-system")),
           protocols = Protocols(UDP(53))
         )
+      ),
+      Connection(
+        name = "allow-kubernetes-access",
+        resourceSelector = AllApplications,
+        ingress = NoSelector,
+        egress = SelectedNamespaces(
+          expressions = Labels(Name("default")),
+          protocols = Protocols(TCP(443))
+        )
+      ),
+      Connection(
+        name = "complex-ip-exclude",
+        resourceSelector = SelectedApplications(
+          expressions = Expressions("app" is "akka-cluster-demo"),
+          protocols = AllProtocols
+        ),
+        ingress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))),
+        egress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11")))
       )
     )
 
@@ -646,6 +664,59 @@ spec:
     - protocol: UDP
       port: 53
   policyTypes:
+  - Egress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-kubernetes-access"), json) =>
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kubernetes-access
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: allow-kubernetes-access
+spec:
+  podSelector: {}
+  egress:
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - namespaceSelector:
+        matchLabels:
+          name: default
+  policyTypes:
+  - Egress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "complex-ip-exclude"), json) =>
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: complex-ip-exclude
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: complex-ip-exclude
+spec:
+  podSelector:
+    matchLabels:
+      app: akka-cluster-demo
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.8.0.0/16
+        except:
+        - 10.8.2.11/32
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 10.8.0.0/16
+        except:
+        - 10.8.2.11/32
+  policyTypes:
+  - Ingress
   - Egress
 """))
       case (m, _) => info(s"ignored $m")

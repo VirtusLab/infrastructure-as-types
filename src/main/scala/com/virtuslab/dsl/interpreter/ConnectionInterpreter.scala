@@ -3,7 +3,7 @@ package com.virtuslab.dsl.interpreter
 import com.virtuslab.dsl.Connection.ConnectionDefinition
 import com.virtuslab.dsl._
 import skuber.networking.NetworkPolicy
-import skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Port, Spec }
+import skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
 import skuber.{ LabelSelector, ObjectMeta }
 
 class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: NetworkPortsInterpreter) {
@@ -37,8 +37,7 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                         LabelSelector(
                           expressions(s.expressions): _*
                         )
-                      ),
-                      ipBlock = None // TODO
+                      )
                     )
                   ),
                   ports = ports(s.protocols)
@@ -57,6 +56,13 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                       ipBlock = None // TODO
                     )
                   ),
+                  ports = ports(s.protocols)
+                )
+              )
+            case s: SelectedIPs =>
+              List(
+                IngressRule(
+                  from = ipBlocks(s),
                   ports = ports(s.protocols)
                 )
               )
@@ -97,6 +103,13 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                   ports = ports(s.protocols)
                 )
               )
+            case s: SelectedIPs =>
+              List(
+                EgressRule(
+                  to = ipBlocks(s),
+                  ports = ports(s.protocols)
+                )
+              )
           },
           policyTypes = (connection.ingress, connection.egress) match {
             case (NoSelector, NoSelector) => List()
@@ -107,6 +120,19 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
         )
       )
     )
+  }
+
+  private def ipBlocks(s: SelectedIPs) = {
+    s.ips.map {
+      case IP.RangeWithExceptions(ip, mask, exceptions) =>
+        Peer(
+          ipBlock = Some(IPBlock(s"$ip/$mask", exceptions.map(e => s"${e.ip}/${e.mask}").toList))
+        )
+      case cidr: IP.CIDR =>
+        Peer(
+          ipBlock = Some(IPBlock(s"${cidr.ip}/${cidr.mask}"))
+        )
+    }.toList
   }
 }
 

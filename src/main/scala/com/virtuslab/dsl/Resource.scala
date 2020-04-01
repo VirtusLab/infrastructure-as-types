@@ -175,6 +175,11 @@ case object NoSelector extends Selector {
   override def protocols: Protocols = AllProtocols
 }
 
+case class SelectedIPs(ips: IP.CIDR*) extends Selector {
+  override def expressions: Expressions = Unselected
+  override def protocols: Protocols = Protocols(ips.map(IP(_)))
+}
+
 trait Protocol {
   def down: Protocol
 }
@@ -216,15 +221,32 @@ trait HTTPProtocol extends Protocol {
 
 case class IP(cidr: IP.CIDR, down: Protocol) extends IPProtocol
 object IP {
+  import scala.util.matching.Regex
+
+  private[this] val cidrFmt: String = "(([0-9]{1,3}\\.){3}[0-9]{1,3})\\/([0-9]|[1-2][0-9]|3[0-2])?"
+  private[this] val cidrRegexp: Regex = ("^" + cidrFmt + "$").r
+
   sealed trait CIDR {
     def ip: String
     def mask: Short
   }
-  case class IPAddress(ip: String) extends CIDR {
+  case class Address(ip: String) extends CIDR {
     def mask: Short = 32
   }
-  case class IPRange(ip: String, mask: Short) extends CIDR
-  case object AllIPs extends CIDR {
+  case class Range(ip: String, mask: Short) extends CIDR {
+    def except(exceptions: CIDR*): RangeWithExceptions = RangeWithExceptions(ip, mask, exceptions.toSet)
+  }
+  object Range {
+    def apply(cidr: String): Range = cidr match {
+      case cidrRegexp(ip, _, mask) => Range(ip, mask.toShort)
+    }
+  }
+  case class RangeWithExceptions(
+      ip: String,
+      mask: Short,
+      exceptions: Set[CIDR])
+    extends CIDR
+  case object All extends CIDR {
     def ip: String = "0.0.0.0"
     def mask: Short = 0
   }
@@ -274,6 +296,7 @@ case object AllProtocols extends Protocols {
 }
 object Protocols {
   case class SelectedProtocols(protocols: Set[Protocol]) extends Protocols
+  def apply(protocols: Seq[Protocol]): SelectedProtocols = SelectedProtocols(protocols.toSet)
   def apply(protocols: Set[Protocol]): SelectedProtocols = SelectedProtocols(protocols)
   def apply(protocols: Protocol*): Protocols = Protocols(protocols.toSet)
 }
