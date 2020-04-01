@@ -371,15 +371,15 @@ spec:
       .communicatesWith(namespaceLabeled("role".is("backend")))
       .transform({ c =>
         c.copy(
-          resourceSelector = ApplicationSelector(
+          resourceSelector = SelectedApplications(
             c.resourceSelector.expressions,
             c.resourceSelector.protocols
           ),
-          ingress = ApplicationSelector(
+          ingress = SelectedApplications(
             c.ingress.expressions,
             c.ingress.protocols
           ),
-          egress = ApplicationSelector(
+          egress = SelectedApplications(
             c.egress.expressions,
             c.egress.protocols
           )
@@ -446,6 +446,7 @@ spec:
 
     import ds._
     import ns._
+    import Expressions._
 
     connections(
       Connection(
@@ -461,10 +462,37 @@ spec:
         egress = NoSelector
       ),
       Connection(
+        name = "allow-all-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = AllowSelector
+      ),
+      Connection(
+        name = "default-deny-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = DenySelector
+      ),
+      Connection(
+        name = "default-deny-all",
+        resourceSelector = NoSelector,
+        ingress = DenySelector,
+        egress = DenySelector
+      ),
+      Connection(
+        name = "access-nginx",
+        resourceSelector = SelectedApplications(
+          expressions = Expressions("run" is "nginx"),
+          protocols = AllProtocols
+        ),
+        ingress = AllApplications,
+        egress = NoSelector
+      ),
+      Connection(
         name = "allow-dns-access",
         resourceSelector = NoSelector,
         ingress = NoSelector,
-        egress = NamespaceSelector(
+        egress = SelectedNamespaces(
           expressions = Labels(Name("kube-system")),
           protocols = Protocols(UDP(53))
         )
@@ -507,6 +535,95 @@ spec:
   podSelector: {}
   policyTypes:
   - Ingress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-all-egress"), json) =>
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-egress
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: allow-all-egress
+spec:
+  podSelector: {}
+  egress:
+  - {}
+  policyTypes:
+  - Egress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-egress"), json) =>
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: default-deny-egress
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-all"), json) =>
+        json should matchJsonString(yamlToJson("""
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-ingress-to-nginx"), json) =>
+        json should matchJsonString(yamlToJson("""
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-nginx
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: allow-ingress-to-nginx
+spec:
+  podSelector:
+    matchLabels:
+      run: nginx
+  ingress:
+  - from:
+    - podSelector: {}
+  policyTypes:
+  - Ingress
+"""))
+      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-egress-to-nginx"), json) =>
+        json should matchJsonString(yamlToJson("""
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-nginx
+  namespace: com.virtuslab.dsl.ConnectionTest
+  labels:
+    name: allow-egress-to-nginx
+spec:
+  podSelector:
+    matchLabels: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          run: nginx
+  policyTypes:
+  - Egress
 """))
       case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-dns-access"), json) =>
         json should matchJsonString(yamlToJson("""

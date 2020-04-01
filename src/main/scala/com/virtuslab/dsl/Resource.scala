@@ -102,13 +102,13 @@ object Expressions {
   }
 
   def applicationLabeled(expressions: Expression*): ApplicationSelector =
-    ApplicationSelector(
+    SelectedApplications(
       expressions = Expressions(expressions: _*),
       protocols = AllProtocols
     )
 
   def namespaceLabeled(expressions: Expression*): NamespaceSelector =
-    NamespaceSelector(
+    SelectedNamespaces(
       expressions = Expressions(expressions: _*),
       protocols = AllProtocols
     )
@@ -140,15 +140,25 @@ object Labels {
   def apply(name: Name, values: Label*): Labels = Labels(name, values.toSet)
 }
 
-abstract class Selector extends HasShortDescription {
+trait Selector extends HasShortDescription {
   def expressions: Expressions
   def protocols: Protocols
   override def asShortString: String = expressions.asShortString
 }
 
-case class NamespaceSelector(expressions: Expressions, protocols: Protocols) extends Selector
+sealed trait NamespaceSelector extends Selector
+case class SelectedNamespaces(expressions: Expressions, protocols: Protocols) extends NamespaceSelector
+case object AllNamespaces extends NamespaceSelector {
+  override def expressions: Expressions = Expressions()
+  override def protocols: Protocols = AllProtocols
+}
 
-case class ApplicationSelector(expressions: Expressions, protocols: Protocols) extends Selector
+sealed trait ApplicationSelector extends Selector
+case class SelectedApplications(expressions: Expressions, protocols: Protocols) extends ApplicationSelector
+case object AllApplications extends ApplicationSelector {
+  override def expressions: Expressions = Expressions()
+  override def protocols: Protocols = AllProtocols
+}
 
 case object DenySelector extends Selector {
   override def expressions: Expressions = Unselected

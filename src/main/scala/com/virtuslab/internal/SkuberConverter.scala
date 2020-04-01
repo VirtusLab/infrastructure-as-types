@@ -8,7 +8,9 @@ case class ShortMeta(
     apiVersion: String,
     kind: String,
     namespace: String,
-    name: String)
+    name: String) {
+  override def toString: String = (apiVersion, kind, namespace, name).toString()
+}
 
 class SkuberConverter(interpreter: SystemInterpreter) {
   def toMetaAndJsValue: Seq[(ShortMeta, JsValue)] = {
