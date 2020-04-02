@@ -1,28 +1,26 @@
 package com.virtuslab.dsl
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Connection.ConnectionDefinition
-import com.virtuslab.dsl.interpreter.SystemInterpreter
+import com.virtuslab.dsl.interpreter.{ InterpreterSpec, SystemInterpreter }
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
 
-class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
+class ConnectionTest extends InterpreterSpec {
   it should "allow to express connections between two namespaces" in {
 
     case class RoleLabel(value: String) extends Label {
       override val key: String = "role"
     }
 
-    val system = DistributedSystem.ref(this.getClass.getCanonicalName)
-    implicit val systemBuilder: SystemBuilder = system.builder
+    implicit val ds: SystemBuilder = DistributedSystem.ref(generateSystemName()).builder
 
     val frontendRoleLabel = RoleLabel("frontend")
     val frontendNsRef = Namespace.ref(Labels(Name("frontend"), frontendRoleLabel))
 
     val backendRoleLabel = RoleLabel("backend")
     val backendNsRef = Namespace.ref(Labels(Name("backend"), backendRoleLabel))
+
+    info(s"system: ${ds.name}, namespaces: ${frontendNsRef.name}, ${backendNsRef.name}")
 
     val app3 = Application.ref(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
 
@@ -57,313 +55,281 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers {
         )
       }
 
-    val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
+    val resources = SkuberConverter(SystemInterpreter.of(ds)).toMetaAndJsValue
 
-    val keys = resources.toMap.keys
-
-    keys should contain(ShortMeta("v1", "Namespace", "default", "frontend"))
-    keys should contain(ShortMeta("v1", "Namespace", "default", "backend"))
-    keys should contain(ShortMeta("v1", "Service", "frontend", "app-one"))
-    keys should contain(ShortMeta("v1", "Service", "frontend", "app-two"))
-    keys should contain(ShortMeta("v1", "Service", "backend", "app-three"))
-    keys should contain(ShortMeta("apps/v1", "Deployment", "backend", "app-three"))
-    keys should contain(ShortMeta("apps/v1", "Deployment", "frontend", "app-two"))
-    keys should contain(ShortMeta("apps/v1", "Deployment", "frontend", "app-one"))
-    keys should contain(ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one"))
-    keys should contain(ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three"))
-    keys should contain(ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one"))
-
-    resources foreach {
-      case (ShortMeta(_, "Namespace", _, "frontend"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: frontend
-  labels:
-    name: frontend
-    role: frontend
-"""))
-      case (ShortMeta(_, "Namespace", _, "backend"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: backend
-  labels:
-    name: backend
-    role: backend
-"""))
-      case (ShortMeta(_, "Service", "frontend", "app-one"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: app-one
-  namespace: frontend
-  labels:
-    name: app-one
-    role: frontend
-spec:
-  ports:
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
-  selector:
-    name: app-one
-    role: frontend
-  type: ClusterIP
-  sessionAffinity: None
-"""))
-      case (ShortMeta(_, "Service", "frontend", "app-two"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: app-two
-  namespace: frontend
-  labels:
-    name: app-two
-    role: frontend
-spec:
-  ports:
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
-  selector:
-    name: app-two
-    role: frontend
-  type: ClusterIP
-  sessionAffinity: None
-"""))
-      case (ShortMeta(_, "Service", "backend", "app-three"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: app-three
-  namespace: backend
-  labels:
-    name: app-three
-    role: backend
-spec:
-  selector:
-    name: app-three
-    role: backend
-  type: ClusterIP
-  sessionAffinity: None
-"""))
-      case (ShortMeta(_, "Deployment", "backend", "app-three"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: app-three
-  namespace: backend
-  labels:
-    name: app-three
-    role: backend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: app-three
-      role: backend
-  template:
-    metadata:
-      labels:
-        name: app-three
-        role: backend
-    spec:
-      containers:
-      - name: app-three
-        image: image-app-three
-        imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-      dnsPolicy: ClusterFirst
-"""))
-      case (ShortMeta(_, "Deployment", "frontend", "app-two"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: app-two
-  namespace: frontend
-  labels:
-    name: app-two
-    role: frontend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: app-two
-      role: frontend
-  template:
-    metadata:
-      labels:
-        name: app-two
-        role: frontend
-    spec:
-      containers:
-      - name: app-two
-        image: image-app-two
-        ports:
-        - containerPort: 9090
-          protocol: TCP
-        imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-      dnsPolicy: ClusterFirst
-"""))
-      case (ShortMeta(_, "Deployment", "frontend", "app-one"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  name: app-one
-  namespace: frontend
-  labels:
-    name: app-one
-    role: frontend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: app-one
-      role: frontend
-  template:
-    metadata:
-      labels:
-        name: app-one
-        role: frontend
-    spec:
-      containers:
-      - name: app-one
-        image: image-app-one
-        ports:
-        - containerPort: 9090
-          protocol: TCP
-        imagePullPolicy: IfNotPresent
-      restartPolicy: Always
-      dnsPolicy: ClusterFirst
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "frontend", "app-one-backend-app-one"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: app-one-backend-app-one
-  namespace: frontend
-  labels:
-    name: app-one-backend-app-one
-spec:
-  podSelector:
-    matchLabels:
-      name: app-one
-      role: frontend
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: backend
-          role: backend
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          name: app-one
-          role: frontend
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "backend", "app-three-frontend-app-three"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: app-three-frontend-app-three
-  namespace: backend
-  labels:
-    name: app-three-frontend-app-three
-spec:
-  podSelector:
-    matchLabels:
-      name: app-three
-      role: backend
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: frontend
-          role: frontend
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          name: app-three
-          role: backend
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "frontend", "app-one-app-two-app-one"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: app-one-app-two-app-one
-  namespace: frontend
-  labels:
-    name: app-one-app-two-app-one
-spec:
-  podSelector:
-    matchLabels:
-      name: app-one
-      role: frontend
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          name: app-two
-          role: frontend
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          name: app-one
-          role: frontend
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (m, _) =>
-        fail(s"Resource $m was not matched")
-    }
-
-    resources should have length 11
+    Ensure(resources)
+      .contain(
+        ShortMeta("v1", "Namespace", "default", "frontend") -> yamlToJson("""
+          |---
+          |kind: Namespace
+          |apiVersion: v1
+          |metadata:
+          |  name: frontend
+          |  labels:
+          |    name: frontend
+          |    role: frontend
+          |""".stripMargin),
+        ShortMeta("v1", "Namespace", "default", "backend") -> yamlToJson("""
+          |---
+          |kind: Namespace
+          |apiVersion: v1
+          |metadata:
+          |  name: backend
+          |  labels:
+          |    name: backend
+          |    role: backend
+          |""".stripMargin),
+        ShortMeta("v1", "Service", "frontend", "app-one") -> yamlToJson("""
+          |---
+          |kind: Service
+          |apiVersion: v1
+          |metadata:
+          |  name: app-one
+          |  namespace: frontend
+          |  labels:
+          |    name: app-one
+          |    role: frontend
+          |spec:
+          |  ports:
+          |  - protocol: TCP
+          |    port: 9090
+          |    targetPort: 9090
+          |  selector:
+          |    name: app-one
+          |    role: frontend
+          |  type: ClusterIP
+          |  sessionAffinity: None
+          |""".stripMargin),
+        ShortMeta("v1", "Service", "frontend", "app-two") -> yamlToJson("""
+          |---
+          |kind: Service
+          |apiVersion: v1
+          |metadata:
+          |  name: app-two
+          |  namespace: frontend
+          |  labels:
+          |    name: app-two
+          |    role: frontend
+          |spec:
+          |  ports:
+          |  - protocol: TCP
+          |    port: 9090
+          |    targetPort: 9090
+          |  selector:
+          |    name: app-two
+          |    role: frontend
+          |  type: ClusterIP
+          |  sessionAffinity: None
+          |""".stripMargin),
+        ShortMeta("v1", "Service", "backend", "app-three") -> yamlToJson("""
+          |---
+          |kind: Service
+          |apiVersion: v1
+          |metadata:
+          |  name: app-three
+          |  namespace: backend
+          |  labels:
+          |    name: app-three
+          |    role: backend
+          |spec:
+          |  selector:
+          |    name: app-three
+          |    role: backend
+          |  type: ClusterIP
+          |  sessionAffinity: None
+          |""".stripMargin),
+        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> yamlToJson("""
+          |---
+          |kind: Deployment
+          |apiVersion: apps/v1
+          |metadata:
+          |  name: app-three
+          |  namespace: backend
+          |  labels:
+          |    name: app-three
+          |    role: backend
+          |spec:
+          |  replicas: 1
+          |  selector:
+          |    matchLabels:
+          |      name: app-three
+          |      role: backend
+          |  template:
+          |    metadata:
+          |      labels:
+          |        name: app-three
+          |        role: backend
+          |    spec:
+          |      containers:
+          |      - name: app-three
+          |        image: image-app-three
+          |        imagePullPolicy: IfNotPresent
+          |      restartPolicy: Always
+          |      dnsPolicy: ClusterFirst
+          |""".stripMargin),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> yamlToJson("""
+          |---
+          |kind: Deployment
+          |apiVersion: apps/v1
+          |metadata:
+          |  name: app-two
+          |  namespace: frontend
+          |  labels:
+          |    name: app-two
+          |    role: frontend
+          |spec:
+          |  replicas: 1
+          |  selector:
+          |    matchLabels:
+          |      name: app-two
+          |      role: frontend
+          |  template:
+          |    metadata:
+          |      labels:
+          |        name: app-two
+          |        role: frontend
+          |    spec:
+          |      containers:
+          |      - name: app-two
+          |        image: image-app-two
+          |        ports:
+          |        - containerPort: 9090
+          |          protocol: TCP
+          |        imagePullPolicy: IfNotPresent
+          |      restartPolicy: Always
+          |      dnsPolicy: ClusterFirst
+          |""".stripMargin),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> yamlToJson("""
+          |---
+          |kind: Deployment
+          |apiVersion: apps/v1
+          |metadata:
+          |  name: app-one
+          |  namespace: frontend
+          |  labels:
+          |    name: app-one
+          |    role: frontend
+          |spec:
+          |  replicas: 1
+          |  selector:
+          |    matchLabels:
+          |      name: app-one
+          |      role: frontend
+          |  template:
+          |    metadata:
+          |      labels:
+          |        name: app-one
+          |        role: frontend
+          |    spec:
+          |      containers:
+          |      - name: app-one
+          |        image: image-app-one
+          |        ports:
+          |        - containerPort: 9090
+          |          protocol: TCP
+          |        imagePullPolicy: IfNotPresent
+          |      restartPolicy: Always
+          |      dnsPolicy: ClusterFirst
+          |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> yamlToJson("""
+          |---
+          |kind: NetworkPolicy
+          |apiVersion: networking.k8s.io/v1
+          |metadata:
+          |  name: app-one-backend-app-one
+          |  namespace: frontend
+          |  labels:
+          |    name: app-one-backend-app-one
+          |spec:
+          |  podSelector:
+          |    matchLabels:
+          |      name: app-one
+          |      role: frontend
+          |  ingress:
+          |  - from:
+          |    - namespaceSelector:
+          |        matchLabels:
+          |          name: backend
+          |          role: backend
+          |  egress:
+          |  - to:
+          |    - podSelector:
+          |        matchLabels:
+          |          name: app-one
+          |          role: frontend
+          |  policyTypes:
+          |  - Ingress
+          |  - Egress
+          |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three") -> yamlToJson("""
+          |---
+          |kind: NetworkPolicy
+          |apiVersion: networking.k8s.io/v1
+          |metadata:
+          |  name: app-three-frontend-app-three
+          |  namespace: backend
+          |  labels:
+          |    name: app-three-frontend-app-three
+          |spec:
+          |  podSelector:
+          |    matchLabels:
+          |      name: app-three
+          |      role: backend
+          |  ingress:
+          |  - from:
+          |    - namespaceSelector:
+          |        matchLabels:
+          |          name: frontend
+          |          role: frontend
+          |  egress:
+          |  - to:
+          |    - podSelector:
+          |        matchLabels:
+          |          name: app-three
+          |          role: backend
+          |  policyTypes:
+          |  - Ingress
+          |  - Egress
+          |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one") -> yamlToJson("""
+          |---
+          |kind: NetworkPolicy
+          |apiVersion: networking.k8s.io/v1
+          |metadata:
+          |  name: app-one-app-two-app-one
+          |  namespace: frontend
+          |  labels:
+          |    name: app-one-app-two-app-one
+          |spec:
+          |  podSelector:
+          |    matchLabels:
+          |      name: app-one
+          |      role: frontend
+          |  ingress:
+          |  - from:
+          |    - podSelector:
+          |        matchLabels:
+          |          name: app-two
+          |          role: frontend
+          |  egress:
+          |  - to:
+          |    - podSelector:
+          |        matchLabels:
+          |          name: app-one
+          |          role: frontend
+          |  policyTypes:
+          |  - Ingress
+          |  - Egress
+          |""".stripMargin)
+      )
   }
 
   it should "allow to express complex customized connections" in {
-    implicit val ds: SystemBuilder =
-      DistributedSystem.ref(this.getClass.getCanonicalName).builder
-    implicit val ns: NamespaceBuilder =
-      Namespace.ref(this.getClass.getCanonicalName).builder
+    implicit val (ds, ns) = builders()
 
-    import Expressions._
     import ds._
     import ns._
+    import Expressions._
 
     val app1 = Application.ref(Labels(Name("app-one")), image = "test").define
 
@@ -400,49 +366,47 @@ spec:
 
     applications(app1)
     connections(conn1)
-    namespaces(ns.build())
+    namespaces(ns)
 
-    val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
-    resources foreach {
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "custom-name"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: custom-name
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: custom-name
-    tier: top
-spec:
-  podSelector:
-    matchLabels:
-      name: app-one
-  ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          role: backend
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          name: app-one
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (m, _) => info(s"ignored $m")
-    }
+    val resources = SkuberConverter(SystemInterpreter.of(systemBuilder)).toMetaAndJsValue
+
+    Ensure(resources)
+      .ignore(_.kind != "NetworkPolicy")
+      .contain(
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
+          yamlToJson(s"""
+            |---
+            |kind: NetworkPolicy
+            |apiVersion: networking.k8s.io/v1
+            |metadata:
+            |  name: custom-name
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: custom-name
+            |    tier: top
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: app-one
+            |  ingress:
+            |  - from:
+            |    - podSelector:
+            |        matchLabels:
+            |          role: backend
+            |  egress:
+            |  - to:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: app-one
+            |  policyTypes:
+            |  - Ingress
+            |  - Egress
+            |""".stripMargin)
+      )
   }
 
   it should "allow for external connections" in {
-    implicit val ds: SystemBuilder =
-      DistributedSystem.ref(this.getClass.getCanonicalName).builder
-    implicit val ns: NamespaceBuilder =
-      Namespace.ref(this.getClass.getCanonicalName).builder
+    implicit val (ds, ns) = builders()
 
     import ds._
     import ns._
@@ -480,13 +444,22 @@ spec:
         egress = DenySelector
       ),
       Connection(
-        name = "access-nginx",
+        name = "allow-ingress-to-nginx",
         resourceSelector = SelectedApplications(
           expressions = Expressions("run" is "nginx"),
           protocols = AllProtocols
         ),
         ingress = AllApplications,
         egress = NoSelector
+      ),
+      Connection(
+        name = "allow-egress-to-nginx",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = SelectedApplications(
+          expressions = Expressions("run" is "nginx"),
+          protocols = AllProtocols
+        )
       ),
       Connection(
         name = "allow-dns-access",
@@ -517,209 +490,210 @@ spec:
       )
     )
 
-    namespaces(ns.build())
+    namespaces(ns)
 
-    val systemInterpreter = SystemInterpreter.of(systemBuilder)
-    val resources = SkuberConverter(systemInterpreter).toMetaAndJsValue
-    resources foreach {
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-all-ingress"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-all-ingress
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-all-ingress
-spec:
-  podSelector: {}
-  ingress:
-  - {}
-  policyTypes:
-  - Ingress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-ingress"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-ingress
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: default-deny-ingress
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-all-egress"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-all-egress
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-all-egress
-spec:
-  podSelector: {}
-  egress:
-  - {}
-  policyTypes:
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-egress"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-egress
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: default-deny-egress
-spec:
-  podSelector: {}
-  policyTypes:
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "default-deny-all"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-all
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: default-deny-all
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-ingress-to-nginx"), json) =>
-        json should matchJsonString(yamlToJson("""
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-ingress-to-nginx
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-ingress-to-nginx
-spec:
-  podSelector:
-    matchLabels:
-      run: nginx
-  ingress:
-  - from:
-    - podSelector: {}
-  policyTypes:
-  - Ingress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-egress-to-nginx"), json) =>
-        json should matchJsonString(yamlToJson("""
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-egress-to-nginx
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-egress-to-nginx
-spec:
-  podSelector:
-    matchLabels: {}
-  policyTypes:
-  - Egress
-  egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          run: nginx
-  policyTypes:
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-dns-access"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-dns-access
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-dns-access
-spec:
-  podSelector: {}
-  egress:
-  - to:
-    - namespaceSelector:
-        matchLabels:
-          name: kube-system
-    ports:
-    - protocol: UDP
-      port: 53
-  policyTypes:
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "allow-kubernetes-access"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-kubernetes-access
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: allow-kubernetes-access
-spec:
-  podSelector: {}
-  egress:
-  - ports:
-    - port: 443
-      protocol: TCP
-    to:
-    - namespaceSelector:
-        matchLabels:
-          name: default
-  policyTypes:
-  - Egress
-"""))
-      case (ShortMeta(_, "NetworkPolicy", "com.virtuslab.dsl.ConnectionTest", "complex-ip-exclude"), json) =>
-        json should matchJsonString(yamlToJson("""
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: complex-ip-exclude
-  namespace: com.virtuslab.dsl.ConnectionTest
-  labels:
-    name: complex-ip-exclude
-spec:
-  podSelector:
-    matchLabels:
-      app: akka-cluster-demo
-  egress:
-  - to:
-    - ipBlock:
-        cidr: 10.8.0.0/16
-        except:
-        - 10.8.2.11/32
-  ingress:
-  - from:
-    - ipBlock:
-        cidr: 10.8.0.0/16
-        except:
-        - 10.8.2.11/32
-  policyTypes:
-  - Ingress
-  - Egress
-"""))
-      case (m, _) => info(s"ignored $m")
-    }
+    val resources = SkuberConverter(SystemInterpreter.of(systemBuilder)).toMetaAndJsValue
+
+    Ensure(resources)
+      .ignore(_.kind != "NetworkPolicy")
+      .contain(
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-all-ingress
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-all-ingress
+            |spec:
+            |  podSelector: {}
+            |  ingress:
+            |  - {}
+            |  policyTypes:
+            |  - Ingress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-ingress") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: default-deny-ingress
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: default-deny-ingress
+            |spec:
+            |  podSelector: {}
+            |  policyTypes:
+            |  - Ingress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-egress") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-all-egress
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-all-egress
+            |spec:
+            |  podSelector: {}
+            |  egress:
+            |  - {}
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-egress") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: default-deny-egress
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: default-deny-egress
+            |spec:
+            |  podSelector: {}
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: default-deny-all
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: default-deny-all
+            |spec:
+            |  podSelector: {}
+            |  policyTypes:
+            |  - Ingress
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-ingress-to-nginx
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-ingress-to-nginx
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      run: nginx
+            |  ingress:
+            |  - from:
+            |    - podSelector: {}
+            |  policyTypes:
+            |  - Ingress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
+          yamlToJson(s"""
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-egress-to-nginx
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-egress-to-nginx
+            |spec:
+            |  podSelector: {}
+            |  policyTypes:
+            |  - Egress
+            |  egress:
+            |  - to:
+            |    - podSelector:
+            |        matchLabels:
+            |          run: nginx
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-dns-access") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-dns-access
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-dns-access
+            |spec:
+            |  podSelector: {}
+            |  egress:
+            |  - to:
+            |    - namespaceSelector:
+            |        matchLabels:
+            |          name: kube-system
+            |    ports:
+            |    - protocol: UDP
+            |      port: 53
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-kubernetes-access") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: allow-kubernetes-access
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: allow-kubernetes-access
+            |spec:
+            |  podSelector: {}
+            |  egress:
+            |  - ports:
+            |    - port: 443
+            |      protocol: TCP
+            |    to:
+            |    - namespaceSelector:
+            |        matchLabels:
+            |          name: default
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "complex-ip-exclude") ->
+          yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: complex-ip-exclude
+            |  namespace: ${ns.name}
+            |  labels:
+            |    name: complex-ip-exclude
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      app: akka-cluster-demo
+            |  egress:
+            |  - to:
+            |    - ipBlock:
+            |        cidr: 10.8.0.0/16
+            |        except:
+            |        - 10.8.2.11/32
+            |  ingress:
+            |  - from:
+            |    - ipBlock:
+            |        cidr: 10.8.0.0/16
+            |        except:
+            |        - 10.8.2.11/32
+            |  policyTypes:
+            |  - Ingress
+            |  - Egress
+            |""".stripMargin)
+      )
   }
 }

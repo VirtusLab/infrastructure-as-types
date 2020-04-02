@@ -6,7 +6,9 @@ import skuber.json.format._
 
 class SecretInterpreterSpec extends InterpreterSpec {
 
-  it should "create empty secret" in new Builders {
+  it should "create empty secret" in {
+    implicit val (ds, ns) = builders()
+
     val secret = Secret(Labels(Name("test")), data = Map.empty)
 
     Json.toJson(SecretInterpreter(secret)) should matchJsonString(s"""
@@ -15,7 +17,7 @@ class SecretInterpreterSpec extends InterpreterSpec {
         |  "apiVersion" : "v1",
         |  "metadata" : {
         |    "name" : "test",
-        |    "namespace" : "$namespaceName",
+        |    "namespace" : "${ns.name}",
         |    "labels" : {
         |      "name" : "test"
         |    }
@@ -24,7 +26,9 @@ class SecretInterpreterSpec extends InterpreterSpec {
         |""".stripMargin)
   }
 
-  it should "create secret with key and value" in new Builders {
+  it should "create secret with key and value" in {
+    implicit val (ds, ns) = builders()
+
     val secret = Secret(Labels(Name("test")), data = Map("foo" -> "bar"))
 
     Json.toJson(SecretInterpreter(secret)) should matchJsonString(s"""
@@ -33,7 +37,7 @@ class SecretInterpreterSpec extends InterpreterSpec {
        |  "apiVersion" : "v1",
        |  "metadata" : {
        |    "name" : "test",
-       |    "namespace" : "$namespaceName",
+       |    "namespace" : "${ns.name}",
        |    "labels" : {
        |      "name" : "test"
        |    }

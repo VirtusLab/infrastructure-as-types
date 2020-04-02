@@ -1,6 +1,5 @@
 package com.virtuslab.dsl.interpreter
 
-import com.virtuslab.dsl.Namespace
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 import play.api.libs.json.Json
 
@@ -9,10 +8,9 @@ class NamespaceInterpreterSpec extends InterpreterSpec {
   import skuber.json.format._
 
   it should "serialize Namespace to JSON" in {
-    implicit val (sb, nb) = builders()
+    implicit val (ds, ns) = builders()
 
-    val namespace = Namespace.ref("test").inNamespace(identity)
-    val resource = NamespaceInterpreter(namespace)
+    val resource = NamespaceInterpreter(ns.build())
 
     val json = Json.toJson(resource)
     json should matchJsonString(yamlToJson(s"""
@@ -20,9 +18,9 @@ class NamespaceInterpreterSpec extends InterpreterSpec {
         |kind: Namespace
         |apiVersion: v1
         |metadata:
-        |  name: test
+        |  name: ${ns.name}
         |  labels:
-        |    name: test
+        |    name: ${ns.name}
         """.stripMargin))
   }
 }

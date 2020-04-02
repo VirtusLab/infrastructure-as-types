@@ -13,6 +13,8 @@ case class SystemBuilder(system: DistributedSystem) {
     this
   }
 
+  def namespaces(builders: NamespaceBuilder): SystemBuilder = namespaces(builders.build())
+  def namespaces(ref: NamespaceReference): SystemBuilder = namespaces(ref.builder(this))
   def namespaces(defined: NamespaceDefinition*): SystemBuilder = {
     nss ++= defined
     this
@@ -50,6 +52,8 @@ case class SystemBuilder(system: DistributedSystem) {
   }
 
   def build(): DistributedSystemDefinition = DistributedSystemDefinition(system.labels, collect())
+
+  def name: String = system.name
 }
 
 trait DistributedSystem extends Labeled

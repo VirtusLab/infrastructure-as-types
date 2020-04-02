@@ -50,6 +50,8 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
     ns
   }
 
+  def name: String = namespace.name
+
   // TODO: extract to common place for implicits
   implicit class ApplicationConnectionOps(app: Application) {
     def communicatesWith(other: Application): ConnectionDraft = {

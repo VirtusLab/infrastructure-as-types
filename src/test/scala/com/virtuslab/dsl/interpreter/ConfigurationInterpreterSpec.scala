@@ -7,7 +7,9 @@ import skuber.json.format._
 
 class ConfigurationInterpreterSpec extends InterpreterSpec {
 
-  ignore should "ignore second label name when it's user defined" in new Builders {
+  ignore should "ignore second label name when it's user defined" in {
+    implicit val (ds, ns) = builders()
+
     val configuration = Configuration(
       Labels(Name("foo"), UntypedLabel("name", "bazz")),
       data = Map.empty
@@ -15,15 +17,15 @@ class ConfigurationInterpreterSpec extends InterpreterSpec {
 
     val skuberConfig = ConfigurationInterpreter(configuration)
 
-    Json.toJson(skuberConfig) should matchJsonString(yamlToJson(s"""
-        |---
-        |kind: ConfigMap
-        |apiVersion: v1
-        |metadata:
-        |  name: foo
-        |  namespace: "$namespaceName"
-        |  labels:
-        |    name: foo
-        |""".stripMargin))
+    Json.toJson(skuberConfig).should(matchJsonString(yamlToJson(s"""
+      |---
+      |kind: ConfigMap
+      |apiVersion: v1
+      |metadata:
+      |  name: foo
+      |  namespace: "${ns.name}"
+      |  labels:
+      |    name: foo
+      |""".stripMargin)))
   }
 }
