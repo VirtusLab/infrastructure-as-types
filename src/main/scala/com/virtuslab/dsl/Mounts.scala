@@ -9,7 +9,6 @@ trait Mount {
   def name: String
   def mountPath: Path
 }
-final case class RawMount(name: String, mountPath: Path) extends Mount
 final case class KeyValueMount[A <: KeyValue: MountSource](
     name: String,
     key: String,
