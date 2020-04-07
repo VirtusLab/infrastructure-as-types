@@ -335,7 +335,7 @@ class ConnectionTest extends InterpreterSpec {
 
     val conn1 = app1
       .communicatesWith(namespaceLabeled("role".is("backend")))
-      .transform({ c =>
+      .transform { c =>
         c.copy(
           resourceSelector = SelectedApplications(
             c.resourceSelector.expressions,
@@ -350,8 +350,8 @@ class ConnectionTest extends InterpreterSpec {
             c.egress.protocols
           )
         )
-      })
-      .define({ c =>
+      }
+      .define { c =>
         ConnectionDefinition(
           implicitly[NamespaceBuilder].namespace,
           Labels(
@@ -362,7 +362,7 @@ class ConnectionTest extends InterpreterSpec {
           c.ingress,
           c.egress
         )
-      })
+      }
 
     applications(app1)
     connections(conn1)
@@ -447,7 +447,7 @@ class ConnectionTest extends InterpreterSpec {
         name = "allow-ingress-to-nginx",
         resourceSelector = SelectedApplications(
           expressions = Expressions("run" is "nginx"),
-          protocols = AllProtocols
+          protocols = Protocols.Any
         ),
         ingress = AllApplications,
         egress = NoSelector
@@ -458,7 +458,7 @@ class ConnectionTest extends InterpreterSpec {
         ingress = NoSelector,
         egress = SelectedApplications(
           expressions = Expressions("run" is "nginx"),
-          protocols = AllProtocols
+          protocols = Protocols.Any
         )
       ),
       Connection(
@@ -467,7 +467,7 @@ class ConnectionTest extends InterpreterSpec {
         ingress = NoSelector,
         egress = SelectedNamespaces(
           expressions = Labels(Name("kube-system")),
-          protocols = Protocols(UDP(53))
+          protocols = Protocols(Protocol.Layers(l4 = UDP(53)))
         )
       ),
       Connection(
@@ -476,14 +476,14 @@ class ConnectionTest extends InterpreterSpec {
         ingress = NoSelector,
         egress = SelectedNamespaces(
           expressions = Labels(Name("default")),
-          protocols = Protocols(TCP(443))
+          protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
         )
       ),
       Connection(
         name = "complex-ip-exclude",
         resourceSelector = SelectedApplications(
           expressions = Expressions("app" is "akka-cluster-demo"),
-          protocols = AllProtocols
+          protocols = Protocols.Any
         ),
         ingress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))),
         egress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11")))

@@ -58,7 +58,7 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
       communicatesWith(
         SelectedApplications(
           other,
-          AllProtocols
+          Protocols.Any
         )
       )
     }
@@ -67,16 +67,16 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
       communicatesWith(
         SelectedNamespaces(
           other,
-          AllProtocols
+          Protocols.Any
         )
       )
     }
 
     def communicatesWith(other: Selector): ConnectionDraft = {
       ConnectionDraft(
-        resourceSelector = SelectedApplications(app, AllProtocols),
+        resourceSelector = SelectedApplications(app, Protocols.Any),
         ingress = other,
-        egress = SelectedApplications(app, AllProtocols)
+        egress = SelectedApplications(app, Protocols.Any)
       )
     }
   }

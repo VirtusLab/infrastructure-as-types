@@ -104,13 +104,13 @@ object Expressions {
   def applicationLabeled(expressions: Expression*): ApplicationSelector =
     SelectedApplications(
       expressions = Expressions(expressions: _*),
-      protocols = AllProtocols
+      protocols = Protocols.Any
     )
 
   def namespaceLabeled(expressions: Expression*): NamespaceSelector =
     SelectedNamespaces(
       expressions = Expressions(expressions: _*),
-      protocols = AllProtocols
+      protocols = Protocols.Any
     )
 }
 
@@ -150,42 +150,34 @@ sealed trait NamespaceSelector extends Selector
 case class SelectedNamespaces(expressions: Expressions, protocols: Protocols) extends NamespaceSelector
 case object AllNamespaces extends NamespaceSelector {
   override def expressions: Expressions = Expressions()
-  override def protocols: Protocols = AllProtocols
+  override def protocols: Protocols = Protocols()
 }
 
 sealed trait ApplicationSelector extends Selector
 case class SelectedApplications(expressions: Expressions, protocols: Protocols) extends ApplicationSelector
 case object AllApplications extends ApplicationSelector {
   override def expressions: Expressions = Expressions()
-  override def protocols: Protocols = AllProtocols
+  override def protocols: Protocols = Protocols()
 }
 
 case object DenySelector extends Selector {
   override def expressions: Expressions = Unselected
-  override def protocols: Protocols = AllProtocols
+  override def protocols: Protocols = Protocols()
 }
 
 case object AllowSelector extends Selector {
   override def expressions: Expressions = Unselected
-  override def protocols: Protocols = AllProtocols
+  override def protocols: Protocols = Protocols()
 }
 
 case object NoSelector extends Selector {
   override def expressions: Expressions = Unselected
-  override def protocols: Protocols = AllProtocols
+  override def protocols: Protocols = Protocols()
 }
 
 case class SelectedIPs(ips: IP.CIDR*) extends Selector {
   override def expressions: Expressions = Unselected
-  override def protocols: Protocols = Protocols(ips.map(IP(_)))
-}
-
-trait Protocol {
-  def down: Protocol
-}
-
-case object AnyProtocol extends Protocol {
-  override def down: Protocol = AnyProtocol
+  override def protocols: Protocols = Protocols.ip(ips.map(IP(_)): _*)
 }
 
 sealed trait ProtocolPort {
@@ -201,25 +193,67 @@ case object AllPorts extends ProtocolPort {
   override def numberOrName = Left(0)
 }
 
-trait IPProtocol extends Protocol {
-  def cidr: IP.CIDR
-  // TODO except[CIDR], as another type?
+trait Protocol {
+  @deprecated
+  def down: Protocol
 }
 
-trait UDPProtocol extends Protocol {
-  def port: Port
+object Protocol {
+  trait L7 extends Protocol
+  trait L4 extends Protocol
+  trait L3 extends Protocol
+
+  sealed trait Any extends L7 with L4 with L3
+  case object Any extends Any {
+    override def down: Protocol = Protocol.Any
+  }
+
+  trait IP extends Protocol.L3 {
+    def cidr: IP.CIDR
+  }
+
+  trait UDP extends Protocol.L4 {
+    def port: Port
+  }
+
+  trait TCP extends Protocol.L4 {
+    def port: Port
+  }
+
+  trait HTTP extends Protocol.L7 {
+    def method: HTTP.Method
+    def path: HTTP.Path
+  }
+
+  trait Layers[L7 <: Protocol.L7, L4 <: Protocol.L4, L3 <: Protocol.L3] {
+    def l7: L7
+    def l4: L4
+    def l3: L3
+  }
+
+  case class SomeLayers[L7 <: Protocol.L7, L4 <: Protocol.L4, L3 <: Protocol.L3](
+      l7: L7,
+      l4: L4,
+      l3: L3)
+    extends Layers[L7, L4, L3]
+
+  case object AnyLayers extends Layers[Protocol.Any, Protocol.Any, Protocol.Any] {
+    override def l7: Protocol.Any = Protocol.Any
+    override def l4: Protocol.Any = Protocol.Any
+    override def l3: Protocol.Any = Protocol.Any
+  }
+
+  object Layers {
+    def apply(): Layers[Protocol.Any, Protocol.Any, Protocol.Any] = AnyLayers
+    def apply[A <: L7, B <: L4, C <: L3](
+        l7: A = Protocol.Any,
+        l4: B = Protocol.Any,
+        l3: C = Protocol.Any
+      ): Layers[A, B, C] = SomeLayers(l7, l4, l3)
+  }
 }
 
-trait TCPProtocol extends Protocol {
-  def port: Port
-}
-
-trait HTTPProtocol extends Protocol {
-  def method: HTTP.Method
-  def path: HTTP.Path
-}
-
-case class IP(cidr: IP.CIDR, down: Protocol) extends IPProtocol
+case class IP(cidr: IP.CIDR, down: Protocol) extends Protocol.IP
 object IP {
   import scala.util.matching.Regex
 
@@ -251,19 +285,19 @@ object IP {
     def mask: Short = 0
   }
 
-  def apply(cidr: CIDR): IP = new IP(cidr, AnyProtocol)
+  def apply(cidr: CIDR): IP = new IP(cidr, Protocol.Any)
 }
 
-case class UDP(port: Port, down: Protocol) extends UDPProtocol
+case class UDP(port: Port, down: Protocol) extends Protocol.UDP
 object UDP {
-  def apply(port: Port): UDP = new UDP(port, AnyProtocol)
-  def apply(number: Int): UDP = new UDP(Port(number), AnyProtocol)
+  def apply(port: Port): UDP = new UDP(port, Protocol.Any)
+  def apply(number: Int): UDP = new UDP(Port(number), Protocol.Any)
 }
 
-case class TCP(port: Port, down: Protocol) extends TCPProtocol
+case class TCP(port: Port, down: Protocol) extends Protocol.TCP
 object TCP {
-  def apply(port: Port): TCP = new TCP(port, AnyProtocol)
-  def apply(number: Int): TCP = new TCP(Port(number), AnyProtocol)
+  def apply(port: Port): TCP = new TCP(port, Protocol.Any)
+  def apply(number: Int): TCP = new TCP(Port(number), Protocol.Any)
 }
 
 // TODO TLS
@@ -271,34 +305,74 @@ object TCP {
 case class HTTP(
     method: HTTP.Method,
     path: HTTP.Path,
+    host: HTTP.Host,
     down: Protocol)
-  extends HTTPProtocol
+  extends Protocol.HTTP
 object HTTP {
-  sealed trait Method
-  case class AMethod(method: String) extends Method
-  case object AnyMethod extends Method
+  sealed trait Method {
+    def get: Option[String] = this match {
+      case Method.Any             => None
+      case Method.AMethod(method) => Some(method)
+    }
+  }
+  object Method {
+    case object Any extends Method
+    case class AMethod(method: String) extends Method
+    def apply(method: String): Method = AMethod(method)
+  }
 
-  sealed trait Path
-  case class APath(path: String) extends Path
-  case object AnyPath extends Path
+  sealed trait Path {
+    def get: Option[String] = this match {
+      case Path.Any         => None
+      case Path.APath(path) => Some(path)
+    }
+  }
+  object Path {
+    case object Any extends Path
+    case class APath(path: String) extends Path
+    def apply(path: String): Path = APath(path)
+  }
 
-  def apply(method: Method, path: Path): HTTP = new HTTP(method, path, AnyProtocol)
-  def apply(port: Port): HTTP = new HTTP(AnyMethod, AnyPath, TCP(port, AnyProtocol))
+  sealed trait Host {
+    def get: Option[String] = this match {
+      case Host.Any         => None
+      case Host.AHost(host) => Some(host)
+    }
+  }
+  object Host {
+    case object Any extends Host
+    case class AHost(host: String) extends Host
+    def apply(host: String): Host = AHost(host)
+  }
+
+  def apply(
+      method: Method = Method.Any,
+      path: Path = Path.Any,
+      host: Host = Host.Any
+    ): HTTP = new HTTP(method, path, host, Protocol.Any)
 }
 
 // TODO HTTPS
 
 sealed trait Protocols {
-  def protocols: Set[Protocol]
+  def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
 }
-case object AllProtocols extends Protocols {
-  override def protocols: Set[Protocol] = Set()
-}
+
 object Protocols {
-  case class SelectedProtocols(protocols: Set[Protocol]) extends Protocols
-  def apply(protocols: Seq[Protocol]): SelectedProtocols = SelectedProtocols(protocols.toSet)
-  def apply(protocols: Set[Protocol]): SelectedProtocols = SelectedProtocols(protocols)
-  def apply(protocols: Protocol*): Protocols = Protocols(protocols.toSet)
+  case object Any extends Protocols {
+    override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
+  }
+
+  case class Selected(protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]) extends Protocols
+
+  def apply(protocols: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]*): Protocols =
+    apply(protocols)
+  def apply(protocols: Seq[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected =
+    Selected(protocols.toSet)
+//  def apply(protocols: Set[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected = Selected(protocols)
+  def tcp(tcps: Protocol.TCP*): Protocols = apply(tcps.map(tcp => Protocol.Layers(l4 = tcp)))
+  def ip(ips: Protocol.IP*): Protocols = apply(ips.map(ip => Protocol.Layers(l3 = ip)))
+  def apply(): Protocols = Any
 }
 
 object Validation {

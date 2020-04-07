@@ -156,15 +156,11 @@ class LabelExpressionInterpreter {
 }
 
 class NetworkPortsInterpreter {
-  def apply(ps: Protocols): List[Port] = apply(ps.protocols)
-  def apply(ps: Set[Protocol]): List[Port] = apply(ps.toSeq)
-  def apply(ps: Seq[Protocol]): List[Port] = ps.map(apply).flatten.toList
+  def apply(ps: Protocols): List[Port] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
 
-  @scala.annotation.tailrec
-  final def apply(p: Protocol): Option[Port] = p match {
-    case UDP(port, _)                         => Some(Port(port.numberOrName, skuber.Protocol.UDP))
-    case TCP(port, _)                         => Some(Port(port.numberOrName, skuber.Protocol.TCP))
-    case p: Protocol if p.down != AnyProtocol => apply(p)
-    case _                                    => None
+  def apply(p: Protocol.L4): Option[Port] = p match {
+    case UDP(port, _) => Some(Port(port.numberOrName, skuber.Protocol.UDP))
+    case TCP(port, _) => Some(Port(port.numberOrName, skuber.Protocol.TCP))
+    case _            => None
   }
 }
