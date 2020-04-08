@@ -21,7 +21,7 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
             // NoSelector and AllowSelector are interchangeable here
             case s: Selector =>
               LabelSelector(
-                expressions(s.expressions.expressions): _*
+                expressions(s.expressions): _*
               )
           },
           ingress = connection.ingress match {
@@ -37,27 +37,34 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                         LabelSelector(
                           expressions(s.expressions): _*
                         )
-                      )
+                      ),
+                      namespaceSelector = None,
+                      ipBlock = None
                     )
+                    // TODO multiple "Peers", combined with logical OR
                   ),
                   ports = ports(s.protocols)
                 )
+                // TODO multiple "Rules", combined with logical OR
               )
             case s: NamespaceSelector =>
               List(
                 IngressRule(
                   from = List(
                     Peer(
+                      podSelector = None,
                       namespaceSelector = Some(
                         LabelSelector(
                           expressions(s.expressions): _*
                         )
                       ),
-                      ipBlock = None // TODO
+                      ipBlock = None
                     )
+                    // TODO multiple "Peers", combined with logical OR
                   ),
                   ports = ports(s.protocols)
                 )
+                // TODO multiple "Rules", combined with logical OR
               )
             case s: SelectedIPs =>
               List(
@@ -65,6 +72,14 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                   from = ipBlocks(s),
                   ports = ports(s.protocols)
                 )
+              )
+            case s: SelectedIPsAndPorts =>
+              List(
+                IngressRule(
+                  from = ipBlocks(s),
+                  ports = ports(s.protocols)
+                )
+                // TODO multiple "Rules", combined with logical OR
               )
           },
           egress = connection.egress match {
@@ -81,27 +96,33 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                           expressions(s.expressions): _*
                         )
                       ),
-                      ipBlock = None // TODO
+                      namespaceSelector = None,
+                      ipBlock = None
                     )
+                    // TODO multiple "Peers", combined with logical OR
                   ),
                   ports = ports(s.protocols)
                 )
+                // TODO multiple "Rules", combined with logical OR
               )
             case s: NamespaceSelector =>
               List(
                 EgressRule(
                   to = List(
                     Peer(
+                      podSelector = None,
                       namespaceSelector = Some(
                         LabelSelector(
                           expressions(s.expressions): _*
                         )
                       ),
-                      ipBlock = None // TODO
+                      ipBlock = None
                     )
+                    // TODO multiple "Peers", combined with logical OR
                   ),
                   ports = ports(s.protocols)
                 )
+                // TODO multiple "Rules", combined with logical OR
               )
             case s: SelectedIPs =>
               List(
@@ -109,6 +130,15 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
                   to = ipBlocks(s),
                   ports = ports(s.protocols)
                 )
+                // TODO multiple "Rules", combined with logical OR
+              )
+            case s: SelectedIPsAndPorts =>
+              List(
+                EgressRule(
+                  to = ipBlocks(s),
+                  ports = ports(s.protocols)
+                )
+                // TODO multiple "Rules", combined with logical OR
               )
           },
           policyTypes = (connection.ingress, connection.egress) match {
@@ -122,14 +152,18 @@ class ConnectionInterpreter(expressions: LabelExpressionInterpreter, ports: Netw
     )
   }
 
-  private def ipBlocks(s: SelectedIPs) = {
+  private def ipBlocks(s: CIDRs): List[Peer] = {
     s.ips.map {
       case IP.RangeWithExceptions(ip, mask, exceptions) =>
         Peer(
+          podSelector = None,
+          namespaceSelector = None,
           ipBlock = Some(IPBlock(s"$ip/$mask", exceptions.map(e => s"${e.ip}/${e.mask}").toList))
         )
       case cidr: IP.CIDR =>
         Peer(
+          podSelector = None,
+          namespaceSelector = None,
           ipBlock = Some(IPBlock(s"${cidr.ip}/${cidr.mask}"))
         )
     }.toList
@@ -159,8 +193,8 @@ class NetworkPortsInterpreter {
   def apply(ps: Protocols): List[Port] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
 
   def apply(p: Protocol.L4): Option[Port] = p match {
-    case UDP(port, _) => Some(Port(port.numberOrName, skuber.Protocol.UDP))
-    case TCP(port, _) => Some(Port(port.numberOrName, skuber.Protocol.TCP))
-    case _            => None
+    case UDP(port) => Some(Port(port.numberOrName, skuber.Protocol.UDP))
+    case TCP(port) => Some(Port(port.numberOrName, skuber.Protocol.TCP))
+    case _         => None
   }
 }

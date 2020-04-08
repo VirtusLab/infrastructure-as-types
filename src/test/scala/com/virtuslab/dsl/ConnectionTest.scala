@@ -487,6 +487,33 @@ class ConnectionTest extends InterpreterSpec {
         ),
         ingress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))),
         egress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11")))
+      ),
+      Connection(
+        name = "egress-external-tcp-443",
+        resourceSelector = SelectedApplications(
+          expressions = Expressions("external-egress.monzo.com/443" is "true"),
+          protocols = Protocols.Any
+        ),
+        ingress = NoSelector,
+        egress = SelectedIPs(
+          IP.Range("0.0.0.0/0")
+            .except(
+              IP.Range("0.0.0.0/8"),
+              IP.Range("10.0.0.0/8"),
+              IP.Range("172.16.0.0/12"),
+              IP.Range("192.168.0.0/16")
+            )
+        ).ports(TCP(443))
+      ),
+      Connection(
+        name = "default-deny-external-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = SelectedIPs(
+          IP.Range("10.0.0.0/8"),
+          IP.Range("172.16.0.0/12"),
+          IP.Range("192.168.0.0/16")
+        )
       )
     )
 
@@ -693,7 +720,59 @@ class ConnectionTest extends InterpreterSpec {
             |  policyTypes:
             |  - Ingress
             |  - Egress
-            |""".stripMargin)
+            |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "egress-external-tcp-443") ->
+          yamlToJson(s"""
+             |apiVersion: networking.k8s.io/v1
+             |kind: NetworkPolicy
+             |metadata:
+             |  name: egress-external-tcp-443
+             |  namespace: ${ns.name}
+             |  labels:
+             |    name: egress-external-tcp-443
+             |spec:
+             |  egress:
+             |  - to:
+             |    - ipBlock:
+             |        cidr: 0.0.0.0/0 # allow the whole internet
+             |        except: # private IP addresses
+             |        - 0.0.0.0/8
+             |        - 10.0.0.0/8
+             |        - 172.16.0.0/12
+             |        - 192.168.0.0/16
+             |    ports:
+             |      - port: 443
+             |        protocol: TCP
+             |  podSelector:
+             |    matchLabels:
+             |      external-egress.monzo.com/443: "true"
+             |  policyTypes:
+             |  - Egress
+             |""".stripMargin),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-external-egress") ->
+          yamlToJson(s"""
+             |apiVersion: networking.k8s.io/v1
+             |kind: NetworkPolicy
+             |metadata:
+             |  name: default-deny-external-egress
+             |  namespace: ${ns.name}
+             |  labels:
+             |    name: default-deny-external-egress
+             |spec:
+             |  podSelector: {}
+             |  # traffic to external IPs will not be allowed from this namespace
+             |  # ensure your internal IP range is allowed
+             |  egress:
+             |  - to:
+             |    - ipBlock:
+             |        cidr: 10.0.0.0/8
+             |    - ipBlock:
+             |       cidr: 172.16.0.0/12
+             |    - ipBlock:
+             |       cidr: 192.168.0.0/16
+             |  policyTypes:
+             |  - Egress
+             |""".stripMargin)
       )
   }
 }

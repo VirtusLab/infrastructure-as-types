@@ -14,14 +14,6 @@ trait HasShortDescription {
   def asShortString: String
 }
 
-@deprecated("use Expressions.Any")
-sealed trait Unselected extends Expressions
-@deprecated("use Expressions.Any")
-case object Unselected extends Unselected {
-  override def expressions: Set[Expression] = Set()
-  override def asShortString: String = "unselected"
-}
-
 trait Labeled extends Named with Expressions {
   def labels: Labels
 
@@ -169,29 +161,49 @@ case object AllApplications extends ApplicationSelector {
 }
 
 case object DenySelector extends Selector {
-  override def expressions: Expressions = Unselected
+  override def expressions: Expressions = Expressions.Any
   override def protocols: Protocols = Protocols()
 }
 
 case object AllowSelector extends Selector {
-  override def expressions: Expressions = Unselected
+  override def expressions: Expressions = Expressions.Any
   override def protocols: Protocols = Protocols()
 }
 
 case object NoSelector extends Selector {
-  override def expressions: Expressions = Unselected
+  override def expressions: Expressions = Expressions.Any
   override def protocols: Protocols = Protocols()
 }
 
-case class SelectedIPs(ips: IP.CIDR*) extends Selector {
-  override def expressions: Expressions = Unselected
-  override def protocols: Protocols = Protocols.ip(ips.map(IP(_)): _*)
+trait CIDRs {
+  def ips: Seq[Protocol.HasCidr]
+}
+case class SelectedIPs(ips: Protocol.HasCidr*) extends Selector with CIDRs {
+  override def expressions: Expressions = Expressions.Any
+  override def protocols: Protocols = Protocols.cidr(ips: _*)
+
+  def ports(ports: Protocol.HasPort*): SelectedIPsAndPorts = SelectedIPsAndPorts(ips, ports)
+}
+
+trait Ports {
+  def ports: Seq[Protocol.HasPort]
+}
+case class SelectedPorts(ports: Protocol.HasPort*) extends Selector with Ports {
+  override def expressions: Expressions = Expressions.Any
+  override def protocols: Protocols = Protocols.port(ports: _*)
+  def apply(ports: Protocol.HasPort*): SelectedPorts = SelectedPorts(ports: _*)
+}
+
+case class SelectedIPsAndPorts(ips: Seq[Protocol.HasCidr], ports: Seq[Protocol.HasPort]) extends Selector with CIDRs with Ports {
+  override def expressions: Expressions = Expressions.Any
+  override def protocols: Protocols = Protocols.cidr(ips: _*).merge(Protocols.port(ports: _*))
 }
 
 sealed trait ProtocolPort {
   def numberOrName: Either[Int, String]
   def asString: String = numberOrName.fold(_.toString, identity)
 }
+// TODO do we need "nameable ports" or can we just enforce integer ports?
 case class Port(numberOrName: Either[Int, String]) extends ProtocolPort
 object Port {
   def apply(number: Int): Port = new Port(Left(number))
@@ -201,10 +213,7 @@ case object AllPorts extends ProtocolPort {
   override def numberOrName = Left(0)
 }
 
-trait Protocol {
-  @deprecated
-  def down: Protocol
-}
+trait Protocol
 
 object Protocol {
   trait L7 extends Protocol
@@ -212,21 +221,19 @@ object Protocol {
   trait L3 extends Protocol
 
   sealed trait Any extends L7 with L4 with L3
-  case object Any extends Any {
-    override def down: Protocol = Protocol.Any
-  }
+  case object Any extends Any
 
-  trait IP extends Protocol.L3 {
+  trait HasCidr extends Protocol.L3 {
     def cidr: IP.CIDR
   }
 
-  trait UDP extends Protocol.L4 {
+  trait HasPort extends Protocol.L4 {
     def port: Port
   }
 
-  trait TCP extends Protocol.L4 {
-    def port: Port
-  }
+  trait IP extends Protocol.L3 with HasCidr
+  trait UDP extends Protocol.L4 with HasPort
+  trait TCP extends Protocol.L4 with HasPort
 
   trait HTTP extends Protocol.L7 {
     def method: HTTP.Method
@@ -261,16 +268,17 @@ object Protocol {
   }
 }
 
-case class IP(cidr: IP.CIDR, down: Protocol) extends Protocol.IP
+case class IP(cidr: IP.CIDR) extends Protocol.IP
 object IP {
   import scala.util.matching.Regex
 
   private[this] val cidrFmt: String = "(([0-9]{1,3}\\.){3}[0-9]{1,3})\\/([0-9]|[1-2][0-9]|3[0-2])?"
   private[this] val cidrRegexp: Regex = ("^" + cidrFmt + "$").r
 
-  sealed trait CIDR {
+  sealed trait CIDR extends Protocol.HasCidr {
     def ip: String
     def mask: Short
+    override def cidr: CIDR = this
   }
   case class Address(ip: String) extends CIDR {
     def mask: Short = 32
@@ -292,20 +300,16 @@ object IP {
     def ip: String = "0.0.0.0"
     def mask: Short = 0
   }
-
-  def apply(cidr: CIDR): IP = new IP(cidr, Protocol.Any)
 }
 
-case class UDP(port: Port, down: Protocol) extends Protocol.UDP
+case class UDP(port: Port) extends Protocol.UDP
 object UDP {
-  def apply(port: Port): UDP = new UDP(port, Protocol.Any)
-  def apply(number: Int): UDP = new UDP(Port(number), Protocol.Any)
+  def apply(number: Int): UDP = UDP(Port(number))
 }
 
-case class TCP(port: Port, down: Protocol) extends Protocol.TCP
+case class TCP(port: Port) extends Protocol.TCP
 object TCP {
-  def apply(port: Port): TCP = new TCP(port, Protocol.Any)
-  def apply(number: Int): TCP = new TCP(Port(number), Protocol.Any)
+  def apply(number: Int): TCP = TCP(Port(number))
 }
 
 // TODO TLS
@@ -313,8 +317,7 @@ object TCP {
 case class HTTP(
     method: HTTP.Method,
     path: HTTP.Path,
-    host: HTTP.Host,
-    down: Protocol)
+    host: HTTP.Host)
   extends Protocol.HTTP
 object HTTP {
   sealed trait Method {
@@ -357,13 +360,14 @@ object HTTP {
       method: Method = Method.Any,
       path: Path = Path.Any,
       host: Host = Host.Any
-    ): HTTP = new HTTP(method, path, host, Protocol.Any)
+    ): HTTP = new HTTP(method, path, host)
 }
 
 // TODO HTTPS
 
 trait Protocols {
   def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
+  def merge(other: Protocols): Protocols = Protocols.Selected(protocols ++ other.protocols)
 }
 
 object Protocols {
@@ -379,8 +383,8 @@ object Protocols {
   def apply(protocols: Seq[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected =
     Selected(protocols.toSet)
 //  def apply(protocols: Set[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected = Selected(protocols)
-  def tcp(tcps: Protocol.TCP*): Protocols = apply(tcps.map(tcp => Protocol.Layers(l4 = tcp)))
-  def ip(ips: Protocol.IP*): Protocols = apply(ips.map(ip => Protocol.Layers(l3 = ip)))
+  def port(ports: Protocol.HasPort*): Protocols = apply(ports.map(port => Protocol.Layers(l4 = port)))
+  def cidr(cidrs: Protocol.HasCidr*): Protocols = apply(cidrs.map(cidr => Protocol.Layers(l3 = cidr)))
   def apply(): Protocols = Any
 }
 
