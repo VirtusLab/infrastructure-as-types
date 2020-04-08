@@ -2,6 +2,7 @@ package com.virtuslab.dsl
 
 import cats.Show
 
+@deprecated
 trait Networked {
   def ports: List[Networked.Port]
   def ping: Option[HttpPing]

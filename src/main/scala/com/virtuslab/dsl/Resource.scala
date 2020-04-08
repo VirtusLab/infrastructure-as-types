@@ -14,7 +14,9 @@ trait HasShortDescription {
   def asShortString: String
 }
 
+@deprecated("use Expressions.Any")
 sealed trait Unselected extends Expressions
+@deprecated("use Expressions.Any")
 case object Unselected extends Unselected {
   override def expressions: Set[Expression] = Set()
   override def asShortString: String = "unselected"
@@ -38,10 +40,15 @@ trait Expressions extends HasShortDescription {
 }
 
 object Expressions {
-  def apply(expressions: Expression*): Expressions = ExpressionsDefinition(expressions.toSet)
-  def apply(expressions: Set[Expression]): Expressions = ExpressionsDefinition(expressions)
+  def apply(expressions: Expression*): Expressions = Definition(expressions.toSet)
+  def apply(expressions: Set[Expression]): Expressions = Definition(expressions)
 
-  final case class ExpressionsDefinition(expressions: Set[Expression]) extends Expressions {
+  sealed trait Any extends Expressions
+  case object Any extends Any {
+    override def expressions: Set[Expression] = Set()
+    override def asShortString: String = "any"
+  }
+  case class Definition(expressions: Set[Expression]) extends Expressions {
     override def toString: String = expressions.mkString(",")
     override def asShortString: String = toString.replaceAll("[!@#$%^&*()+=<>|/\\\\_,.]*", "-").take(20)
   }
@@ -140,6 +147,7 @@ object Labels {
   def apply(name: Name, values: Label*): Labels = Labels(name, values.toSet)
 }
 
+@deprecated
 trait Selector extends HasShortDescription {
   def expressions: Expressions
   def protocols: Protocols
@@ -354,12 +362,13 @@ object HTTP {
 
 // TODO HTTPS
 
-sealed trait Protocols {
+trait Protocols {
   def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
 }
 
 object Protocols {
-  case object Any extends Protocols {
+  sealed trait Any extends Protocols
+  case object Any extends Any {
     override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
   }
 
@@ -373,6 +382,24 @@ object Protocols {
   def tcp(tcps: Protocol.TCP*): Protocols = apply(tcps.map(tcp => Protocol.Layers(l4 = tcp)))
   def ip(ips: Protocol.IP*): Protocols = apply(ips.map(ip => Protocol.Layers(l3 = ip)))
   def apply(): Protocols = Any
+}
+
+trait Identity
+object Identity {
+  sealed trait Any extends Identity
+  case object Any extends Any
+  case class DNS(host: String) extends Identity
+}
+
+trait Identities {
+  def identities: Set[Identity]
+}
+object Identities {
+  sealed trait Any extends Identities
+  case object Any extends Any {
+    def identities: Set[Identity] = Set()
+  }
+  case class Some(identities: Set[Identity]) extends Identities
 }
 
 object Validation {
