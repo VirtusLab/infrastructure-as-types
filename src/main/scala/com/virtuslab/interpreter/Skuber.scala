@@ -1,12 +1,11 @@
 package com.virtuslab.interpreter
 
-import com.virtuslab.dsl.{ AllowSelector, ApplicationSelector, CIDRs, Configuration, Connection, Definition, DenySelector, Expressions, IP, Label, NamespaceSelector, NoSelector, Protocol, Protocols, SelectedIPs, SelectedIPsAndPorts, Selector, TCP, UDP }
+import com.virtuslab.dsl._
 import com.virtuslab.exporter.skuber.Resource
 import skuber.json.format._
-import skuber.ConfigMap
 import skuber.networking.NetworkPolicy
 import skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
-import skuber.{ LabelSelector, ObjectMeta }
+import skuber.{ ConfigMap, LabelSelector, ObjectMeta }
 
 object Skuber {
 
@@ -27,6 +26,22 @@ object Skuber {
               labels = cfg.obj.labels.toMap
             ),
             data = cfg.obj.data
+          )
+        )
+      )
+    }
+
+  implicit val secretInterpreter: Interpreter[SkuberContext, Secret] =
+    (secret: Definition[SkuberContext, Secret]) => {
+      Seq(
+        Resource(
+          skuber.Secret(
+            metadata = ObjectMeta(
+              name = secret.obj.name,
+              namespace = secret.namespace.name,
+              labels = secret.obj.labels.toMap
+            ),
+            data = secret.obj.data.mapValues(_.getBytes)
           )
         )
       )
