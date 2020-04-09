@@ -1,6 +1,7 @@
 package com.virtuslab.interpreter
 
 import com.virtuslab.dsl.Definition
+import scala.language.higherKinds
 
 trait Context {
   type Ret[A]

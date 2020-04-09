@@ -7,14 +7,14 @@ import skuber.{ ConfigMap, ObjectMeta }
 
 object Skuber {
 
-  class SkuberContxt extends Context {
+  class SkuberContext extends Context {
     override type Ret[A] = Seq[Resource[A]]
   }
 
-  implicit val context = new SkuberContxt
+  implicit val context: SkuberContext = new SkuberContext
 
-  implicit val configurationInterpreter = new Interpreter[SkuberContxt, Configuration] {
-    override def apply(cfg: Definition[SkuberContxt, Configuration]): SkuberContxt#Ret[ConfigMap] = {
+  implicit val configurationInterpreter: Interpreter[SkuberContext, Configuration] =
+    (cfg: Definition[SkuberContext, Configuration]) => {
       Seq(
         Resource(
           ConfigMap(
@@ -28,6 +28,5 @@ object Skuber {
         )
       )
     }
-  }
 
 }
