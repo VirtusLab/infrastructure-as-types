@@ -4,7 +4,6 @@ import cats.syntax.either._
 import cats.syntax.option._
 import com.virtuslab.dsl.Application.ApplicationDefinition
 import com.virtuslab.dsl.{ Configuration, DistributedSystem }
-import skuber.Volume.ConfigMapVolumeSource
 import skuber.apps.v1.Deployment
 import skuber.{ Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 

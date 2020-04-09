@@ -90,7 +90,7 @@ object Namespace {
     def builder(implicit systemBuilder: SystemBuilder): NamespaceBuilder = NamespaceBuilder(this, systemBuilder)
   }
 
-  final case class NamespaceDefinition protected (labels: Labels, members: Set[Namespaced]) extends Namespace
+  final case class NamespaceDefinition protected (labels: Labels, members: Set[Definition[_, _]]) extends Namespace
 
   def ref(
       name: String

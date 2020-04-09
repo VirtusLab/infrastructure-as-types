@@ -31,8 +31,8 @@ case class SystemBuilder(system: DistributedSystem) {
         }
       case aref: ApplicationReference =>
         if (!ms.exists {
-              case adef: ApplicationDefinition => aref.labels.equals(adef.labels)
-              case _                           => false
+              case Definition(adef: ApplicationDefinition, _) => aref.labels.equals(adef.labels)
+              case _                                          => false
             }) {
           throw new IllegalStateException("Can't find an application definition for reference: " + aref)
         }
