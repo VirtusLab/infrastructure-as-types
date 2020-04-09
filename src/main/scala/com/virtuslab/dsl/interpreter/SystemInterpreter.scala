@@ -8,7 +8,6 @@ import skuber.ObjectResource
 class SystemInterpreter(
     system: DistributedSystemDefinition,
     applicationInterpreter: ApplicationInterpreter,
-    connection: ConnectionInterpreter,
     namespace: NamespaceInterpreter) {
 
   def resources: Seq[Resource[ObjectResource]] = {
@@ -38,12 +37,10 @@ object SystemInterpreter {
   def apply(
       system: DistributedSystemDefinition,
       applicationInterpreter: ApplicationInterpreter,
-      connectionInterpreter: ConnectionInterpreter,
       namespaceInterpreter: NamespaceInterpreter
     ): SystemInterpreter = new SystemInterpreter(
     system,
     applicationInterpreter,
-    connectionInterpreter,
     namespaceInterpreter
   )
 
@@ -51,10 +48,6 @@ object SystemInterpreter {
     new SystemInterpreter(
       system,
       new ApplicationInterpreter(MountInterpreter, system),
-      new ConnectionInterpreter(
-        new LabelExpressionInterpreter(),
-        new NetworkPortsInterpreter()
-      ),
       NamespaceInterpreter
     )
   }

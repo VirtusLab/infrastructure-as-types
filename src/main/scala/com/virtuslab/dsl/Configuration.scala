@@ -1,16 +1,13 @@
 package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Mountable.MountSource
-import skuber.Volume
 import skuber.Volume.ConfigMapVolumeSource
 
 case class Configuration private (labels: Labels, data: Map[String, String]) extends KeyValue with Transformable[Configuration]
 
 object Configuration {
-  implicit val mountSource = new MountSource[Configuration] {
-    override def source(obj: Configuration): Volume.Source = {
-      ConfigMapVolumeSource(name = obj.name)
-    }
+  implicit val mountSource: MountSource[Configuration] = (obj: Configuration) => {
+    ConfigMapVolumeSource(name = obj.name)
   }
 
 //  def apply(

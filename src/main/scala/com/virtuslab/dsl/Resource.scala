@@ -2,16 +2,12 @@ package com.virtuslab.dsl
 
 import com.virtuslab.dsl.Expressions.Expression
 
-trait Named { self: Labeled =>
-  def name: String = labels.name.value
-}
-
 trait Transformable[A] { self: A =>
   def transform(f: A => A): A = f(self)
 }
 
-trait HasShortDescription {
-  def asShortString: String
+trait Named { self: Labeled =>
+  def name: String = labels.name.value
 }
 
 trait Labeled extends Named with Expressions {
@@ -25,6 +21,10 @@ trait Labeled extends Named with Expressions {
     case other: Labeled => labels.equals(other.labels)
     case _              => false
   }
+}
+
+trait HasShortDescription {
+  def asShortString: String
 }
 
 @deprecated

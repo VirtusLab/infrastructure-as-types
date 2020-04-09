@@ -6,17 +6,9 @@ import com.virtuslab.dsl.Namespace.{ NamespaceDefinition, NamespaceReference }
 
 import scala.collection.mutable
 
-trait Namespaced {
-  def namespace: Namespace
-}
-
-trait Definable[T, A <: T, B <: T] { self: A =>
-  def define(f: A => B)(implicit builder: NamespaceBuilder): B = f(self)
-}
-
 case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: SystemBuilder) {
-  private[this] val connections: mutable.Set[ConnectionDefinition] = mutable.Set.empty
-  private[this] val applications: mutable.Set[ApplicationDefinition] = mutable.Set.empty
+  private[this] val connections: mutable.Set[Definition[_, Connection]] = mutable.Set.empty
+  private[this] val applications: mutable.Set[Definition[_, Application]] = mutable.Set.empty
 
   def references(rs: Labeled*): SystemBuilder = systemBuilder.references(rs: _*)
 
@@ -43,7 +35,7 @@ case class NamespaceBuilder(namespace: NamespaceReference, systemBuilder: System
 
   def build(): NamespaceDefinition = {
     val (as, cs) = collect()
-    val members: Set[Namespaced] = as ++ cs
+    val members: Set[Definition[_, _]] = as ++ cs
 
     val ns = NamespaceDefinition(namespace.labels, members)
     systemBuilder.namespaces(ns)

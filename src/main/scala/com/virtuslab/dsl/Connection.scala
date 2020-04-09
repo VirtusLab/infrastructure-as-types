@@ -1,80 +1,36 @@
 package com.virtuslab.dsl
 
-trait Connection {
-  def resourceSelector: Selector
-  def ingress: Selector
-  def egress: Selector
-}
+case class Connection(
+    labels: Labels,
+    resourceSelector: Selector,
+    ingress: Selector,
+    egress: Selector)
+  extends Labeled
+  with Transformable[Connection]
 
 object Connection {
-  case class ConnectionDraft(
-      resourceSelector: Selector,
-      ingress: Selector,
-      egress: Selector)
-    extends Connection
-    with Transformable[ConnectionDraft]
-    with Definable[Connection, ConnectionDraft, ConnectionDefinition] {
-
-    def asDefault(implicit builder: NamespaceBuilder): ConnectionDefinition = {
-      named(defaultName(resourceSelector, ingress, egress))
-    }
-
-    def named(name: String)(implicit builder: NamespaceBuilder): ConnectionDefinition =
-      labeled(Labels(Name(name)))
-
-    def labeled(labels: Labels)(implicit builder: NamespaceBuilder): ConnectionDefinition =
-      ConnectionDefinition(
-        labels = labels,
-        namespace = builder.namespace,
-        resourceSelector = resourceSelector,
-        ingress = ingress,
-        egress = egress
-      )
-  }
-
-  case class ConnectionDefinition(
-      namespace: Namespace,
-      labels: Labels,
-      resourceSelector: Selector,
-      ingress: Selector,
-      egress: Selector)
-    extends Connection
-    with Labeled
-    with Namespaced
-
   def apply(
       name: String,
       resourceSelector: Selector,
       ingress: Selector,
       egress: Selector
-    )(implicit
-      builder: NamespaceBuilder
-    ): ConnectionDefinition = {
-    val conn = ConnectionDraft(
-      resourceSelector,
-      ingress,
-      egress
-    ).named(name)
-    builder.references(conn)
-    conn
-  }
+    ): Connection = Connection(
+    Labels(Name(name)),
+    resourceSelector,
+    ingress,
+    egress
+  )
 
   def apply(
-      labels: Labels,
       resourceSelector: Selector,
       ingress: Selector,
       egress: Selector
-    )(implicit
-      builder: NamespaceBuilder
-    ): ConnectionDefinition = {
-    val conn = ConnectionDraft(
-      resourceSelector,
-      ingress,
-      egress
-    ).labeled(labels)
-    builder.references(conn)
-    conn
-  }
+    ): Connection = Connection(
+    Labels(Name(Connection.defaultName(resourceSelector, ingress, egress))),
+    resourceSelector,
+    ingress,
+    egress
+  )
 
   def defaultName(
       resourceSelector: Selector,
