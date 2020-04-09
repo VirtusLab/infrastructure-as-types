@@ -1,16 +1,18 @@
-package com.virtuslab.dsl.interpreter
+package com.virtuslab.interpreter.skuber
 
 import java.nio.file.Path
 
-import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
 import com.virtuslab.dsl.Mountable._
+import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
+import com.virtuslab.interpreter.InterpreterSpec
 import play.api.libs.json.Json
-import skuber.json.format._
 
 class MountInterpreterSpec extends InterpreterSpec {
+  import com.virtuslab.interpreter.skuber.Skuber._
+  import skuber.json.format._
 
   it should "generate volume mount based on config map entry" in {
-    implicit val (ds, ns) = builders()
+    implicit val (ds, ns) = builders[SkuberContext]()
 
     val config = Configuration(
       labels = Labels(Name("test-configmap")),
@@ -19,7 +21,7 @@ class MountInterpreterSpec extends InterpreterSpec {
         |""".stripMargin)
     )
     val mount = config.mount("test-mount", "test.txt", Path.of("/opt/foo.txt"))
-    val (volume, volumeMount) = MountInterpreter(mount)
+    val (volume, volumeMount) = Skuber.mount(mount)
 
     Json.toJson(volume).should(matchJsonString("""
       |{
@@ -40,7 +42,7 @@ class MountInterpreterSpec extends InterpreterSpec {
   }
 
   it should "generate volume mount based on secret entry" in {
-    implicit val (ds, ns) = builders()
+    implicit val (ds, ns) = builders[SkuberContext]()
 
     val secret = Secret(
       labels = Labels(Name("top-secret")),
@@ -49,7 +51,7 @@ class MountInterpreterSpec extends InterpreterSpec {
         |""".stripMargin)
     )
     val mount = secret.mount(name = "test-secret-mount", key = "test.txt", as = Path.of("/opt/test-secret.txt"))
-    val (volume, volumeMount) = MountInterpreter(mount)
+    val (volume, volumeMount) = Skuber.mount(mount)
 
     Json.toJson(volume) should matchJsonString("""
         |{

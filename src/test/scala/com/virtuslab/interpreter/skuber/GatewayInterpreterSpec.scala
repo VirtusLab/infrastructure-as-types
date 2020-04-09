@@ -1,14 +1,18 @@
-package com.virtuslab.dsl.interpreter
+package com.virtuslab.interpreter.skuber
 
 import com.virtuslab.dsl.HTTP.Host
-import com.virtuslab.dsl.{ Gateway, HTTP, Labels, Name, Port, Protocol, Protocols, TCP }
+import com.virtuslab.dsl._
+import com.virtuslab.interpreter.InterpreterSpec
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 import play.api.libs.json.Json
-import skuber.json.ext.format._
+import skuber.ext.Ingress
 
 class GatewayInterpreterSpec extends InterpreterSpec {
+  import skuber.json.ext.format._
+
   it should "allow to define a simple Ingress definition" in {
-    implicit val (ds, ns) = builders()
+    implicit val (ds, ns) = builders[SkuberContext]()
     val gateway = Gateway(
       Labels(Name("external")),
       Protocols(
@@ -16,7 +20,7 @@ class GatewayInterpreterSpec extends InterpreterSpec {
       )
     )
 
-    val ingress = new GatewayInterpreter()(gateway)
+    val ingress: Ingress = Skuber.gatewayInterpreter(Definition(gateway)).head.obj.asInstanceOf[Ingress] // FIXME
 
     Json.toJson(ingress) should matchJsonString(yamlToJson(s"""
         |apiVersion: networking.k8s.io/v1beta1

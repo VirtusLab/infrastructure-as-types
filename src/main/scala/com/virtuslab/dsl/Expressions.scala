@@ -7,15 +7,15 @@ trait Expressions extends HasShortDescription {
 }
 
 object Expressions {
-  def apply(expressions: Expression*): Expressions = Definition(expressions.toSet)
-  def apply(expressions: Set[Expression]): Expressions = Definition(expressions)
+  def apply(expressions: Expression*): Expressions = Some(expressions.toSet)
+  def apply(expressions: Set[Expression]): Expressions = Some(expressions)
 
   sealed trait Any extends Expressions
   case object Any extends Any {
     override def expressions: Set[Expression] = Set()
     override def asShortString: String = "any"
   }
-  case class Definition(expressions: Set[Expression]) extends Expressions {
+  case class Some(expressions: Set[Expression]) extends Expressions {
     override def toString: String = expressions.mkString(",")
     override def asShortString: String = toString.replaceAll("[!@#$%^&*()+=<>|/\\\\_,.]*", "-").take(20)
   }

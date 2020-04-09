@@ -1,7 +1,7 @@
 package com.virtuslab.deployer.skuber
 
-import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.exporter.skuber.Resource
+import com.virtuslab.interpreter.{ Context, SystemInterpreter }
 import skuber.api.client.LoggingContext
 import skuber.{ K8SRequestContext, ObjectResource }
 
@@ -9,7 +9,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext, Future }
 
 object SimpleDeployer {
-  def createOrUpdate(client: K8SRequestContext, interpreter: SystemInterpreter)(implicit executor: ExecutionContext): Unit = {
+  def createOrUpdate[Ctx <: Context](client: K8SRequestContext, interpreter: SystemInterpreter[Ctx])(implicit executor: ExecutionContext): Unit = {
     val resources: Seq[Resource[ObjectResource]] = interpreter.resources
     resources.map(createOrUpdate(client))
   }

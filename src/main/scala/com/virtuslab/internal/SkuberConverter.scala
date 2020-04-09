@@ -1,7 +1,8 @@
 package com.virtuslab.internal
 
-import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.exporter.Exporter
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
+import com.virtuslab.interpreter.SystemInterpreter
 import play.api.libs.json.JsValue
 
 case class ShortMeta(
@@ -12,7 +13,7 @@ case class ShortMeta(
   override def toString: String = (apiVersion, kind, namespace, name).toString()
 }
 
-class SkuberConverter(interpreter: SystemInterpreter) {
+class SkuberConverter(interpreter: SystemInterpreter[SkuberContext]) {
   def toMetaAndJsValue: Seq[(ShortMeta, JsValue)] = {
     interpreter.resources.map { resource =>
       val r = resource.obj
@@ -22,5 +23,5 @@ class SkuberConverter(interpreter: SystemInterpreter) {
 }
 
 object SkuberConverter {
-  def apply(interpreter: SystemInterpreter): SkuberConverter = new SkuberConverter(interpreter)
+  def apply(interpreter: SystemInterpreter[SkuberContext]): SkuberConverter = new SkuberConverter(interpreter)
 }

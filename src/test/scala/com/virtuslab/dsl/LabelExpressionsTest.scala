@@ -1,21 +1,19 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.interpreter.LabelExpressionInterpreter
+import com.virtuslab.interpreter.skuber.Skuber
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import skuber.LabelSelector.{ ExistsRequirement, InRequirement, IsEqualRequirement, IsNotEqualRequirement, NotExistsRequirement }
+import skuber.LabelSelector._
 
 class LabelExpressionsTest extends AnyFlatSpec with Matchers {
   import Expressions._
 
   import scala.language.postfixOps
 
-  val expressions = new LabelExpressionInterpreter()
-
   it should "allow to express all Kubernetes label selector expressions" in {
 
     val existence = Expressions("live")
-    val requirement = expressions(existence)
+    val requirement = Skuber.expressions(existence)
     requirement shouldEqual Seq(ExistsRequirement("live"))
 
     val complex = Expressions(
@@ -24,7 +22,7 @@ class LabelExpressionsTest extends AnyFlatSpec with Matchers {
       "environment" isNot "dev",
       "live" doesNotExist
     )
-    val requirements = expressions(complex)
+    val requirements = Skuber.expressions(complex)
     requirements shouldEqual Seq(
       InRequirement("partition", List("customerA", "customerB")),
       IsEqualRequirement("environment", "qa"),

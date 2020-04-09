@@ -1,31 +1,33 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.Connection.ConnectionDefinition
-import com.virtuslab.dsl.interpreter.{ InterpreterSpec, SystemInterpreter }
+import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
+import com.virtuslab.interpreter.SystemInterpreter
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 
 class ConnectionTest extends InterpreterSpec {
+  import com.virtuslab.interpreter.skuber.Skuber._
+
   it should "allow to express connections between two namespaces" in {
 
     case class RoleLabel(value: String) extends Label {
       override val key: String = "role"
     }
 
-    implicit val ds: SystemBuilder = DistributedSystem.ref(generateSystemName()).builder
+    implicit val ds: SystemBuilder[SkuberContext] = DistributedSystem(generateSystemName()).builder
 
     val frontendRoleLabel = RoleLabel("frontend")
-    val frontendNsRef = Namespace.ref(Labels(Name("frontend"), frontendRoleLabel))
+    val frontendNsRef = Namespace(Labels(Name("frontend"), frontendRoleLabel))
 
     val backendRoleLabel = RoleLabel("backend")
-    val backendNsRef = Namespace.ref(Labels(Name("backend"), backendRoleLabel))
+    val backendNsRef = Namespace(Labels(Name("backend"), backendRoleLabel))
 
     info(s"system: ${ds.name}, namespaces: ${frontendNsRef.name}, ${backendNsRef.name}")
 
-    val app3 = Application.ref(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
+    val app3 = Application(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
 
     backendNsRef
-      .inNamespace { implicit ns =>
+      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
         import ns._
 
         applications(
@@ -37,11 +39,11 @@ class ConnectionTest extends InterpreterSpec {
         )
       }
 
-    val app1 = Application.ref(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Networked.Port(9090) :: Nil)
-    val app2 = Application.ref(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Networked.Port(9090) :: Nil)
+    val app1 = Application(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Networked.Port(9090) :: Nil)
+    val app2 = Application(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Networked.Port(9090) :: Nil)
 
     frontendNsRef
-      .inNamespace { implicit ns =>
+      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
         import ns._
 
         applications(
@@ -325,13 +327,13 @@ class ConnectionTest extends InterpreterSpec {
   }
 
   it should "allow to express complex customized connections" in {
-    implicit val (ds, ns) = builders()
+    implicit val (ds, ns) = builders[SkuberContext]()
 
+    import Expressions._
     import ds._
     import ns._
-    import Expressions._
 
-    val app1 = Application.ref(Labels(Name("app-one")), image = "test").define
+    val app1 = Application(Labels(Name("app-one")), image = "test")
 
     val conn1 = app1
       .communicatesWith(namespaceLabeled("role".is("backend")))
@@ -351,9 +353,8 @@ class ConnectionTest extends InterpreterSpec {
           )
         )
       }
-      .define { c =>
-        ConnectionDefinition(
-          implicitly[NamespaceBuilder].namespace,
+      .transform { c =>
+        Connection(
           Labels(
             Name("custom-name"),
             UntypedLabel("tier", "top") +: app1.labels.tail.toSeq: _*
@@ -406,11 +407,11 @@ class ConnectionTest extends InterpreterSpec {
   }
 
   it should "allow for external connections" in {
-    implicit val (ds, ns) = builders()
+    implicit val (ds, ns) = builders[SkuberContext]()
 
+    import Expressions._
     import ds._
     import ns._
-    import Expressions._
 
     connections(
       Connection(

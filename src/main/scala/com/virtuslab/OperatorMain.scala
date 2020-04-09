@@ -3,16 +3,18 @@ package com.virtuslab
 import java.nio.file.Path
 
 import com.virtuslab.deployer.skuber.SimpleDeployer
-import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
+import com.virtuslab.interpreter.SystemInterpreter
 
 object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
-    val system = DistributedSystem.ref("test").inSystem { implicit ds =>
+    import com.virtuslab.interpreter.skuber.Skuber._
+
+    val system = DistributedSystem("test").inSystem { implicit ds: SystemBuilder[SkuberContext] => // FIXME
       import ds._
       namespaces(
-        Namespace.ref("test").inNamespace { implicit ns =>
+        Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME
           import ns._
 
           val configuration = Configuration(

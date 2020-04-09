@@ -1,21 +1,21 @@
 package com.virtuslab.exporter
 
-import com.virtuslab.dsl.interpreter.SystemInterpreter
 import com.virtuslab.exporter.skuber.Resource
 import com.virtuslab.yaml.Yaml
 import play.api.libs.json.{ JsValue, Json }
 import _root_.skuber.ObjectResource
+import com.virtuslab.interpreter.{ Context, SystemInterpreter }
 
 object Exporter {
-  def toYaml(interpreter: SystemInterpreter): Seq[String] = {
+  def toYaml[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[String] = {
     toJsValues(interpreter).map(Yaml.prettyPrint)
   }
 
-  def toJson(interpreter: SystemInterpreter): Seq[String] = {
+  def toJson[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[String] = {
     toJsValues(interpreter).map(Json.prettyPrint)
   }
 
-  private[virtuslab] def toJsValues(interpreter: SystemInterpreter): Seq[JsValue] = {
+  private[virtuslab] def toJsValues[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[JsValue] = {
     interpreter.resources.map(toJsValue)
   }
 

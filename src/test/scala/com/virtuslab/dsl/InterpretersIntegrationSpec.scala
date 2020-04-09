@@ -1,18 +1,19 @@
 package com.virtuslab.dsl
 
-import com.virtuslab.dsl.interpreter.{ InterpreterSpec, SystemInterpreter }
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
+import com.virtuslab.interpreter.{ InterpreterSpec, SystemInterpreter }
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 
 class InterpretersIntegrationSpec extends InterpreterSpec {
+  import com.virtuslab.interpreter.skuber.Skuber._
 
   it should "create a simple system" in {
     val namespaceName = generateNamespaceName()
-    val system = DistributedSystem.ref(generateSystemName()).inSystem { implicit ds =>
+    val system = DistributedSystem(generateSystemName()).inSystem { implicit ds: SystemBuilder[SkuberContext] =>
       import ds._
 
       namespaces(
-        Namespace.ref(namespaceName).inNamespace { implicit ns =>
+        Namespace(namespaceName).inNamespace { implicit ns: NamespaceBuilder[SkuberContext] =>
           import ns._
 
           applications(

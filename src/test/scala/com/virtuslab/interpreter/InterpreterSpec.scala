@@ -1,4 +1,4 @@
-package com.virtuslab.dsl.interpreter
+package com.virtuslab.interpreter
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.{ DistributedSystem, Namespace, NamespaceBuilder, SystemBuilder }
@@ -11,12 +11,12 @@ import scala.util.Random
 
 abstract class InterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers {
 
-  def builders(names: (String, String) = generateNames()): (SystemBuilder, NamespaceBuilder) = {
+  def builders[Ctx <: Context](names: (String, String) = generateNames())(implicit ctx: Ctx): (SystemBuilder[Ctx], NamespaceBuilder[Ctx]) = {
     val (systemName, namespaceName) = names
     info(s"system: $systemName, namespace: $namespaceName")
 
-    implicit val systemBuilder: SystemBuilder = DistributedSystem.ref(systemName).builder
-    val namespaceBuilder: NamespaceBuilder = Namespace.ref(namespaceName).builder
+    implicit val systemBuilder: SystemBuilder[Ctx] = DistributedSystem(systemName).builder
+    val namespaceBuilder: NamespaceBuilder[Ctx] = Namespace(namespaceName).builder
     (systemBuilder, namespaceBuilder)
   }
 
