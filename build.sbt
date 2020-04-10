@@ -8,6 +8,8 @@ organization := "com.virtuslab"
 
 scalaVersion := "2.12.10"
 
+crossScalaVersions := Seq(scalaVersion.value,  "2.11.12")
+
 scalacOptions += "-Ypartial-unification"
 
 libraryDependencies ++= Seq(
