@@ -58,7 +58,7 @@ object Skuber {
               namespace = secret.namespace.name,
               labels = secret.obj.labels.toMap
             ),
-            data = secret.obj.data.mapValues(_.getBytes)
+            data = secret.obj.data.view.mapValues(_.getBytes).toMap
           )
         )
       )

@@ -99,12 +99,11 @@ final case class Name(value: String) extends Label {
 final case class UntypedLabel(key: String, value: String) extends Label
 
 case class Labels(name: Name, private val values: Set[Label]) extends Expressions {
-  import scala.collection.generic.CanBuildFrom
 
   def all: Set[Label] = Set(name) ++ values
   def tail: Set[Label] = values
   def toMap: Map[String, String] = all.map(l => l.key -> l.value).toMap
-  def map[B, That](f: Label => B)(implicit bf: CanBuildFrom[Set[Label], B, That]): That = all.map(f)(bf)
+  def map[B](f: Label => B): Set[B] = all.map(f)
 
   override def expressions: Set[Expression] = all.map(l => l)
   override def asShortString: String = name.value.take(20)
