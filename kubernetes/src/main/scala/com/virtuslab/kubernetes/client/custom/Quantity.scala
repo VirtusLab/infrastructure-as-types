@@ -1,11 +1,5 @@
 package com.virtuslab.kubernetes.client.custom
 
-import java.io.IOException
-
-import com.google.gson.TypeAdapter
-import com.google.gson.annotations.JsonAdapter
-import com.google.gson.stream.{JsonReader, JsonWriter}
-
 import scala.math.BigDecimal
 import scala.util.matching.Regex
 
@@ -15,8 +9,8 @@ class Quantity(val value: String) {
   lazy val amount: BigDecimal =
     format match {
       case Quantity.DecimalExponent => BigDecimal(new java.math.BigDecimal(value))
-      case Quantity.BinarySI => Quantity.parseBinarySI(number, suffix)
-      case Quantity.DecimalSI => Quantity.parseDecimalSI(number, suffix)
+      case Quantity.BinarySI        => Quantity.parseBinarySI(number, suffix)
+      case Quantity.DecimalSI       => Quantity.parseDecimalSI(number, suffix)
     }
 
   val QuantSplitRE: Regex = """^([+-]?[0-9.]+)([eEimkKMGTP]*[-+]?[0-9]*)$""".r
@@ -25,10 +19,10 @@ class Quantity(val value: String) {
   lazy val QuantSplitRE(number, suffix) = value
 
   lazy val format: Quantity.Format = suffix match {
-    case "Ki" | "Mi" | "Gi" | "Ti" | "Pi" | "Ei" => Quantity.BinarySI
+    case "Ki" | "Mi" | "Gi" | "Ti" | "Pi" | "Ei"      => Quantity.BinarySI
     case "m" | "" | "k" | "M" | "G" | "T" | "P" | "E" => Quantity.DecimalSI
-    case ExponentSplitRE(_, _) => Quantity.DecimalExponent
-    case _ => throw new Exception("Invalid resource quantity format")
+    case ExponentSplitRE(_, _)                        => Quantity.DecimalExponent
+    case _                                            => throw new Exception("Invalid resource quantity format")
   }
 
   override def toString: String = value
@@ -36,7 +30,7 @@ class Quantity(val value: String) {
   override def equals(o: Any): Boolean = {
     o match {
       case that: Quantity => that.amount.equals(this.amount)
-      case _ => false
+      case _              => false
     }
   }
 
@@ -53,26 +47,11 @@ object Quantity {
   case object DecimalSI extends Format
   case object DecimalExponent extends Format
 
-  val binBe2Suffix = Map(
-    (2, 10) -> "Ki",
-    (2, 20) -> "Mi",
-    (2, 30) -> "Gi",
-    (2, 40) -> "Ti",
-    (2, 50) -> "Pi",
-    (2, 60) -> "Ei",
-    (2, 0) -> "")
+  val binBe2Suffix = Map((2, 10) -> "Ki", (2, 20) -> "Mi", (2, 30) -> "Gi", (2, 40) -> "Ti", (2, 50) -> "Pi", (2, 60) -> "Ei", (2, 0) -> "")
 
   val binSuffix2Be: Map[String, (Int, Int)] = binBe2Suffix map { case (be, suffix) => (suffix, be) }
 
-  val decBe2Suffix = Map(
-    (10, -3) -> "m",
-    (10, 0) -> "",
-    (10, 3) -> "k",
-    (10, 6) -> "M",
-    (10, 9) -> "G",
-    (10, 12) -> "T",
-    (10, 15) -> "P",
-    (10, 18) -> "E")
+  val decBe2Suffix = Map((10, -3) -> "m", (10, 0) -> "", (10, 3) -> "k", (10, 6) -> "M", (10, 9) -> "G", (10, 12) -> "T", (10, 15) -> "P", (10, 18) -> "E")
 
   val decSuffix2Be: Map[String, (Int, Int)] = decBe2Suffix map { case (be, suffix) => (suffix, be) }
 
@@ -97,12 +76,18 @@ object Quantity {
 
   def apply(quantity: String): Quantity = new Quantity(quantity)
 
-  class QuantityAdapter extends TypeAdapter[Quantity] {
-    @throws[IOException]
-    def write(jsonWriter: JsonWriter, quantity: Quantity): Unit =
-      jsonWriter.value(if (quantity != null) quantity.toString else null)
+  import org.json4s.CustomSerializer
+  import org.json4s.JsonAST._
 
-    @throws[IOException]
-    def read(jsonReader: JsonReader): Quantity = Quantity(jsonReader.nextString)
-  }
+  case object Serializer
+    extends CustomSerializer[Quantity](
+      _ =>
+        ({
+          case JString(s) => Quantity(s)
+          case JNull      => null
+        }, {
+          case q: Quantity => JString(q.value)
+        })
+    )
+
 }

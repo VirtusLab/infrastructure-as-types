@@ -1,6 +1,7 @@
 package com.virtuslab.kubernetes.client.custom
 
-import com.google.gson.Gson
+import org.json4s.{ Formats, NoTypeHints }
+import org.json4s.jackson.Serialization
 import org.specs2.matcher.JsonMatchers
 import org.specs2.mutable.Specification
 
@@ -18,15 +19,16 @@ class IntOrStringTest extends Specification with JsonMatchers {
     "where value is test" >> { IntOrString("test").string mustEqual "test" }
   }
 
-  val gson: Gson = JSON.gson
+  import org.json4s.jackson.Serialization._
+  implicit val formats: Formats = Serialization.formats(NoTypeHints) + IntOrString.Serializer
 
   "An IntOrString can be marshalled to JSON\n" >> {
-    "where a value of '10' is used" >> { gson.toJson(IntOrString(10)) mustEqual ("10") }
-    "where a value of 'ten' is used" >> { gson.toJson(IntOrString("ten")) mustEqual ("\"ten\"") }
+    "where a value of '10' is used" >> { write(IntOrString(10)) mustEqual "10" }
+    "where a value of 'ten' is used" >> { write(IntOrString("ten")) mustEqual "\"ten\"" }
   }
 
   "An IntOrString can be un-marshalled from JSON\n" >> {
-    "where a value of '10' is used" >> { gson.fromJson("10", classOf[IntOrString]) mustEqual IntOrString(10) }
-    "where a value of 'ten' is used" >> { gson.fromJson("ten", classOf[IntOrString]) mustEqual IntOrString("ten") }
+    "where a value of '10' is used" >> { read[IntOrString]("10") mustEqual IntOrString(10) }
+    "where a value of 'ten' is used" >> { read[IntOrString]("\"ten\"") mustEqual IntOrString("ten") }
   }
 }

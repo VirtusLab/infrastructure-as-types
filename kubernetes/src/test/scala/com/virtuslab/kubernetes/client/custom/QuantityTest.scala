@@ -1,6 +1,8 @@
 package com.virtuslab.kubernetes.client.custom
 
 import com.google.gson.Gson
+import org.json4s.jackson.Serialization
+import org.json4s.{ Formats, NoTypeHints }
 import org.specs2.mutable.Specification
 import org.specs2.matcher.JsonMatchers
 
@@ -59,14 +61,15 @@ class QuantityTest extends Specification with JsonMatchers {
     }
   }
 
-  val gson: Gson = JSON.gson
+  import org.json4s.jackson.Serialization._
+  implicit val formats: Formats = Serialization.formats(NoTypeHints) + Quantity.Serializer
 
   "A quantity can be marshalled to JSON\n" >> {
-    "where a value of 100Ki is used" >> { gson.toJson(Quantity("100Ki")) mustEqual ("\"100Ki\"") }
-    "where a value of 10 is used" >> { gson.toJson(Quantity("10")) mustEqual ("\"10\"") }
+    "where a value of 100Ki is used" >> { write(Quantity("100Ki")) mustEqual ("\"100Ki\"") }
+    "where a value of 10 is used" >> { write(Quantity("10")) mustEqual ("\"10\"") }
   }
 
   "A quantity can be un-marshalled from JSON\n" >> {
-    "where a value of 100Ki is used" >> { gson.fromJson("\"100Ki\"", classOf[Quantity]) mustEqual Quantity("100Ki") }
+    "where a value of 100Ki is used" >> { read[Quantity]("\"100Ki\"") mustEqual Quantity("100Ki") }
   }
 }
