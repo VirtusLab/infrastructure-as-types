@@ -20,12 +20,12 @@ case class SubjectAccessReviewSpec(
   /* Extra corresponds to the user.Info.GetExtra() method from the authenticator.  Since that is input to the authorizer it needs a reflection here. */
   extra: Option[Map[String, Seq[String]]] = None,
   /* Groups is the groups you're testing for. */
-  groups: Option[Seq[String]] = None,
+  group: Option[Seq[String]] = None,
   nonResourceAttributes: Option[NonResourceAttributes] = None,
   resourceAttributes: Option[ResourceAttributes] = None,
   /* UID information about the requesting user. */
   uid: Option[String] = None,
-  /* User is the user you're testing for. If you specify \"User\" but not \"Groups\", then is it interpreted as \"What if User were not a member of any groups */
+  /* User is the user you're testing for. If you specify \"User\" but not \"Group\", then is it interpreted as \"What if User were not a member of any groups */
   user: Option[String] = None
 ) extends ApiModel
 

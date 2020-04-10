@@ -14,7 +14,7 @@ package org.openapitools.client.model
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * ScaleSpec describes the attributes of a scale subresource.
+   * describes the attributes of a scale subresource
    */
 case class ScaleSpec(
   /* desired number of instances for the scaled object. */

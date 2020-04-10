@@ -26,8 +26,10 @@ typeMappings:
 #  quantity: Quantity
 #  patch: V1Patch
   ByteArray: ArrayByte
+  object: JObject
 importMappings:
 #  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
 #  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
-  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
 #  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
+  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
+  JObject: org.json4s.JObject

@@ -12,6 +12,7 @@
 package org.openapitools.client.api
 
 import org.openapitools.client.model.DeleteOptions
+import org.json4s.JObject
 import com.virtuslab.kubernetes.client.openapi.core._
 import alias._
 import sttp.client._
@@ -31,7 +32,7 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * Creates a cluster scoped Custom object
    * 
    * Expected answers:
-   *   code 201 : Any (Created)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -43,19 +44,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural The custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param body The JSON schema of the Resource to create.
    */
-  def createClusterCustomObject(pretty: Option[String] = None, group: String, version: String, plural: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def createClusterCustomObject(pretty: Option[String] = None, group: String, version: String, plural: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.POST, uri"$baseUrl/apis/${group}/${version}/${plural}?pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * Creates a namespace scoped Custom object
    * 
    * Expected answers:
-   *   code 201 : Any (Created)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -68,19 +69,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural The custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param body The JSON schema of the Resource to create.
    */
-  def createNamespacedCustomObject(pretty: Option[String] = None, group: String, version: String, namespace: String, plural: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def createNamespacedCustomObject(pretty: Option[String] = None, group: String, version: String, namespace: String, plural: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.POST, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}?pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * Deletes the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -95,19 +96,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param propagationPolicy Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy.
    * @param body 
    */
-  def deleteClusterCustomObject(group: String, version: String, plural: String, name: String, gracePeriodSeconds: Option[Int] = None, orphanDependents: Option[Boolean] = None, propagationPolicy: Option[String] = None, body: Option[DeleteOptions] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def deleteClusterCustomObject(group: String, version: String, plural: String, name: String, gracePeriodSeconds: Option[Int] = None, orphanDependents: Option[Boolean] = None, propagationPolicy: Option[String] = None, body: Option[DeleteOptions] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.DELETE, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}?gracePeriodSeconds=$gracePeriodSeconds&orphanDependents=$orphanDependents&propagationPolicy=$propagationPolicy")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * Deletes the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -123,19 +124,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param propagationPolicy Whether and how garbage collection will be performed. Either this field or OrphanDependents may be set, but not both. The default policy is decided by the existing finalizer set in the metadata.finalizers and the resource-specific default policy.
    * @param body 
    */
-  def deleteNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, gracePeriodSeconds: Option[Int] = None, orphanDependents: Option[Boolean] = None, propagationPolicy: Option[String] = None, body: Option[DeleteOptions] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def deleteNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, gracePeriodSeconds: Option[Int] = None, orphanDependents: Option[Boolean] = None, propagationPolicy: Option[String] = None, body: Option[DeleteOptions] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.DELETE, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}?gracePeriodSeconds=$gracePeriodSeconds&orphanDependents=$orphanDependents&propagationPolicy=$propagationPolicy")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * Returns a cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (A single Resource)
+   *   code 200 : JObject (A single Resource)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -146,18 +147,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom object's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getClusterCustomObject(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getClusterCustomObject(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * read scale of the specified custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -168,18 +169,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getClusterCustomObjectScale(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getClusterCustomObjectScale(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/scale")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * read status of the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -190,18 +191,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getClusterCustomObjectStatus(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getClusterCustomObjectStatus(group: String, version: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/status")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * Returns a namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (A single Resource)
+   *   code 200 : JObject (A single Resource)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -213,18 +214,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * read scale of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -236,18 +237,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/scale")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * read status of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -259,18 +260,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param plural the custom resource's plural name. For TPRs this would be lowercase plural kind.
    * @param name the custom object's name
    */
-  def getNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def getNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/status")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * list or watch cluster scoped custom objects
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -288,18 +289,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param timeoutSeconds Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.
    * @param watch Watch for changes to the described resources and return them as a stream of add, update, and remove notifications.
    */
-  def listClusterCustomObject(pretty: Option[String] = None, group: String, version: String, plural: String, continue: Option[String] = None, fieldSelector: Option[String] = None, labelSelector: Option[String] = None, limit: Option[Int] = None, resourceVersion: Option[String] = None, timeoutSeconds: Option[Int] = None, watch: Option[Boolean] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def listClusterCustomObject(pretty: Option[String] = None, group: String, version: String, plural: String, continue: Option[String] = None, fieldSelector: Option[String] = None, labelSelector: Option[String] = None, limit: Option[Int] = None, resourceVersion: Option[String] = None, timeoutSeconds: Option[Int] = None, watch: Option[Boolean] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/${plural}?pretty=$pretty&continue=$continue&fieldSelector=$fieldSelector&labelSelector=$labelSelector&limit=$limit&resourceVersion=$resourceVersion&timeoutSeconds=$timeoutSeconds&watch=$watch")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * list or watch namespace scoped custom objects
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -318,18 +319,18 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param timeoutSeconds Timeout for the list/watch call. This limits the duration of the call, regardless of any activity or inactivity.
    * @param watch Watch for changes to the described resources and return them as a stream of add, update, and remove notifications.
    */
-  def listNamespacedCustomObject(pretty: Option[String] = None, group: String, version: String, namespace: String, plural: String, continue: Option[String] = None, fieldSelector: Option[String] = None, labelSelector: Option[String] = None, limit: Option[Int] = None, resourceVersion: Option[String] = None, timeoutSeconds: Option[Int] = None, watch: Option[Boolean] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def listNamespacedCustomObject(pretty: Option[String] = None, group: String, version: String, namespace: String, plural: String, continue: Option[String] = None, fieldSelector: Option[String] = None, labelSelector: Option[String] = None, limit: Option[Int] = None, resourceVersion: Option[String] = None, timeoutSeconds: Option[Int] = None, watch: Option[Boolean] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}?pretty=$pretty&continue=$continue&fieldSelector=$fieldSelector&labelSelector=$labelSelector&limit=$limit&resourceVersion=$resourceVersion&timeoutSeconds=$timeoutSeconds&watch=$watch")
       .contentType("application/json")
       .header("authorization", apiKey.value)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * patch the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -341,19 +342,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body The JSON schema of the Resource to patch.
    */
-  def patchClusterCustomObject(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchClusterCustomObject(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * partially update scale of the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -365,19 +366,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def patchClusterCustomObjectScale(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchClusterCustomObjectScale(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/scale")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * partially update status of the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -389,19 +390,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def patchClusterCustomObjectStatus(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchClusterCustomObjectStatus(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/status")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * patch the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -414,19 +415,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body The JSON schema of the Resource to patch.
    */
-  def patchNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * partially update scale of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -439,19 +440,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def patchNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/scale")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * partially update status of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -464,19 +465,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def patchNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def patchNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PATCH, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/status")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -488,20 +489,20 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body The JSON schema of the Resource to replace.
    */
-  def replaceClusterCustomObject(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceClusterCustomObject(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace scale of the specified cluster scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
-   *   code 201 : Any (Created)
+   *   code 200 : JObject (OK)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -513,20 +514,20 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def replaceClusterCustomObjectScale(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceClusterCustomObjectScale(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/scale")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace status of the cluster scoped specified custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
-   *   code 201 : Any (Created)
+   *   code 200 : JObject (OK)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -538,19 +539,19 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def replaceClusterCustomObjectStatus(group: String, version: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceClusterCustomObjectStatus(group: String, version: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/${plural}/${name}/status")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
+   *   code 200 : JObject (OK)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -563,20 +564,20 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body The JSON schema of the Resource to replace.
    */
-  def replaceNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceNamespacedCustomObject(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace scale of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
-   *   code 201 : Any (Created)
+   *   code 200 : JObject (OK)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -589,20 +590,20 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def replaceNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceNamespacedCustomObjectScale(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/scale")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
   /**
    * replace status of the specified namespace scoped custom object
    * 
    * Expected answers:
-   *   code 200 : Any (OK)
-   *   code 201 : Any (Created)
+   *   code 200 : JObject (OK)
+   *   code 201 : JObject (Created)
    *   code 401 :  (Unauthorized)
    * 
    * Available security schemes:
@@ -615,13 +616,13 @@ class CustomObjectsApi(baseUrl: String)(implicit serializer: SttpSerializer) {
    * @param name the custom object's name
    * @param body 
    */
-  def replaceNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String, body: Any)(implicit apiKey: ApiKeyValue): ApiRequestT[Any] =
+  def replaceNamespacedCustomObjectStatus(group: String, version: String, namespace: String, plural: String, name: String, body: JObject)(implicit apiKey: ApiKeyValue): ApiRequestT[JObject] =
     basicRequest
       .method(Method.PUT, uri"$baseUrl/apis/${group}/${version}/namespaces/${namespace}/${plural}/${name}/status")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
-      .response(asJson[Any])
+      .response(asJson[JObject])
 
 }
 

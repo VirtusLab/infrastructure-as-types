@@ -17,7 +17,7 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
    * RollingUpdateStatefulSetStrategy is used to communicate parameter for RollingUpdateStatefulSetStrategyType.
    */
 case class RollingUpdateStatefulSetStrategy(
-  /* Partition indicates the ordinal at which the StatefulSet should be partitioned. */
+  /* Partition indicates the ordinal at which the StatefulSet should be partitioned. Default value is 0. */
   partition: Option[Int] = None
 ) extends ApiModel
 

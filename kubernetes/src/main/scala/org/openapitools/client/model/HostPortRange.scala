@@ -14,7 +14,7 @@ package org.openapitools.client.model
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * HostPortRange defines a range of host ports that will be enabled by a policy for pods to use.  It requires both the start and end to be defined. Deprecated: use HostPortRange from policy API Group instead.
+   * HostPortRange defines a range of host ports that will be enabled by a policy for pods to use.  It requires both the start and end to be defined.
    */
 case class HostPortRange(
   /* max is the end of the range, inclusive. */

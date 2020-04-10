@@ -17,12 +17,10 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
    * ServiceReference holds a reference to Service.legacy.k8s.io
    */
 case class ServiceReference(
-  /* `name` is the name of the service. Required */
-  name: String,
-  /* `namespace` is the namespace of the service. Required */
-  namespace: String,
-  /* `path` is an optional URL path which will be sent in any request to this service. */
-  path: Option[String] = None,
+  /* Name is the name of the service */
+  name: Option[String] = None,
+  /* Namespace is the namespace of the service */
+  namespace: Option[String] = None,
   /* If specified, the port on the service that hosting webhook. Default to 443 for backward compatibility. `port` should be a valid port number (1-65535, inclusive). */
   port: Option[Int] = None
 ) extends ApiModel

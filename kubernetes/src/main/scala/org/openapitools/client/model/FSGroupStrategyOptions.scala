@@ -14,7 +14,7 @@ package org.openapitools.client.model
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * FSGroupStrategyOptions defines the strategy type and options used to create the strategy. Deprecated: use FSGroupStrategyOptions from policy API Group instead.
+   * FSGroupStrategyOptions defines the strategy type and options used to create the strategy.
    */
 case class FSGroupStrategyOptions(
   /* ranges are the allowed ranges of fs groups.  If you would like to force a single fs group then supply a single range with the same start and end. Required for MustRunAs. */

@@ -12,6 +12,7 @@
 package org.openapitools.client.model
 
 import java.time.OffsetDateTime
+import org.json4s.JObject
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
@@ -21,7 +22,7 @@ case class ManagedFieldsEntry(
   /* APIVersion defines the version of this resource that this field set applies to. The format is \"group/version\" just like the top-level APIVersion field. It is necessary to track the version of a field set because it cannot be automatically converted. */
   apiVersion: Option[String] = None,
   /* Fields identifies a set of fields. */
-  fields: Option[Any] = None,
+  fields: Option[JObject] = None,
   /* Manager is an identifier of the workflow managing these fields. */
   manager: Option[String] = None,
   /* Operation is the type of operation which lead to this ManagedFieldsEntry being created. The only valid values for this field are 'Apply' and 'Update'. */

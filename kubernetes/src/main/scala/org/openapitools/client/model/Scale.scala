@@ -14,7 +14,7 @@ package org.openapitools.client.model
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * Scale represents a scaling request for a resource.
+   * represents a scaling request for a resource.
    */
 case class Scale(
   /* APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources */

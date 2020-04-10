@@ -13,12 +13,9 @@ package org.openapitools.client.model
 
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
-  /**
-   * DaemonSetUpdateStrategy is a struct used to control the update strategy for a DaemonSet.
-   */
 case class DaemonSetUpdateStrategy(
   rollingUpdate: Option[RollingUpdateDaemonSet] = None,
-  /* Type of daemon set update. Can be \"RollingUpdate\" or \"OnDelete\". Default is RollingUpdate. */
+  /* Type of daemon set update. Can be \"RollingUpdate\" or \"OnDelete\". Default is OnDelete. */
   `type`: Option[String] = None
 ) extends ApiModel
 

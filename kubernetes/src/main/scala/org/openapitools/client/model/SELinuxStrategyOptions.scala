@@ -14,7 +14,7 @@ package org.openapitools.client.model
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * SELinuxStrategyOptions defines the strategy type and any options used to create the strategy. Deprecated: use SELinuxStrategyOptions from policy API Group instead.
+   * SELinuxStrategyOptions defines the strategy type and any options used to create the strategy.
    */
 case class SELinuxStrategyOptions(
   /* rule is the strategy that will dictate the allowable labels that may be set. */

@@ -15,7 +15,7 @@ import com.virtuslab.kubernetes.client.custom.ArrayByte
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
-   * WebhookClientConfig contains the information to make a TLS connection with the webhook
+   * WebhookClientConfig contains the information to make a TLS connection with the webhook. It has the same field as admissionregistration.v1beta1.WebhookClientConfig.
    */
 case class WebhookClientConfig(
   /* `caBundle` is a PEM encoded CA bundle which will be used to validate the webhook's server certificate. If unspecified, system trust roots on the apiserver are used. */

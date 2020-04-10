@@ -11,6 +11,7 @@
  */
 package org.openapitools.client.model
 
+import org.json4s.JObject
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
@@ -19,7 +20,7 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 case class CustomResourceSubresources(
   scale: Option[CustomResourceSubresourceScale] = None,
   /* Status denotes the status subresource for CustomResources */
-  status: Option[Any] = None
+  status: Option[JObject] = None
 ) extends ApiModel
 
 

@@ -21,8 +21,10 @@ case class DaemonSetSpec(
   minReadySeconds: Option[Int] = None,
   /* The number of old history to retain to allow rollback. This is a pointer to distinguish between explicit zero and not specified. Defaults to 10. */
   revisionHistoryLimit: Option[Int] = None,
-  selector: LabelSelector,
+  selector: Option[LabelSelector] = None,
   template: PodTemplateSpec,
+  /* DEPRECATED. A sequence number representing a specific generation of the template. Populated by the system. It can be set only during the creation. */
+  templateGeneration: Option[Long] = None,
   updateStrategy: Option[DaemonSetUpdateStrategy] = None
 ) extends ApiModel
 

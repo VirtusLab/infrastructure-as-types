@@ -11,6 +11,7 @@
  */
 package org.openapitools.client.model
 
+import org.json4s.JObject
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
@@ -20,26 +21,26 @@ case class JSONSchemaProps(
   ref: Option[String] = None,
   schema: Option[String] = None,
   /* JSONSchemaPropsOrBool represents JSONSchemaProps or a boolean value. Defaults to true for the boolean property. */
-  additionalItems: Option[Any] = None,
+  additionalItems: Option[JObject] = None,
   /* JSONSchemaPropsOrBool represents JSONSchemaProps or a boolean value. Defaults to true for the boolean property. */
-  additionalProperties: Option[Any] = None,
+  additionalProperties: Option[JObject] = None,
   allOf: Option[Seq[JSONSchemaProps]] = None,
   anyOf: Option[Seq[JSONSchemaProps]] = None,
   /* default is a default value for undefined object fields. Defaulting is an alpha feature under the CustomResourceDefaulting feature gate. Defaulting requires spec.preserveUnknownFields to be false. */
-  default: Option[Any] = None,
+  default: Option[JObject] = None,
   definitions: Option[Map[String, JSONSchemaProps]] = None,
-  dependencies: Option[Map[String, Any]] = None,
+  dependencies: Option[Map[String, JObject]] = None,
   description: Option[String] = None,
-  enum: Option[Seq[Any]] = None,
+  enum: Option[Seq[JObject]] = None,
   /* JSON represents any valid JSON value. These types are supported: bool, int64, float64, string, []interface{}, map[string]interface{} and nil. */
-  example: Option[Any] = None,
+  example: Option[JObject] = None,
   exclusiveMaximum: Option[Boolean] = None,
   exclusiveMinimum: Option[Boolean] = None,
   externalDocs: Option[ExternalDocumentation] = None,
   format: Option[String] = None,
   id: Option[String] = None,
   /* JSONSchemaPropsOrArray represents a value that can either be a JSONSchemaProps or an array of JSONSchemaProps. Mainly here for serialization purposes. */
-  items: Option[Any] = None,
+  items: Option[JObject] = None,
   maxItems: Option[Long] = None,
   maxLength: Option[Long] = None,
   maxProperties: Option[Long] = None,
