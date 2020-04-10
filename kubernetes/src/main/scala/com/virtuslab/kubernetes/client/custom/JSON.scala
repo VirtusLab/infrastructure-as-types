@@ -6,21 +6,16 @@ import com.google.gson.{JsonElement, JsonSerializationContext, _}
 import com.virtuslab.kubernetes.client.custom.IntOrString.IntOrStringAdapter
 import com.virtuslab.kubernetes.client.custom.Quantity.QuantityAdapter
 import com.virtuslab.kubernetes.client.custom.V1Patch.V1PatchAdapter
-import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
-import org.joda.time.{DateTime, DateTimeZone}
 
 object JSON {
   lazy val gson: Gson = new GsonBuilder()
     .registerTypeHierarchyAdapter(classOf[Seq[Any]], new ListSerializer)
     .registerTypeHierarchyAdapter(classOf[Map[Any, Any]], new MapSerializer)
     .registerTypeHierarchyAdapter(classOf[Option[Any]], new OptionSerializer)
-    .registerTypeAdapter(classOf[DateTime], new DateTimeSerializer)
     .registerTypeAdapter(classOf[IntOrString], new IntOrStringAdapter)
     .registerTypeAdapter(classOf[Quantity], new QuantityAdapter)
     .registerTypeAdapter(classOf[V1Patch], new V1PatchAdapter)
     .create()
-
-  val DATE_TIME_FORMATTER: DateTimeFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC)
 
   class ListSerializer extends JsonSerializer[Seq[Any]] {
     override def serialize(src: Seq[Any], typeOfSrc: Type, context: JsonSerializationContext): JsonElement = {
@@ -59,12 +54,6 @@ object JSON {
       case _ => throw new UnsupportedOperationException(outerType.toString)
     }
 
-  }
-
-  class DateTimeSerializer extends JsonSerializer[DateTime] {
-    override def serialize(src: DateTime, typeOfSrc: Type, context: JsonSerializationContext): JsonElement = {
-      new JsonPrimitive(DATE_TIME_FORMATTER.print(src))
-    }
   }
 
 }

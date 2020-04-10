@@ -11,6 +11,7 @@
  */
 package org.openapitools.client.model
 
+import com.virtuslab.kubernetes.client.custom.ArrayByte
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
   /**
@@ -22,7 +23,7 @@ case class CertificateSigningRequestSpec(
   /* Group information about the requesting user. See user.Info interface for details. */
   groups: Option[Seq[String]] = None,
   /* Base64-encoded PKCS#10 CSR data */
-  request: ByteArray,
+  request: ArrayByte,
   /* UID information about the requesting user. See user.Info interface for details. */
   uid: Option[String] = None,
   /* allowedUsages specifies a set of usage contexts the key will be valid for. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3      https://tools.ietf.org/html/rfc5280#section-4.2.1.12 */
