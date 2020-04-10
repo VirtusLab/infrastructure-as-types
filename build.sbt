@@ -8,7 +8,9 @@ lazy val kubernetes = project.in(file("kubernetes"))
       "org.specs2" %% "specs2-core" % "4.8.3" % "test",
       "org.specs2" %% "specs2-matcher-extra" % "4.8.3" % "test",
     ),
-    scalacOptions in Test ++= Seq("-Yrangepos")
+    scalacOptions ++= Seq("-language:higherKinds"),
+    scalacOptions in Test ++= Seq("-Yrangepos"),
+    scalafmtOnCompile := true
   )
 
 lazy val dsl = (project in file("dsl"))
@@ -25,6 +27,7 @@ lazy val dsl = (project in file("dsl"))
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
       "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
     ),
+    scalacOptions ++= Seq("-deprecation"),
     scalafmtOnCompile := true
   ).dependsOn(kubernetes)
 
