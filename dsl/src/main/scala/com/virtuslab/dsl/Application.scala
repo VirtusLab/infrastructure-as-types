@@ -17,13 +17,12 @@ case class Application(
     command: List[String] = Nil,
     args: List[String] = Nil,
     envs: List[Containerized.EnvironmentVariable] = Nil,
-    ports: List[Networked.Port] = Nil,
+    ports: List[Port] = Nil,
     ping: Option[HttpPing] = None,
     healthCheck: Option[HttpHealthCheck] = None,
     mounts: List[Mount] = Nil,
     secrets: List[Secret] = Nil)
   extends Labeled
   with Containerized
-  with Networked
   with Mounts
   with Transformable[Application]

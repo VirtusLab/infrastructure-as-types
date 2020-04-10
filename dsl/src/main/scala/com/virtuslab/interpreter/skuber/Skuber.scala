@@ -1,5 +1,6 @@
 package com.virtuslab.interpreter.skuber
 
+import com.virtuslab.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.dsl._
 import com.virtuslab.exporter.skuber.Resource
 import com.virtuslab.interpreter.{ Context, Interpreter }
@@ -9,7 +10,7 @@ import skuber.json.ext.format._
 import skuber.json.format._
 import skuber.networking.NetworkPolicy
 import skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
-import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
+import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
 
 object Skuber {
 
@@ -85,11 +86,10 @@ object Skuber {
         command = app.obj.command,
         args = app.obj.args,
         env = env,
-        ports = app.obj.ports.map { port =>
-          Container.Port(
-            containerPort = port.number,
-            name = port.name.getOrElse("")
-          )
+        ports = app.obj.ports.flatMap {
+          case NamedPort(name, number) => Container.Port(containerPort = number, name = name) :: Nil
+          case APort(number)           => Container.Port(containerPort = number) :: Nil
+          case _                       => Nil
         },
         livenessProbe = app.obj.ping.map(ping => Probe(action = HTTPGetAction(ping.url))),
         readinessProbe = app.obj.healthCheck.map(
@@ -141,14 +141,22 @@ object Skuber {
   private def service(ns: Namespace, app: Application): Service = {
     app.ports
       .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = ns.name))) {
-        case (svc, port) =>
+        case (svc, NamedPort(name, number)) =>
           svc.exposeOnPort(
             Service.Port(
-              name = port.name.getOrElse(""),
-              port = port.number,
-              targetPort = Some(Left(port.number))
+              name = name,
+              port = number,
+              targetPort = Some(Left(number))
             )
           )
+        case (svc, APort(number)) =>
+          svc.exposeOnPort(
+            Service.Port(
+              port = number,
+              targetPort = Some(Left(number))
+            )
+          )
+        case (svc, _) => svc
       }
       .withSelector(
         app.labels.toMap
@@ -347,9 +355,11 @@ object Skuber {
     def apply(ps: Protocols): List[Port] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
 
     def apply(p: Protocol.L4): Option[Port] = p match {
-      case UDP(port) => Some(Port(port.numberOrName, skuber.Protocol.UDP))
-      case TCP(port) => Some(Port(port.numberOrName, skuber.Protocol.TCP))
-      case _         => None
+      case UDP(port: APort)     => Some(Port(Left(port.number), skuber.Protocol.UDP))
+      case UDP(port: NamedPort) => Some(Port(Left(port.number), skuber.Protocol.UDP))
+      case TCP(port: APort)     => Some(Port(Left(port.number), skuber.Protocol.TCP))
+      case TCP(port: NamedPort) => Some(Port(Left(port.number), skuber.Protocol.TCP))
+      case _                    => None
     }
   }
 
@@ -380,7 +390,7 @@ object Skuber {
                                 http.path.get.getOrElse("/"),
                                 Ingress.Backend(
                                   serviceName = "???", // FIXME get from identity
-                                  servicePort = tcp.port.numberOrName.left.get // FIXME
+                                  servicePort = tcp.port.get.get._1 // FIXME
                                 )
                               )
                             )

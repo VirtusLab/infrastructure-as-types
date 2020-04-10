@@ -39,8 +39,8 @@ class ConnectionTest extends InterpreterSpec {
         )
       }
 
-    val app1 = Application(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Networked.Port(9090) :: Nil)
-    val app2 = Application(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Networked.Port(9090) :: Nil)
+    val app1 = Application(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Port(9090) :: Nil)
+    val app2 = Application(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Port(9090) :: Nil)
 
     frontendNsRef
       .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?

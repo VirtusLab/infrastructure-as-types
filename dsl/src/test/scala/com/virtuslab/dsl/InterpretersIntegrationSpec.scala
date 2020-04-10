@@ -1,5 +1,6 @@
 package com.virtuslab.dsl
 
+import com.virtuslab.dsl.Port.NamedPort
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import com.virtuslab.interpreter.{ InterpreterSpec, SystemInterpreter }
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
@@ -17,8 +18,8 @@ class InterpretersIntegrationSpec extends InterpreterSpec {
           import ns._
 
           applications(
-            Application(Labels(Name("app-one")), "image-app-one", ports = Networked.Port(9090) :: Nil),
-            Application(Labels(Name("app-two")), "image-app-two", ports = Networked.Port(9090, Some("http-port")) :: Nil)
+            Application(Labels(Name("app-one")), "image-app-one", ports = Port(9090) :: Nil),
+            Application(Labels(Name("app-two")), "image-app-two", ports = NamedPort("http-port", 9090) :: Nil)
           )
         }
       )

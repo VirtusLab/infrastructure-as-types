@@ -176,19 +176,22 @@ object Protocols {
 }
 
 sealed trait Port {
-  def numberOrName: Either[Int, String]
-  def asString: String = numberOrName.fold(_.toString, identity)
+  def getNumber: Option[Int] = get.map(_._1)
+  def getName: Option[String] = get.flatMap(_._2)
+  def get: Option[(Int, Option[String])] = this match {
+    case Port.Any                     => None
+    case Port.APort(number)           => Some(number, None)
+    case Port.NamedPort(name, number) => Some(number, Some(name))
+  }
 }
 object Port {
   sealed trait Any extends Port
-  case object Any extends Any {
-    override def numberOrName = Left(0)
-  }
-  // TODO do we need "nameable ports" or can we just enforce integer ports?
-  case class APort(numberOrName: Either[Int, String]) extends Port
+  case object Any extends Any
+  case class APort(number: Int) extends Port
+  case class NamedPort(name: String, number: Int) extends Port
 
-  def apply(number: Int): Port = APort(Left(number))
-  def apply(name: String): Port = APort(Right(name))
+  def apply(number: Int): Port = APort(number)
+  def apply(name: String, number: Int): Port = NamedPort(name, number)
 }
 
 trait CIDRs {
