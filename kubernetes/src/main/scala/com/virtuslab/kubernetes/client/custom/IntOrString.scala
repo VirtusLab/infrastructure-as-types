@@ -2,8 +2,8 @@ package com.virtuslab.kubernetes.client.custom
 
 case class IntOrString(value: Either[Int, String]) {
   def isInt: Boolean = value.isLeft
-  def int: Int = if (!isInt) throw new IllegalStateException("Not an integer") else value.left.get
-  def string: String = if (isInt) throw new IllegalStateException("Not a string") else value.right.get
+  def int: Int = if (!isInt) throw new IllegalStateException("Not an integer") else value.swap.getOrElse(-1)
+  def string: String = if (isInt) throw new IllegalStateException("Not a string") else value.getOrElse("")
 }
 
 object IntOrString {
