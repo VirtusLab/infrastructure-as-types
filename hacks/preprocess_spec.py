@@ -146,6 +146,8 @@ def process_swagger(spec, client_language):
 def preserved_primitives_for_language(client_language):
     if client_language == "java":
         return ["intstr.IntOrString", "resource.Quantity", "v1.Patch"]
+    elif client_language == "scala":
+        return ["intstr.IntOrString", "resource.Quantity", "v1.Patch"]
     elif client_language == "csharp":
         return ["intstr.IntOrString", "resource.Quantity", "v1.Patch"]
     elif client_language == "haskell-http-client":
@@ -156,12 +158,16 @@ def preserved_primitives_for_language(client_language):
 def format_for_language(client_language):
     if client_language == "java":
         return {"resource.Quantity": "quantity", "v1.Patch": "patch"}
+    elif client_language == "scala":
+        return {"intstr.IntOrString": "int-or-string", "resource.Quantity": "quantity", "v1.Patch": "patch"}
     else:
         return {}
 
 def type_for_language(client_language):
     if client_language == "java":
         return {"v1.Patch": "string"}
+    elif client_language == "scala":
+        return {"intstr.IntOrString": "string", "resource.Quantity": "string", "v1.Patch": "string"}
     else:
         return {}
 
@@ -267,7 +273,7 @@ def remove_model_prefixes(spec):
     for k, v in models.items():
         if "new_name" not in v:
             raise PreprocessingException("Cannot rename model %s" % k)
-        print("Removing prefix %s from %s...\n" % (v["removed_prefix"], k))
+        print("Removing prefix %s from %s..." % (v["removed_prefix"], k))
         rename_model(spec, k, v["new_name"])
 
 

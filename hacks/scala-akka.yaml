@@ -13,6 +13,17 @@ ensureUniqueParams: true
 # Add form or body parameters to the beginning of the parameter list. (Default: false)
 prependFormOrBodyParameters: false
 # Sort model properties to place required parameters before optional parameters. (Default: true)
-sortModelPropertiesByRequiredFlag: true
+sortModelPropertiesByRequiredFlag: false
 # Sort method arguments to place required parameters before optional parameters. (Default: true)
-sortParamsByRequiredFlag: true
+sortParamsByRequiredFlag: false
+
+typeMappings:
+  int-or-string: IntOrString
+  quantity: Quantity
+  patch: V1Patch
+  ByteArray: ArrayByte
+importMappings:
+  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
+  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
+  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
+  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
