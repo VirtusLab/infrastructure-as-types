@@ -1,23 +1,19 @@
 version := "1.0.0"
 name := "kubernetes-client-scala"
 organization := "com.virtuslab"
-scalaVersion := "2.12.8"
+
+scalaVersion := "2.13.0"
+
+crossScalaVersions := Seq(scalaVersion.value, "2.12.10",  "2.11.12")
 
 libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % "1.3.3",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.21",
-  "com.typesafe.akka" %% "akka-stream" % "2.5.21",
-  "com.typesafe.akka" %% "akka-http" % "10.1.7",
-  "joda-time" % "joda-time" % "2.10.1",
-  "org.json4s" %% "json4s-jackson" % "3.6.5",
-  "org.json4s" %% "json4s-ext" % "3.6.5",
-  "de.heikoseeberger" %% "akka-http-json4s" % "1.25.2",
+  "com.softwaremill.sttp.client" %% "core" % "2.0.0",
+  "com.softwaremill.sttp.client" %% "json4s" % "2.0.0",
+  "org.json4s" %% "json4s-jackson" % "3.6.7",
   // test dependencies
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "junit" % "junit" % "4.13" % "test"
 )
-
-resolvers ++= Seq(Resolver.mavenLocal)
 
 scalacOptions := Seq(
   "-unchecked",
