@@ -21,13 +21,13 @@ modelPropertyNaming: camelCase
 # Date library to use: 'joda', 'java8' (Default: java8)
 dateLibrary: java8
 
-#typeMappings:
+typeMappings:
 #  int-or-string: IntOrString
 #  quantity: Quantity
 #  patch: V1Patch
-#  ByteArray: ArrayByte
-#importMappings:
+  ByteArray: ArrayByte
+importMappings:
 #  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
 #  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
-#  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
+  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
 #  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
