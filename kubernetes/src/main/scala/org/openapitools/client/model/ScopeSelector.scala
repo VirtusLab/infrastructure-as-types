@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * A scope selector represents the AND of the selectors represented by the scoped-resource selector requirements.

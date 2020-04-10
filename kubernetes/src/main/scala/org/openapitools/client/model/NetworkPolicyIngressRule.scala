@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * NetworkPolicyIngressRule describes a particular set of traffic that is allowed to the pods matched by a NetworkPolicySpec's podSelector. The traffic must match both ports and from.

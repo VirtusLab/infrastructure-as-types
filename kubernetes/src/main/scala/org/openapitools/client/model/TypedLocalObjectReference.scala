@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * TypedLocalObjectReference contains enough information to let you locate the typed referenced object inside the same namespace.

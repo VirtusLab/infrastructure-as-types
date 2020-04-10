@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * Status is a return value for calls that don't return other objects.

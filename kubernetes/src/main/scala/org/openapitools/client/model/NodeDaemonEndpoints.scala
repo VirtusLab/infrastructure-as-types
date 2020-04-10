@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * NodeDaemonEndpoints lists ports opened by daemons running on the Node.

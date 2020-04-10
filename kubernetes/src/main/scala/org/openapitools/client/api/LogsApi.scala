@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.api
 
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

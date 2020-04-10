@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import java.time.OffsetDateTime
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.

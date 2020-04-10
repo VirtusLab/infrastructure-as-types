@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * HTTPIngressPath associates a path regex with a backend. Incoming urls matching the path are forwarded to the backend.

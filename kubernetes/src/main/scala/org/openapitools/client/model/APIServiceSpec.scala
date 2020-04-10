@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import com.virtuslab.kubernetes.client.custom.ArrayByte
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * APIServiceSpec contains information for locating and communicating with a server. Only https is supported, though you are able to disable certificate verification.

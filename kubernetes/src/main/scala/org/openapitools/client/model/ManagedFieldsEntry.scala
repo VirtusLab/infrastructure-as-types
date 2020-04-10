@@ -13,7 +13,7 @@ package org.openapitools.client.model
 
 import java.time.OffsetDateTime
 import org.json4s.JObject
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * ManagedFieldsEntry is a workflow-id, a FieldSet and the group version of the resource that the fieldset applies to.

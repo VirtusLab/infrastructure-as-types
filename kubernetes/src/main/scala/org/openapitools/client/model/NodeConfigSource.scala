@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * NodeConfigSource specifies a source of node configuration. Exactly one subfield (excluding metadata) must be non-nil.

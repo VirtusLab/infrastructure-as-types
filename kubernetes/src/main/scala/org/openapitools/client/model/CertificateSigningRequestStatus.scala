@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import com.virtuslab.kubernetes.client.custom.ArrayByte
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
 case class CertificateSigningRequestStatus(
   /* If request was approved, the controller will place the issued certificate here. */

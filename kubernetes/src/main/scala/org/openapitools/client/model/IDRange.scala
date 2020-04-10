@@ -11,10 +11,10 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
-   * IDRange provides a min/max of an allowed range of IDs.
+   * IDRange provides a min/max of an allowed range of IDs. Deprecated: use IDRange from policy API Group instead.
    */
 case class IDRange(
   /* max is the end of the range, inclusive. */

@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import java.time.OffsetDateTime
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * Event is a report of an event somewhere in the cluster. It generally denotes some state change in the system.

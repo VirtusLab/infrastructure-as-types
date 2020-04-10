@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import org.json4s.JObject
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * CustomResourceSubresources defines the status and scale subresources for CustomResources.

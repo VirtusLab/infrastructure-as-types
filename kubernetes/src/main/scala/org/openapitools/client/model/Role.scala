@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * Role is a namespaced, logical grouping of PolicyRules that can be referenced as a unit by a RoleBinding.

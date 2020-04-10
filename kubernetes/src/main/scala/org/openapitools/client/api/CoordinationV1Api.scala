@@ -16,7 +16,7 @@ import org.openapitools.client.model.DeleteOptions
 import org.openapitools.client.model.Lease
 import org.openapitools.client.model.LeaseList
 import org.openapitools.client.model.Status
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

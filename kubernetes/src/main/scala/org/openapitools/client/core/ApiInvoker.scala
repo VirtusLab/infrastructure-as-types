@@ -9,7 +9,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-package com.virtuslab.kubernetes.client.openapi.core
+package org.openapitools.client.core
 
 import org.json4s._
 import sttp.client._

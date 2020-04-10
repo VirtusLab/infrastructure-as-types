@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * Node is a worker node in Kubernetes. Each node will have a unique identifier in the cache (i.e. in etcd).

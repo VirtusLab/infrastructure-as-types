@@ -25,7 +25,7 @@ import org.openapitools.client.model.Scale
 import org.openapitools.client.model.StatefulSet
 import org.openapitools.client.model.StatefulSetList
 import org.openapitools.client.model.Status
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

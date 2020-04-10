@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * A scoped-resource selector requirement is a selector that contains values, a scope name, and an operator that relates the scope name and values.

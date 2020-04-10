@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import java.time.OffsetDateTime
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * PodCondition contains details for the current condition of this pod.

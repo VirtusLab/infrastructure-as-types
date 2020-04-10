@@ -13,7 +13,7 @@ package org.openapitools.client.api
 
 import org.openapitools.client.model.APIResourceList
 import org.openapitools.client.model.TokenReview
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

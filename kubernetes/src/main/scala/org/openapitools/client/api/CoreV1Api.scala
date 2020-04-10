@@ -49,7 +49,7 @@ import org.openapitools.client.model.ServiceAccount
 import org.openapitools.client.model.ServiceAccountList
 import org.openapitools.client.model.ServiceList
 import org.openapitools.client.model.Status
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

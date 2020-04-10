@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * GroupVersion contains the \"group/version\" and \"version\" string of a version. It is made a struct to keep extensibility.

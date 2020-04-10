@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import java.time.OffsetDateTime
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * The node this Taint is attached to has the \"effect\" on any pod that does not tolerate the Taint.

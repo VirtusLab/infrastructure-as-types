@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * ValidatingWebhookConfiguration describes the configuration of and admission webhook that accept or reject and object without changing it.

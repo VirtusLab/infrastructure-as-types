@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)

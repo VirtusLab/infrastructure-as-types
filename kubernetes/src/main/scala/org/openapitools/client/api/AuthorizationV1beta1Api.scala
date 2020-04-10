@@ -16,7 +16,7 @@ import org.openapitools.client.model.LocalSubjectAccessReview
 import org.openapitools.client.model.SelfSubjectAccessReview
 import org.openapitools.client.model.SelfSubjectRulesReview
 import org.openapitools.client.model.SubjectAccessReview
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

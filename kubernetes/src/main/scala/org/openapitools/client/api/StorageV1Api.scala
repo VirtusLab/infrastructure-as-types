@@ -18,7 +18,7 @@ import org.openapitools.client.model.StorageClass
 import org.openapitools.client.model.StorageClassList
 import org.openapitools.client.model.VolumeAttachment
 import org.openapitools.client.model.VolumeAttachmentList
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

@@ -18,7 +18,7 @@ import org.openapitools.client.model.MutatingWebhookConfigurationList
 import org.openapitools.client.model.Status
 import org.openapitools.client.model.ValidatingWebhookConfiguration
 import org.openapitools.client.model.ValidatingWebhookConfigurationList
-import com.virtuslab.kubernetes.client.openapi.core._
+import org.openapitools.client.core._
 import alias._
 import sttp.client._
 import sttp.model.Method

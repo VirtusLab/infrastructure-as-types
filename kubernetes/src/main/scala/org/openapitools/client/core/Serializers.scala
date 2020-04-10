@@ -1,4 +1,4 @@
-package com.virtuslab.kubernetes.client.openapi.core
+package org.openapitools.client.core
 
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime, ZoneId}
 import java.time.format.DateTimeFormatter

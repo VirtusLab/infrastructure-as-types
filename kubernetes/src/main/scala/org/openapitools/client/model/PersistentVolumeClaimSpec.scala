@@ -11,7 +11,7 @@
  */
 package org.openapitools.client.model
 
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * PersistentVolumeClaimSpec describes the common attributes of storage devices and allows a Source for provider-specific attributes

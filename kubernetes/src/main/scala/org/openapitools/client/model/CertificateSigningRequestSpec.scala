@@ -12,7 +12,7 @@
 package org.openapitools.client.model
 
 import com.virtuslab.kubernetes.client.custom.ArrayByte
-import com.virtuslab.kubernetes.client.openapi.core.ApiModel
+import org.openapitools.client.core.ApiModel
 
   /**
    * This information is immutable after the request is created. Only the Request and Usages fields can be set on creation, other fields are derived by Kubernetes and cannot be modified by users.
