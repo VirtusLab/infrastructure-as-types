@@ -8,6 +8,7 @@ python preprocess_spec.py scala v1.15.10 swagger.json kubernetes kubernetes | te
 
 # Cleanup already generated stuff
 rm -rf ../kubernetes/src/main/scala/com/virtuslab/kubernetes/client/openapi
+rm -rf ../kubernetes/src/main/scala/org/openapitools/client
 
 # Run the generator
 java -jar openapi-generator-cli.jar generate \
