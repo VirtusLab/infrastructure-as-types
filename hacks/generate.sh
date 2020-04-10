@@ -11,12 +11,12 @@ rm -rf ../kubernetes/src/main/scala/com/virtuslab/kubernetes/client/openapi
 
 # Run the generator
 java -jar openapi-generator-cli.jar generate \
-    --config scala-akka.yaml \
-    --generator-name scala-akka \
+    --config scala-sttp.yaml \
+    --generator-name scala-sttp \
     --input-spec swagger.json \
     --skip-validate-spec \
     --git-user-id VirtusLab \
     --git-repo-id kubernetes-client-scala \
     --artifact-id kubernetes-client-scala \
     --group-id com.virtuslab \
-    --output ../kubernetes | tee generate.log
+    --output ../kubernetes 2>&1 | tee generate.log

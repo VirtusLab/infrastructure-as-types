@@ -16,14 +16,18 @@ prependFormOrBodyParameters: false
 sortModelPropertiesByRequiredFlag: false
 # Sort method arguments to place required parameters before optional parameters. (Default: true)
 sortParamsByRequiredFlag: false
+# Naming convention for the property: 'camelCase', 'PascalCase', 'snake_case' and 'original', which keeps the original name (Default: camelCase)
+modelPropertyNaming: camelCase
+# Date library to use: 'joda', 'java8' (Default: java8)
+dateLibrary: java8
 
-typeMappings:
-  int-or-string: IntOrString
-  quantity: Quantity
-  patch: V1Patch
-  ByteArray: ArrayByte
-importMappings:
-  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
-  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
-  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
-  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
+#typeMappings:
+#  int-or-string: IntOrString
+#  quantity: Quantity
+#  patch: V1Patch
+#  ByteArray: ArrayByte
+#importMappings:
+#  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
+#  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
+#  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
+#  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
