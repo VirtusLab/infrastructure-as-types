@@ -4,18 +4,19 @@ import com.virtuslab.exporter.skuber.Resource
 import com.virtuslab.playjson.Yaml
 import play.api.libs.json.{ JsValue, Json }
 import _root_.skuber.ObjectResource
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.interpreter.{ Context, SystemInterpreter }
 
 object Exporter {
-  def toYaml[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[String] = {
+  def toYaml(interpreter: SystemInterpreter[SkuberContext]): Seq[String] = {
     toJsValues(interpreter).map(Yaml.prettyPrint)
   }
 
-  def toJson[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[String] = {
+  def toJson(interpreter: SystemInterpreter[SkuberContext]): Seq[String] = {
     toJsValues(interpreter).map(Json.prettyPrint)
   }
 
-  private[virtuslab] def toJsValues[Ctx <: Context](interpreter: SystemInterpreter[Ctx]): Seq[JsValue] = {
+  private[virtuslab] def toJsValues(interpreter: SystemInterpreter[SkuberContext]): Seq[JsValue] = {
     interpreter.resources.map(toJsValue)
   }
 

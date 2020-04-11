@@ -4,26 +4,26 @@ import com.virtuslab.interpreter.{ Context, Interpreter }
 
 case class SystemBuilder[Ctx <: Context](system: DistributedSystem[Ctx]) {
   private val refs: scala.collection.mutable.Set[Labeled] = scala.collection.mutable.Set.empty
-  private val nss: scala.collection.mutable.Set[Definition[_, Namespace]] = scala.collection.mutable.Set.empty
+  private val nss: scala.collection.mutable.Set[Definition[Ctx, Namespace[Ctx]]] = scala.collection.mutable.Set.empty
 
   def references(rs: Labeled*): SystemBuilder[Ctx] = {
     refs ++= rs
     this
   }
 
-  def namespaces(builders: NamespaceBuilder[Ctx])(implicit ctx: Ctx, ev: Interpreter[Ctx, Namespace]): SystemBuilder[Ctx] = namespaces(builders.build())
-  def namespaces(namespaces: Namespace*)(implicit ctx: Ctx, ev: Interpreter[Ctx, Namespace]): SystemBuilder[Ctx] = {
+  def namespaces(builders: NamespaceBuilder[Ctx])(implicit ctx: Ctx, ev: Interpreter[Ctx, Namespace[Ctx]]): SystemBuilder[Ctx] = namespaces(builders.build())
+  def namespaces(namespaces: Namespace[Ctx]*)(implicit ctx: Ctx, ev: Interpreter[Ctx, Namespace[Ctx]]): SystemBuilder[Ctx] = {
     nss ++= namespaces.map(ns => Definition(ns, ns))
     this
   }
 
   // TODO should interpreters take over at least the most of validation?
   def validateState(): Unit = {
-    val definitions: Set[Namespace] = nss.map(d => d.obj).toSet
-    val members = definitions.flatten((ns: Namespace) => ns.members)
+    val definitions: Set[Namespace[Ctx]] = nss.map(d => d.obj).toSet
+    val members = definitions.flatten((ns: Namespace[Ctx]) => ns.members)
     refs.foreach {
-      case nref: Namespace =>
-        if (!definitions.exists((ndef: Namespace) => nref.labels == ndef.labels)) {
+      case nref: Namespace[Ctx] =>
+        if (!definitions.exists((ndef: Namespace[Ctx]) => nref.labels == ndef.labels)) {
           throw new IllegalStateException("Can't find a namespace definition for reference: " + nref)
         }
       case aref: Application =>
@@ -43,7 +43,7 @@ case class SystemBuilder[Ctx <: Context](system: DistributedSystem[Ctx]) {
     }
   }
 
-  def collect(): Set[Definition[_, Namespace]] = {
+  def collect(): Set[Definition[Ctx, Namespace[Ctx]]] = {
     validateState()
     nss.toSet
   }
@@ -53,7 +53,7 @@ case class SystemBuilder[Ctx <: Context](system: DistributedSystem[Ctx]) {
   def name: String = system.name
 }
 
-final case class DistributedSystem[Ctx <: Context] private[dsl] (labels: Labels, namespaces: Set[Definition[_, Namespace]]) extends Labeled {
+final case class DistributedSystem[Ctx <: Context] private[dsl] (labels: Labels, namespaces: Set[Definition[Ctx, Namespace[Ctx]]]) extends Labeled {
   def inSystem(f: SystemBuilder[Ctx] => SystemBuilder[Ctx]): DistributedSystem[Ctx] = f(builder).build()
   def builder: SystemBuilder[Ctx] = SystemBuilder(this)
 }

@@ -1,15 +1,13 @@
 package com.virtuslab.interpreter
 
 import com.virtuslab.dsl.{ DistributedSystem, SystemBuilder }
-import com.virtuslab.exporter.skuber.Resource
-import _root_.skuber.ObjectResource
 
 class SystemInterpreter[Ctx <: Context](system: DistributedSystem[Ctx]) {
-  def resources: Seq[Resource[ObjectResource]] = {
+  def resources: Seq[Ctx#Ret] = {
     system.namespaces.flatMap { ns =>
-      Seq(ns.interpret()) ++ ns.obj.members.toSeq.map(_.interpret())
+      ns.interpret() ++ ns.obj.members.toSeq.flatMap(_.interpret())
     }
-  }.toSeq.asInstanceOf[Seq[Resource[ObjectResource]]]
+  }.toSeq
 }
 
 object SystemInterpreter {

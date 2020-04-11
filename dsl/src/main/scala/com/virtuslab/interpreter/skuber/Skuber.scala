@@ -10,20 +10,20 @@ import skuber.json.ext.format._
 import skuber.json.format._
 import skuber.networking.NetworkPolicy
 import skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
-import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, Pod, Probe, Service, Volume }
+import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume }
 
 object Skuber {
 
   class SkuberContext extends Context {
-    override type Ret[A] = Seq[Resource[_]] // FIXME ?
+    override type Ret = Resource[ObjectResource] // FIXME ?
   }
 
   implicit val context: SkuberContext = new SkuberContext
 
-  implicit val namespaceInterpreter: Interpreter[SkuberContext, Namespace] =
-    (namespace: Definition[SkuberContext, Namespace]) =>
+  implicit val namespaceInterpreter: Interpreter[SkuberContext, Namespace[SkuberContext]] =
+    (namespace: Definition[SkuberContext, Namespace[SkuberContext]]) =>
       Seq(
-        Resource(
+        Resource.weak(
           skuber.Namespace.from(
             ObjectMeta(
               name = namespace.obj.name,
@@ -36,7 +36,7 @@ object Skuber {
   implicit val configurationInterpreter: Interpreter[SkuberContext, Configuration] =
     (cfg: Definition[SkuberContext, Configuration]) => {
       Seq(
-        Resource(
+        Resource.weak(
           ConfigMap(
             metadata = ObjectMeta(
               name = cfg.obj.name,
@@ -52,7 +52,7 @@ object Skuber {
   implicit val secretInterpreter: Interpreter[SkuberContext, Secret] =
     (secret: Definition[SkuberContext, Secret]) => {
       Seq(
-        Resource(
+        Resource.weak(
           skuber.Secret(
             metadata = ObjectMeta(
               name = secret.obj.name,
@@ -101,11 +101,11 @@ object Skuber {
       val dpl = deployment(app.namespace, app.obj, container, mounts.map(_._1))
       val svc = service(app.namespace, app.obj)
 
-      Seq(Resource(svc), Resource(dpl))
+      Seq(Resource.weak(svc), Resource.weak(dpl))
     }
 
   private def deployment(
-      ns: Namespace,
+      ns: Namespace[SkuberContext],
       app: Application,
       container: Container,
       mountedVolumes: List[Volume]
@@ -138,7 +138,7 @@ object Skuber {
     )
   }
 
-  private def service(ns: Namespace, app: Application): Service = {
+  private def service(ns: Namespace[SkuberContext], app: Application): Service = {
     app.ports
       .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = ns.name))) {
         case (svc, NamedPort(name, number)) =>
@@ -169,7 +169,7 @@ object Skuber {
   implicit val connectionInterpreter: Interpreter[SkuberContext, Connection] =
     (connection: Definition[SkuberContext, Connection]) => {
       Seq(
-        Resource(
+        Resource.weak(
           NetworkPolicy(
             metadata = ObjectMeta(
               name = connection.obj.name,
@@ -366,7 +366,7 @@ object Skuber {
   implicit val gatewayInterpreter: Interpreter[SkuberContext, Gateway] =
     (gateway: Definition[SkuberContext, Gateway]) => {
       Seq(
-        Resource(
+        Resource.weak(
           Ingress(
             apiVersion = "networking.k8s.io/v1beta1", // Skuber uses wrong api version
             metadata = ObjectMeta(

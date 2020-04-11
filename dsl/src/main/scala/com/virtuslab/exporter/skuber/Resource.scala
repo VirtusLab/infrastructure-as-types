@@ -7,3 +7,8 @@ case class Resource[A <: ObjectResource: Format: ResourceDefinition](obj: A) {
   def format: Format[A] = implicitly[Format[A]]
   def definition: ResourceDefinition[A] = implicitly[ResourceDefinition[A]]
 }
+
+object Resource {
+  def weak[A <: ObjectResource: Format: ResourceDefinition](obj: A): Resource[ObjectResource] =
+    new Resource(obj).asInstanceOf[Resource[ObjectResource]]
+}
