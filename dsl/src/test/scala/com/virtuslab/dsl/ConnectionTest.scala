@@ -1,11 +1,12 @@
 package com.virtuslab.dsl
 
+import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import com.virtuslab.interpreter.SystemInterpreter
 import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 
-class ConnectionTest extends InterpreterSpec {
+class ConnectionTest extends InterpreterSpec with JsonMatchers {
   import com.virtuslab.interpreter.skuber.Skuber._
 
   it should "allow to express connections between two namespaces" in {
@@ -61,7 +62,7 @@ class ConnectionTest extends InterpreterSpec {
 
     Ensure(resources)
       .contain(
-        ShortMeta("v1", "Namespace", "default", "frontend") -> yamlToJson("""
+        ShortMeta("v1", "Namespace", "default", "frontend") -> matchJsonString(yamlToJson("""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -70,8 +71,8 @@ class ConnectionTest extends InterpreterSpec {
           |  labels:
           |    name: frontend
           |    role: frontend
-          |""".stripMargin),
-        ShortMeta("v1", "Namespace", "default", "backend") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("v1", "Namespace", "default", "backend") -> matchJsonString(yamlToJson("""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -80,8 +81,8 @@ class ConnectionTest extends InterpreterSpec {
           |  labels:
           |    name: backend
           |    role: backend
-          |""".stripMargin),
-        ShortMeta("v1", "Service", "frontend", "app-one") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("v1", "Service", "frontend", "app-one") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -101,8 +102,8 @@ class ConnectionTest extends InterpreterSpec {
           |    role: frontend
           |  type: ClusterIP
           |  sessionAffinity: None
-          |""".stripMargin),
-        ShortMeta("v1", "Service", "frontend", "app-two") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("v1", "Service", "frontend", "app-two") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -122,8 +123,8 @@ class ConnectionTest extends InterpreterSpec {
           |    role: frontend
           |  type: ClusterIP
           |  sessionAffinity: None
-          |""".stripMargin),
-        ShortMeta("v1", "Service", "backend", "app-three") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("v1", "Service", "backend", "app-three") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -139,8 +140,8 @@ class ConnectionTest extends InterpreterSpec {
           |    role: backend
           |  type: ClusterIP
           |  sessionAffinity: None
-          |""".stripMargin),
-        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> matchJsonString(yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -168,8 +169,8 @@ class ConnectionTest extends InterpreterSpec {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> matchJsonString(yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -200,8 +201,8 @@ class ConnectionTest extends InterpreterSpec {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> matchJsonString(yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -232,8 +233,9 @@ class ConnectionTest extends InterpreterSpec {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> yamlToJson("""
+          |""".stripMargin)),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: NetworkPolicy
           |apiVersion: networking.k8s.io/v1
@@ -262,8 +264,10 @@ class ConnectionTest extends InterpreterSpec {
           |  policyTypes:
           |  - Ingress
           |  - Egress
-          |""".stripMargin),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three") -> yamlToJson("""
+          |""".stripMargin)
+        ),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: NetworkPolicy
           |apiVersion: networking.k8s.io/v1
@@ -292,8 +296,10 @@ class ConnectionTest extends InterpreterSpec {
           |  policyTypes:
           |  - Ingress
           |  - Egress
-          |""".stripMargin),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one") -> yamlToJson("""
+          |""".stripMargin)
+        ),
+        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: NetworkPolicy
           |apiVersion: networking.k8s.io/v1
@@ -323,6 +329,7 @@ class ConnectionTest extends InterpreterSpec {
           |  - Ingress
           |  - Egress
           |""".stripMargin)
+        )
       )
   }
 
@@ -375,7 +382,7 @@ class ConnectionTest extends InterpreterSpec {
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |kind: NetworkPolicy
             |apiVersion: networking.k8s.io/v1
@@ -402,7 +409,7 @@ class ConnectionTest extends InterpreterSpec {
             |  policyTypes:
             |  - Ingress
             |  - Egress
-            |""".stripMargin)
+            |""".stripMargin))
       )
   }
 
@@ -526,7 +533,7 @@ class ConnectionTest extends InterpreterSpec {
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -541,9 +548,9 @@ class ConnectionTest extends InterpreterSpec {
             |  - {}
             |  policyTypes:
             |  - Ingress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-ingress") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -556,9 +563,9 @@ class ConnectionTest extends InterpreterSpec {
             |  podSelector: {}
             |  policyTypes:
             |  - Ingress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-egress") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -573,9 +580,9 @@ class ConnectionTest extends InterpreterSpec {
             |  - {}
             |  policyTypes:
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-egress") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -588,9 +595,9 @@ class ConnectionTest extends InterpreterSpec {
             |  podSelector: {}
             |  policyTypes:
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -604,9 +611,9 @@ class ConnectionTest extends InterpreterSpec {
             |  policyTypes:
             |  - Ingress
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -624,9 +631,9 @@ class ConnectionTest extends InterpreterSpec {
             |    - podSelector: {}
             |  policyTypes:
             |  - Ingress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
@@ -645,9 +652,9 @@ class ConnectionTest extends InterpreterSpec {
             |          run: nginx
             |  policyTypes:
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-dns-access") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -668,9 +675,9 @@ class ConnectionTest extends InterpreterSpec {
             |      port: 53
             |  policyTypes:
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-kubernetes-access") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -691,9 +698,9 @@ class ConnectionTest extends InterpreterSpec {
             |          name: default
             |  policyTypes:
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "complex-ip-exclude") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -721,9 +728,9 @@ class ConnectionTest extends InterpreterSpec {
             |  policyTypes:
             |  - Ingress
             |  - Egress
-            |""".stripMargin),
+            |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "egress-external-tcp-443") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy
              |metadata:
@@ -749,9 +756,9 @@ class ConnectionTest extends InterpreterSpec {
              |      external-egress.monzo.com/443: "true"
              |  policyTypes:
              |  - Egress
-             |""".stripMargin),
+             |""".stripMargin)),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-external-egress") ->
-          yamlToJson(s"""
+          matchJsonString(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy
              |metadata:
@@ -773,7 +780,7 @@ class ConnectionTest extends InterpreterSpec {
              |       cidr: 192.168.0.0/16
              |  policyTypes:
              |  - Egress
-             |""".stripMargin)
+             |""".stripMargin))
       )
   }
 }

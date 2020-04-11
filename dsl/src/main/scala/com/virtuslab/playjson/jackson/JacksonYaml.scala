@@ -1,4 +1,4 @@
-package com.virtuslab.yaml.jackson
+package com.virtuslab.playjson.jackson
 
 import java.io.{ InputStream, StringWriter }
 
@@ -10,7 +10,7 @@ import play.api.libs.json.jackson.PlayJsonModule
 import play.api.libs.json.{ JsValue, JsonParserSettings }
 
 // Adapted from play.api.libs.json.jackson
-private[yaml] object JacksonYaml {
+private[playjson] object JacksonYaml {
   private lazy val mapper = (new ObjectMapper).registerModule(new PlayJsonModule(JsonParserSettings.settings))
 
   private lazy val yamlFactory = new YAMLFactory(mapper)

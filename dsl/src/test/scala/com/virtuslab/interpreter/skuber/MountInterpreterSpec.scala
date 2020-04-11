@@ -2,12 +2,13 @@ package com.virtuslab.interpreter.skuber
 
 import java.nio.file.Path
 
+import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Mountable._
 import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
 import com.virtuslab.interpreter.InterpreterSpec
 import play.api.libs.json.Json
 
-class MountInterpreterSpec extends InterpreterSpec {
+class MountInterpreterSpec extends InterpreterSpec with JsonMatchers {
   import com.virtuslab.interpreter.skuber.Skuber._
   import skuber.json.format._
 

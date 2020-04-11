@@ -1,7 +1,7 @@
 package com.virtuslab.exporter
 
 import com.virtuslab.exporter.skuber.Resource
-import com.virtuslab.yaml.Yaml
+import com.virtuslab.playjson.Yaml
 import play.api.libs.json.{ JsValue, Json }
 import _root_.skuber.ObjectResource
 import com.virtuslab.interpreter.{ Context, SystemInterpreter }

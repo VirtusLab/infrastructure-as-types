@@ -1,12 +1,13 @@
 package com.virtuslab.interpreter.skuber
 
+import _root_.skuber.{ Secret => SSecret }
+import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.{ Definition, Labels, Name, Secret }
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import play.api.libs.json.Json
-import _root_.skuber.{ Secret => SSecret }
 
-class SecretInterpreterSpec extends InterpreterSpec {
+class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
   import skuber.json.format._
 
   it should "create empty secret" in {

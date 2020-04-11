@@ -1,5 +1,6 @@
 package com.virtuslab.interpreter.skuber
 
+import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.HTTP.Host
 import com.virtuslab.dsl._
 import com.virtuslab.interpreter.InterpreterSpec
@@ -8,7 +9,7 @@ import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 import play.api.libs.json.Json
 import skuber.ext.Ingress
 
-class GatewayInterpreterSpec extends InterpreterSpec {
+class GatewayInterpreterSpec extends InterpreterSpec with JsonMatchers {
   import skuber.json.ext.format._
 
   it should "allow to define a simple Ingress definition" in {

@@ -1,5 +1,6 @@
 package com.virtuslab.interpreter.skuber
 
+import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Definition
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
@@ -7,7 +8,7 @@ import com.virtuslab.scalatest.yaml.Converters.yamlToJson
 import play.api.libs.json.Json
 import skuber.Namespace
 
-class NamespaceInterpreterSpec extends InterpreterSpec {
+class NamespaceInterpreterSpec extends InterpreterSpec with JsonMatchers {
 
   import skuber.json.format._
 
