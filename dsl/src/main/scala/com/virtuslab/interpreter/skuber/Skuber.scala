@@ -20,8 +20,8 @@ object Skuber {
 
   implicit val context: SkuberContext = new SkuberContext
 
-  implicit val namespaceInterpreter: Interpreter[SkuberContext, Namespace[SkuberContext]] =
-    (namespace: Definition[SkuberContext, Namespace[SkuberContext]]) =>
+  implicit val namespaceInterpreter: Interpreter[SkuberContext, Namespace] =
+    (namespace: Definition[SkuberContext, Namespace]) =>
       Seq(
         Resource.weak(
           skuber.Namespace.from(
@@ -105,7 +105,7 @@ object Skuber {
     }
 
   private def deployment(
-      ns: Namespace[SkuberContext],
+      ns: Namespace,
       app: Application,
       container: Container,
       mountedVolumes: List[Volume]
@@ -138,7 +138,7 @@ object Skuber {
     )
   }
 
-  private def service(ns: Namespace[SkuberContext], app: Application): Service = {
+  private def service(ns: Namespace, app: Application): Service = {
     app.ports
       .foldLeft(Service(metadata = ObjectMeta(name = app.name, namespace = ns.name))) {
         case (svc, NamedPort(name, number)) =>

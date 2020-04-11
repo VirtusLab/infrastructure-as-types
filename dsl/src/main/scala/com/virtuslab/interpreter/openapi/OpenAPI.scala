@@ -12,8 +12,8 @@ object OpenAPI {
 
   implicit val context: OpenAPIContext = new OpenAPIContext
 
-  implicit val namespaceInterpreter: Interpreter[OpenAPIContext, Namespace[OpenAPIContext]] =
-    (namespace: Definition[OpenAPIContext, Namespace[OpenAPIContext]]) =>
+  implicit val namespaceInterpreter: Interpreter[OpenAPIContext, Namespace] =
+    (namespace: Definition[OpenAPIContext, Namespace]) =>
       Seq(
         model.Namespace(
           apiVersion = Some("v1"),

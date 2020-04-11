@@ -4,10 +4,10 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import com.virtuslab.interpreter.SystemInterpreter
-import com.virtuslab.scalatest.yaml.Converters.yamlToJson
+import com.virtuslab.json.Converters.yamlToJson
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 
 class ConnectionTest extends InterpreterSpec with JsonMatchers {
-  import com.virtuslab.interpreter.skuber.Skuber._
 
   it should "allow to express connections between two namespaces" in {
 
@@ -18,16 +18,16 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     implicit val ds: SystemBuilder[SkuberContext] = DistributedSystem(generateSystemName()).builder
 
     val frontendRoleLabel = RoleLabel("frontend")
-    val frontendNsRef = Namespace(Labels(Name("frontend"), frontendRoleLabel))
+    val frontend = Namespace(Labels(Name("frontend"), frontendRoleLabel))
 
     val backendRoleLabel = RoleLabel("backend")
-    val backendNsRef = Namespace(Labels(Name("backend"), backendRoleLabel))
+    val backend = Namespace(Labels(Name("backend"), backendRoleLabel))
 
-    info(s"system: ${ds.name}, namespaces: ${frontendNsRef.name}, ${backendNsRef.name}")
+    info(s"system: ${ds.name}, namespaces: ${frontend.name}, ${backend.name}")
 
     val app3 = Application(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
 
-    backendNsRef
+    backend
       .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
         import ns._
 
@@ -36,14 +36,14 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
         )
 
         connections(
-          app3 communicatesWith frontendNsRef
+          app3 communicatesWith frontend
         )
       }
 
     val app1 = Application(Labels(Name("app-one"), frontendRoleLabel), "image-app-one", ports = Port(9090) :: Nil)
     val app2 = Application(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Port(9090) :: Nil)
 
-    frontendNsRef
+    frontend
       .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
         import ns._
 
@@ -54,7 +54,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
         connections(
           app1.communicatesWith(app2),
-          app1.communicatesWith(backendNsRef)
+          app1.communicatesWith(backend)
         )
       }
 

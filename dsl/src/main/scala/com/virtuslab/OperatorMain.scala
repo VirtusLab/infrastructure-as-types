@@ -5,13 +5,13 @@ import java.nio.file.Path
 import com.virtuslab.deployer.skuber.SimpleDeployer
 import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
 import com.virtuslab.interpreter.SystemInterpreter
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 
 object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
-    import com.virtuslab.interpreter.skuber.Skuber._
 
-    val system = DistributedSystem("test").inSystem { implicit ds: SystemBuilder[SkuberContext] => // FIXME
+    val system: DistributedSystem[SkuberContext] = DistributedSystem("test").inSystem { implicit ds =>
       import ds._
       namespaces(
         Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME
@@ -60,5 +60,4 @@ object OperatorMain extends AbstractMain with App {
 
   // Cleanup
   client.close
-  //  super.close() // FIXME
 }

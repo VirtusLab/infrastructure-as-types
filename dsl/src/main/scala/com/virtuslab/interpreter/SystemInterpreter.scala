@@ -5,7 +5,7 @@ import com.virtuslab.dsl.{ DistributedSystem, SystemBuilder }
 class SystemInterpreter[Ctx <: Context](system: DistributedSystem[Ctx]) {
   def resources: Seq[Ctx#Ret] = {
     system.namespaces.flatMap { ns =>
-      ns.interpret() ++ ns.obj.members.toSeq.flatMap(_.interpret())
+      ns.interpret() ++ ns.members.toSeq.flatMap(_.interpret())
     }
   }.toSeq
 }
