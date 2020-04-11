@@ -4,12 +4,9 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl._
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.scalatest.yaml.Converters.yamlToJson
-import play.api.libs.json.Json
-import skuber.ConfigMap
+import com.virtuslab.json.Converters.yamlToJson
 
 class ConfigurationInterpreterSpec extends InterpreterSpec with JsonMatchers {
-  import skuber.json.format._
 
   ignore should "ignore second label name when it's user defined" in {
     implicit val (ds, ns) = builders[SkuberContext]()
@@ -19,9 +16,9 @@ class ConfigurationInterpreterSpec extends InterpreterSpec with JsonMatchers {
       data = Map.empty
     )
 
-    val skuberConfig = Skuber.configurationInterpreter.apply(Definition(configuration)).head.obj.asInstanceOf[ConfigMap] // FIXME
+    val config = Skuber.configurationInterpreter.apply(Definition(configuration)).head.asJsValue
 
-    Json.toJson(skuberConfig).should(matchJsonString(yamlToJson(s"""
+    config.should(matchJsonString(yamlToJson(s"""
       |---
       |kind: ConfigMap
       |apiVersion: v1

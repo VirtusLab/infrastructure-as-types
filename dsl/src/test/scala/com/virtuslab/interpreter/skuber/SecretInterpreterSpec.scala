@@ -15,8 +15,8 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
 
     val secret = Secret(Labels(Name("test")), data = Map.empty)
 
-    val resource: SSecret = Skuber.secretInterpreter(Definition(secret)).head.obj.asInstanceOf[SSecret] // FIXME
-    Json.toJson(resource) should matchJsonString(s"""
+    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJsValue
+    resource.should(matchJsonString(s"""
         |{
         |  "kind" : "Secret",
         |  "apiVersion" : "v1",
@@ -28,7 +28,7 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
         |    }
         |  }
         |}
-        |""".stripMargin)
+        |""".stripMargin))
   }
 
   it should "create secret with key and value" in {
@@ -36,8 +36,8 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
 
     val secret = Secret(Labels(Name("test")), data = Map("foo" -> "bar"))
 
-    val resource: SSecret = Skuber.secretInterpreter(Definition(secret)).head.obj.asInstanceOf[SSecret] // FIXME
-    Json.toJson(resource) should matchJsonString(s"""
+    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJsValue
+    resource should matchJsonString(s"""
        |{
        |  "kind" : "Secret",
        |  "apiVersion" : "v1",
