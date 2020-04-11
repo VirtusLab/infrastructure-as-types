@@ -1,4 +1,4 @@
-package com.virtuslab.json4s.jackson
+package com.virtuslab.json.json4s.jackson
 
 import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_INTEGER_FOR_INTS
 import com.fasterxml.jackson.databind.ObjectMapper

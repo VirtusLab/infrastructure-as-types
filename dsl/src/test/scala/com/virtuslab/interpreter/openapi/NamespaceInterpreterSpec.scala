@@ -5,7 +5,7 @@ import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.openapi.OpenAPI.OpenAPIContext
 import com.virtuslab.kubernetes.client.openapi.model.Namespace
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
-import com.virtuslab.scalatest.yaml.Converters.yamlToJson
+import com.virtuslab.json.Converters.yamlToJson
 import org.json4s.jackson.Serialization
 import org.json4s.{ Formats, NoTypeHints }
 

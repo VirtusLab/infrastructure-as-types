@@ -1,6 +1,6 @@
-package com.virtuslab.playjson
+package com.virtuslab.json.playjson
 
-import com.virtuslab.playjson.jackson.JacksonYaml
+import com.virtuslab.json.playjson.jackson.JacksonYaml
 import play.api.libs.json.JsValue
 
 object Yaml {

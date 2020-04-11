@@ -4,7 +4,7 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Port.NamedPort
 import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
 import com.virtuslab.interpreter.{ InterpreterSpec, SystemInterpreter }
-import com.virtuslab.scalatest.yaml.Converters.yamlToJson
+import com.virtuslab.json.Converters.yamlToJson
 
 class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
   import com.virtuslab.interpreter.skuber.Skuber._

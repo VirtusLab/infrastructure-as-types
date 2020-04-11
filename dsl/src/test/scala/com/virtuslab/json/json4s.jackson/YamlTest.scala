@@ -1,4 +1,4 @@
-package com.virtuslab.json4s.jackson
+package com.virtuslab.json.json4s.jackson
 
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.{ Formats, NoTypeHints }
