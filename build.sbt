@@ -1,6 +1,6 @@
 import sbt.Keys.scalacOptions
 
-lazy val kubernetes = project.in(file("kubernetes"))
+lazy val kubernetes = (project in file("kubernetes"))
   .settings(
     libraryDependencies ++= Seq(
       "org.specs2" %% "specs2-core" % "4.8.3" % "test",
@@ -27,6 +27,6 @@ lazy val dsl = (project in file("dsl"))
     scalafmtOnCompile := true
   ).dependsOn(kubernetes)
 
-lazy val root = project.in(file("."))
+lazy val root = (project in file("."))
   .settings(name := "infrastructure-as-types")
   .aggregate(dsl, kubernetes)
