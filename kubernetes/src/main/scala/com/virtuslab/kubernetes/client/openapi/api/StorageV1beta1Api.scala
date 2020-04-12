@@ -63,7 +63,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSIDriver] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -95,7 +96,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSINode] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -127,7 +129,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -159,7 +162,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -750,7 +756,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSIDriver] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -784,7 +793,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSINode] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -818,8 +830,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -944,7 +958,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[StorageClass])
@@ -973,7 +988,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[VolumeAttachment])
@@ -1005,7 +1021,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSIDriver] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/csidrivers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1038,7 +1057,8 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CSINode] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.PUT,
+              uri"$baseUrl/apis/storage.k8s.io/v1beta1/csinodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1071,7 +1091,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1104,7 +1127,10 @@ class StorageV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1beta1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

@@ -25,7 +25,8 @@ import sttp.model.Method
 
 object AdmissionregistrationV1beta1Api {
 
-  def apply(baseUrl: String = "http://localhost")(implicit serializer: SttpSerializer) = new AdmissionregistrationV1beta1Api(baseUrl)
+  def apply(baseUrl: String = "http://localhost")(implicit serializer: SttpSerializer) =
+    new AdmissionregistrationV1beta1Api(baseUrl)
 }
 
 class AdmissionregistrationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
@@ -488,8 +489,10 @@ class AdmissionregistrationV1beta1Api(baseUrl: String)(implicit serializer: Sttp
       apiKey: ApiKeyValue
     ): ApiRequestT[MutatingWebhookConfiguration] =
     basicRequest
-      .method(Method.GET,
-              uri"$baseUrl/apis/admissionregistration.k8s.io/v1beta1/mutatingwebhookconfigurations/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/admissionregistration.k8s.io/v1beta1/mutatingwebhookconfigurations/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[MutatingWebhookConfiguration])
@@ -518,8 +521,10 @@ class AdmissionregistrationV1beta1Api(baseUrl: String)(implicit serializer: Sttp
       apiKey: ApiKeyValue
     ): ApiRequestT[ValidatingWebhookConfiguration] =
     basicRequest
-      .method(Method.GET,
-              uri"$baseUrl/apis/admissionregistration.k8s.io/v1beta1/validatingwebhookconfigurations/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/admissionregistration.k8s.io/v1beta1/validatingwebhookconfigurations/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ValidatingWebhookConfiguration])

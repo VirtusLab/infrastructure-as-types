@@ -57,7 +57,8 @@ class NodeV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[RuntimeClass] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -243,7 +244,10 @@ class NodeV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[RuntimeClass] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -273,7 +277,8 @@ class NodeV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[RuntimeClass] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[RuntimeClass])
@@ -305,7 +310,10 @@ class NodeV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[RuntimeClass] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/node.k8s.io/v1beta1/runtimeclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

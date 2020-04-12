@@ -253,8 +253,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[String] =
     basicRequest
-      .method(Method.GET,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/attach?container=$container&stderr=$stderr&stdin=$stdin&stdout=$stdout&tty=$tty")
+      .method(
+        Method.GET,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/attach?container=$container&stderr=$stderr&stdin=$stdin&stdout=$stdout&tty=$tty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[String])
@@ -992,8 +994,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[String] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/attach?container=$container&stderr=$stderr&stdin=$stdin&stdout=$stdout&tty=$tty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/attach?container=$container&stderr=$stderr&stdin=$stdin&stdout=$stdout&tty=$tty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[String])
@@ -1443,7 +1447,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Binding] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/bindings?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/bindings?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1477,7 +1482,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ConfigMap] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1511,7 +1517,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Endpoints] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1545,7 +1552,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Event] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/events?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/events?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1579,7 +1587,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[LimitRange] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1613,7 +1622,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolumeClaim] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1647,7 +1659,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Pod] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/pods?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/pods?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1683,7 +1696,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Binding] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/binding?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/binding?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1719,7 +1735,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Eviction] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/eviction?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/eviction?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1753,7 +1772,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodTemplate] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1787,7 +1807,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicationController] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1821,7 +1844,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ResourceQuota] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1855,7 +1881,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Secret] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/secrets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/secrets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1889,7 +1916,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Service] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/services?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/services?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1923,7 +1951,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ServiceAccount] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4573,7 +4604,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Namespace] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(Method.PATCH,
+              uri"$baseUrl/api/v1/namespaces/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4607,7 +4639,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Namespace] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4643,8 +4678,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ConfigMap] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4680,8 +4717,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Endpoints] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4717,7 +4756,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Event] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${namespace}/events/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/events/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4753,8 +4795,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[LimitRange] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4868,7 +4912,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Pod] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4904,8 +4951,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Pod] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -4941,8 +4990,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodTemplate] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5173,7 +5224,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Secret] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${namespace}/secrets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/secrets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5209,7 +5263,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Service] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5321,7 +5378,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Node] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/nodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(Method.PATCH,
+              uri"$baseUrl/api/v1/nodes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5355,7 +5413,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Node] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/nodes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(Method.PATCH,
+              uri"$baseUrl/api/v1/nodes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5389,7 +5448,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolume] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/persistentvolumes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/persistentvolumes/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5423,7 +5485,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolume] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/api/v1/persistentvolumes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/api/v1/persistentvolumes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -5442,7 +5507,12 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
     * @param name name of the ComponentStatus
     * @param pretty If 'true', then the output is pretty printed.
     */
-  def readComponentStatus(name: String, pretty: Option[String] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[ComponentStatus] =
+  def readComponentStatus(
+      name: String,
+      pretty: Option[String] = None
+    )(implicit
+      apiKey: ApiKeyValue
+    ): ApiRequestT[ComponentStatus] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/api/v1/componentstatuses/${name}?pretty=$pretty")
       .contentType("application/json")
@@ -5524,7 +5594,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ConfigMap] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ConfigMap])
@@ -5555,7 +5626,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Endpoints] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Endpoints])
@@ -5617,7 +5689,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[LimitRange] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[LimitRange])
@@ -5648,7 +5721,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolumeClaim] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PersistentVolumeClaim])
@@ -5808,7 +5884,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodTemplate] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodTemplate])
@@ -5839,7 +5916,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicationController] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ReplicationController])
@@ -5924,7 +6004,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ResourceQuota] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ResourceQuota])
@@ -6013,7 +6094,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Service] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Service])
@@ -6044,7 +6126,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ServiceAccount] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ServiceAccount])
@@ -6167,7 +6250,12 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
     * @param name name of the PersistentVolume
     * @param pretty If 'true', then the output is pretty printed.
     */
-  def readPersistentVolumeStatus(name: String, pretty: Option[String] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[PersistentVolume] =
+  def readPersistentVolumeStatus(
+      name: String,
+      pretty: Option[String] = None
+    )(implicit
+      apiKey: ApiKeyValue
+    ): ApiRequestT[PersistentVolume] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/api/v1/persistentvolumes/${name}/status?pretty=$pretty")
       .contentType("application/json")
@@ -6234,7 +6322,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Namespace] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${name}/finalize?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(Method.PUT,
+              uri"$baseUrl/api/v1/namespaces/${name}/finalize?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6302,7 +6391,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ConfigMap] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/configmaps/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6337,7 +6429,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Endpoints] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/endpoints/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6372,7 +6467,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Event] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/events/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/events/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6407,7 +6505,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[LimitRange] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/limitranges/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6442,7 +6543,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolumeClaim] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/persistentvolumeclaims/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6515,7 +6619,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Pod] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.PUT,
+              uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6550,7 +6655,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Pod] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/pods/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6585,7 +6693,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodTemplate] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/podtemplates/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6620,7 +6731,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicationController] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6655,8 +6769,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Scale] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}/scale?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/replicationcontrollers/${name}/scale?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6729,7 +6845,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ResourceQuota] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6764,7 +6883,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ResourceQuota] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/resourcequotas/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6799,7 +6921,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Secret] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/secrets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/secrets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6834,7 +6959,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Service] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6869,7 +6997,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ServiceAccount] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/serviceaccounts/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -6904,7 +7035,10 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Service] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/api/v1/namespaces/${namespace}/services/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -7036,7 +7170,8 @@ class CoreV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PersistentVolume] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/api/v1/persistentvolumes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.PUT,
+              uri"$baseUrl/api/v1/persistentvolumes/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

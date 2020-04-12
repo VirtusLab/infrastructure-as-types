@@ -71,7 +71,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[DaemonSet] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -105,7 +108,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -178,7 +184,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Ingress] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -212,8 +221,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[NetworkPolicy] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/networkpolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/networkpolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -247,7 +258,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicaSet] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -279,7 +293,8 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1848,8 +1863,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1881,7 +1898,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[DaemonSet] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[DaemonSet])
@@ -1939,7 +1959,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Deployment])
@@ -2024,7 +2047,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Ingress] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Ingress])
@@ -2082,7 +2108,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[NetworkPolicy] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/networkpolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/networkpolicies/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[NetworkPolicy])
@@ -2113,7 +2142,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicaSet] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ReplicaSet])
@@ -2194,7 +2226,8 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Scale] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicationcontrollers/${name}/scale?pretty=$pretty")
+      .method(Method.GET,
+              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicationcontrollers/${name}/scale?pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Scale])
@@ -2223,7 +2256,8 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodSecurityPolicy])
@@ -2257,8 +2291,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[DaemonSet] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/daemonsets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -2331,8 +2367,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -2443,8 +2481,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[Ingress] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/ingresses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -2555,8 +2595,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[ReplicaSet] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/extensions/v1beta1/namespaces/${namespace}/replicasets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -2703,7 +2745,10 @@ class ExtensionsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/extensions/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

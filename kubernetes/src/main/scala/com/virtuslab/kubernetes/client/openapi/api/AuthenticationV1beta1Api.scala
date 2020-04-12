@@ -54,7 +54,10 @@ class AuthenticationV1beta1Api(baseUrl: String)(implicit serializer: SttpSeriali
       apiKey: ApiKeyValue
     ): ApiRequestT[TokenReview] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/authentication.k8s.io/v1beta1/tokenreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/authentication.k8s.io/v1beta1/tokenreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

@@ -59,8 +59,10 @@ class CoordinationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[Lease] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/coordination.k8s.io/v1beta1/namespaces/${namespace}/leases?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/coordination.k8s.io/v1beta1/namespaces/${namespace}/leases?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -331,7 +333,10 @@ class CoordinationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[Lease] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/coordination.k8s.io/v1beta1/namespaces/${namespace}/leases/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/coordination.k8s.io/v1beta1/namespaces/${namespace}/leases/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Lease])

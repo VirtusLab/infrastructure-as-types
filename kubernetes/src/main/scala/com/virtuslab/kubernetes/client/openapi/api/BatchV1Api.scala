@@ -59,7 +59,8 @@ class BatchV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Job] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -295,8 +296,10 @@ class BatchV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Job] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -367,7 +370,8 @@ class BatchV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Job] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Job])
@@ -428,7 +432,10 @@ class BatchV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Job] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -463,7 +470,10 @@ class BatchV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Job] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/batch/v1/namespaces/${namespace}/jobs/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

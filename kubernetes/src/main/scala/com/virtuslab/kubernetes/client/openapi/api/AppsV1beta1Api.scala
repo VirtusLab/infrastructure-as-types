@@ -65,7 +65,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ControllerRevision] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/controllerrevisions?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/controllerrevisions?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -99,7 +102,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -172,7 +178,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StatefulSet] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1043,7 +1052,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[ControllerRevision] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/controllerrevisions/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/controllerrevisions/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[ControllerRevision])
@@ -1074,7 +1086,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[Deployment])
@@ -1159,7 +1174,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StatefulSet] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[StatefulSet])
@@ -1285,7 +1303,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Deployment] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1320,8 +1341,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[Scale] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}/scale?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/deployments/${name}/scale?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1394,7 +1417,10 @@ class AppsV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StatefulSet] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/apps/v1beta1/namespaces/${namespace}/statefulsets/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

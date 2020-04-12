@@ -61,8 +61,10 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodDisruptionBudget] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -94,7 +96,8 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -541,7 +544,10 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -573,7 +579,10 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodDisruptionBudget] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodDisruptionBudget])
@@ -600,7 +609,8 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodDisruptionBudget] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets/${name}/status?pretty=$pretty")
+      .method(Method.GET,
+              uri"$baseUrl/apis/policy/v1beta1/namespaces/${namespace}/poddisruptionbudgets/${name}/status?pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodDisruptionBudget])
@@ -629,7 +639,8 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodSecurityPolicy])
@@ -737,7 +748,10 @@ class PolicyV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[PodSecurityPolicy] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/policy/v1beta1/podsecuritypolicies/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

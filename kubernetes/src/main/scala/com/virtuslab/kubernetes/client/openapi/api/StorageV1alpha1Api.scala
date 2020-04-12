@@ -57,7 +57,10 @@ class StorageV1alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -276,7 +279,8 @@ class StorageV1alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[VolumeAttachment])
@@ -308,7 +312,10 @@ class StorageV1alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1alpha1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

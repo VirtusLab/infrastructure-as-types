@@ -57,7 +57,10 @@ class ApiregistrationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerial
       apiKey: ApiKeyValue
     ): ApiRequestT[APIService] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -313,7 +316,8 @@ class ApiregistrationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerial
       apiKey: ApiKeyValue
     ): ApiRequestT[APIService] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[APIService])
@@ -365,7 +369,10 @@ class ApiregistrationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerial
       apiKey: ApiKeyValue
     ): ApiRequestT[APIService] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -398,7 +405,10 @@ class ApiregistrationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerial
       apiKey: ApiKeyValue
     ): ApiRequestT[APIService] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/apiregistration.k8s.io/v1beta1/apiservices/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

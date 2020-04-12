@@ -57,7 +57,10 @@ class CertificatesV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[CertificateSigningRequest] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -313,7 +316,10 @@ class CertificatesV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[CertificateSigningRequest] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[CertificateSigningRequest])
@@ -331,7 +337,12 @@ class CertificatesV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
     * @param name name of the CertificateSigningRequest
     * @param pretty If 'true', then the output is pretty printed.
     */
-  def readCertificateSigningRequestStatus(name: String, pretty: Option[String] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[CertificateSigningRequest] =
+  def readCertificateSigningRequestStatus(
+      name: String,
+      pretty: Option[String] = None
+    )(implicit
+      apiKey: ApiKeyValue
+    ): ApiRequestT[CertificateSigningRequest] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests/${name}/status?pretty=$pretty")
       .contentType("application/json")
@@ -365,8 +376,10 @@ class CertificatesV1beta1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[CertificateSigningRequest] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/certificates.k8s.io/v1beta1/certificatesigningrequests/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

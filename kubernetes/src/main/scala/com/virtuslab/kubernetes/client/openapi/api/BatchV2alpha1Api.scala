@@ -59,7 +59,10 @@ class BatchV2alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CronJob] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -369,7 +372,10 @@ class BatchV2alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CronJob] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[CronJob])
@@ -430,7 +436,10 @@ class BatchV2alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CronJob] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -465,8 +474,10 @@ class BatchV2alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[CronJob] =
     basicRequest
-      .method(Method.PUT,
-              uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/batch/v2alpha1/namespaces/${namespace}/cronjobs/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

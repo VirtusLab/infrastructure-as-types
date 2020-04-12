@@ -59,7 +59,8 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -91,7 +92,8 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(Method.POST,
+              uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -412,7 +414,10 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.PATCH, uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -446,8 +451,10 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.PATCH,
-              uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force")
+      .method(
+        Method.PATCH,
+        uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager&force=$force"
+      )
       .contentType("application/json-patch+json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -543,7 +550,8 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[VolumeAttachment])
@@ -561,7 +569,12 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
     * @param name name of the VolumeAttachment
     * @param pretty If 'true', then the output is pretty printed.
     */
-  def readVolumeAttachmentStatus(name: String, pretty: Option[String] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[VolumeAttachment] =
+  def readVolumeAttachmentStatus(
+      name: String,
+      pretty: Option[String] = None
+    )(implicit
+      apiKey: ApiKeyValue
+    ): ApiRequestT[VolumeAttachment] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}/status?pretty=$pretty")
       .contentType("application/json")
@@ -595,7 +608,10 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[StorageClass] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1/storageclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -628,7 +644,10 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -661,7 +680,10 @@ class StorageV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[VolumeAttachment] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/storage.k8s.io/v1/volumeattachments/${name}/status?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

@@ -57,7 +57,10 @@ class AuditregistrationV1alpha1Api(baseUrl: String)(implicit serializer: SttpSer
       apiKey: ApiKeyValue
     ): ApiRequestT[AuditSink] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -276,7 +279,8 @@ class AuditregistrationV1alpha1Api(baseUrl: String)(implicit serializer: SttpSer
       apiKey: ApiKeyValue
     ): ApiRequestT[AuditSink] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[AuditSink])
@@ -308,7 +312,10 @@ class AuditregistrationV1alpha1Api(baseUrl: String)(implicit serializer: SttpSer
       apiKey: ApiKeyValue
     ): ApiRequestT[AuditSink] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/auditregistration.k8s.io/v1alpha1/auditsinks/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

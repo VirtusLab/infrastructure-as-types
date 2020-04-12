@@ -59,8 +59,10 @@ class SettingsV1alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) 
       apiKey: ApiKeyValue
     ): ApiRequestT[PodPreset] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/settings.k8s.io/v1alpha1/namespaces/${namespace}/podpresets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/settings.k8s.io/v1alpha1/namespaces/${namespace}/podpresets?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -331,7 +333,10 @@ class SettingsV1alpha1Api(baseUrl: String)(implicit serializer: SttpSerializer) 
       apiKey: ApiKeyValue
     ): ApiRequestT[PodPreset] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/settings.k8s.io/v1alpha1/namespaces/${namespace}/podpresets/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/settings.k8s.io/v1alpha1/namespaces/${namespace}/podpresets/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PodPreset])

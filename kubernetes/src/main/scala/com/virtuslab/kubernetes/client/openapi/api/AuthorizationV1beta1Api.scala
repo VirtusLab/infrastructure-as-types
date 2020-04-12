@@ -94,7 +94,10 @@ class AuthorizationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializ
       apiKey: ApiKeyValue
     ): ApiRequestT[SelfSubjectAccessReview] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/authorization.k8s.io/v1beta1/selfsubjectaccessreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/authorization.k8s.io/v1beta1/selfsubjectaccessreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -126,7 +129,10 @@ class AuthorizationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializ
       apiKey: ApiKeyValue
     ): ApiRequestT[SelfSubjectRulesReview] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/authorization.k8s.io/v1beta1/selfsubjectrulesreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/authorization.k8s.io/v1beta1/selfsubjectrulesreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -158,7 +164,10 @@ class AuthorizationV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializ
       apiKey: ApiKeyValue
     ): ApiRequestT[SubjectAccessReview] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/authorization.k8s.io/v1beta1/subjectaccessreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/authorization.k8s.io/v1beta1/subjectaccessreviews?dryRun=$dryRun&fieldManager=$fieldManager&pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

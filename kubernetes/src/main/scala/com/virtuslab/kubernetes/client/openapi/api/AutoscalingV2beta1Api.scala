@@ -372,8 +372,10 @@ class AutoscalingV2beta1Api(baseUrl: String)(implicit serializer: SttpSerializer
       apiKey: ApiKeyValue
     ): ApiRequestT[HorizontalPodAutoscaler] =
     basicRequest
-      .method(Method.GET,
-              uri"$baseUrl/apis/autoscaling/v2beta1/namespaces/${namespace}/horizontalpodautoscalers/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/autoscaling/v2beta1/namespaces/${namespace}/horizontalpodautoscalers/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[HorizontalPodAutoscaler])
@@ -400,7 +402,10 @@ class AutoscalingV2beta1Api(baseUrl: String)(implicit serializer: SttpSerializer
       apiKey: ApiKeyValue
     ): ApiRequestT[HorizontalPodAutoscaler] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/autoscaling/v2beta1/namespaces/${namespace}/horizontalpodautoscalers/${name}/status?pretty=$pretty")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/autoscaling/v2beta1/namespaces/${namespace}/horizontalpodautoscalers/${name}/status?pretty=$pretty"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[HorizontalPodAutoscaler])

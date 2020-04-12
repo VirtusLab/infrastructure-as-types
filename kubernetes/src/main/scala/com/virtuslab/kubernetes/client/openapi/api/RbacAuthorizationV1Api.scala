@@ -63,7 +63,10 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[ClusterRole] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterroles?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterroles?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -95,7 +98,10 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[ClusterRoleBinding] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterrolebindings?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -129,8 +135,10 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[Role] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/namespaces/${namespace}/roles?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/namespaces/${namespace}/roles?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1011,7 +1019,12 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
     * @param name name of the ClusterRoleBinding
     * @param pretty If 'true', then the output is pretty printed.
     */
-  def readClusterRoleBinding(name: String, pretty: Option[String] = None)(implicit apiKey: ApiKeyValue): ApiRequestT[ClusterRoleBinding] =
+  def readClusterRoleBinding(
+      name: String,
+      pretty: Option[String] = None
+    )(implicit
+      apiKey: ApiKeyValue
+    ): ApiRequestT[ClusterRoleBinding] =
     basicRequest
       .method(Method.GET, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/${name}?pretty=$pretty")
       .contentType("application/json")
@@ -1067,7 +1080,8 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[RoleBinding] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/namespaces/${namespace}/rolebindings/${name}?pretty=$pretty")
+      .method(Method.GET,
+              uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/namespaces/${namespace}/rolebindings/${name}?pretty=$pretty")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[RoleBinding])
@@ -1099,7 +1113,10 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[ClusterRole] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterroles/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterroles/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -1132,7 +1149,10 @@ class RbacAuthorizationV1Api(baseUrl: String)(implicit serializer: SttpSerialize
       apiKey: ApiKeyValue
     ): ApiRequestT[ClusterRoleBinding] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)

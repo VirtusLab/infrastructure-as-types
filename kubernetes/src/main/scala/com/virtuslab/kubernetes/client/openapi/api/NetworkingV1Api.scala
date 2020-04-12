@@ -59,8 +59,10 @@ class NetworkingV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[NetworkPolicy] =
     basicRequest
-      .method(Method.POST,
-              uri"$baseUrl/apis/networking.k8s.io/v1/namespaces/${namespace}/networkpolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/networking.k8s.io/v1/namespaces/${namespace}/networkpolicies?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -331,7 +333,10 @@ class NetworkingV1Api(baseUrl: String)(implicit serializer: SttpSerializer) {
       apiKey: ApiKeyValue
     ): ApiRequestT[NetworkPolicy] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/networking.k8s.io/v1/namespaces/${namespace}/networkpolicies/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(
+        Method.GET,
+        uri"$baseUrl/apis/networking.k8s.io/v1/namespaces/${namespace}/networkpolicies/${name}?pretty=$pretty&exact=$exact&export=$export"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[NetworkPolicy])

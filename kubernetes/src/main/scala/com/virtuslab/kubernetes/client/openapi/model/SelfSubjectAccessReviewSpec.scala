@@ -16,5 +16,7 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 /**
   * SelfSubjectAccessReviewSpec is a description of the access request.  Exactly one of ResourceAuthorizationAttributes and NonResourceAuthorizationAttributes must be set
   */
-case class SelfSubjectAccessReviewSpec(nonResourceAttributes: Option[NonResourceAttributes] = None, resourceAttributes: Option[ResourceAttributes] = None)
+case class SelfSubjectAccessReviewSpec(
+    nonResourceAttributes: Option[NonResourceAttributes] = None,
+    resourceAttributes: Option[ResourceAttributes] = None)
   extends ApiModel

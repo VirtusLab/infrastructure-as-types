@@ -57,7 +57,10 @@ class SchedulingV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PriorityClass] =
     basicRequest
-      .method(Method.POST, uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.POST,
+        uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
@@ -276,7 +279,8 @@ class SchedulingV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PriorityClass] =
     basicRequest
-      .method(Method.GET, uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
+      .method(Method.GET,
+              uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses/${name}?pretty=$pretty&exact=$exact&export=$export")
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .response(asJson[PriorityClass])
@@ -308,7 +312,10 @@ class SchedulingV1beta1Api(baseUrl: String)(implicit serializer: SttpSerializer)
       apiKey: ApiKeyValue
     ): ApiRequestT[PriorityClass] =
     basicRequest
-      .method(Method.PUT, uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager")
+      .method(
+        Method.PUT,
+        uri"$baseUrl/apis/scheduling.k8s.io/v1beta1/priorityclasses/${name}?pretty=$pretty&dryRun=$dryRun&fieldManager=$fieldManager"
+      )
       .contentType("application/json")
       .header("authorization", apiKey.value)
       .body(body)
