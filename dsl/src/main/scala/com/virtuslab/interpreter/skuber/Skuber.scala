@@ -3,7 +3,7 @@ package com.virtuslab.interpreter.skuber
 import com.virtuslab.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.dsl._
 import com.virtuslab.exporter.skuber.Resource
-import com.virtuslab.interpreter.{ Context, Interpreter }
+import com.virtuslab.interpreter.{ Context, Interpreter, RootInterpreter }
 import skuber.apps.v1.Deployment
 import skuber.ext.Ingress
 import skuber.json.ext.format._
@@ -20,8 +20,11 @@ object Skuber {
 
   implicit val context: SkuberContext = new SkuberContext
 
-  implicit val namespaceInterpreter: Interpreter[SkuberContext, Namespace] =
-    (namespace: Definition[SkuberContext, Namespace]) =>
+  implicit val systemInterpreter: RootInterpreter[SkuberContext, DistributedSystem, Namespace] =
+    (_: RootDefinition[SkuberContext, DistributedSystem, Namespace]) => Seq()
+
+  implicit val namespaceInterpreter: Interpreter[SkuberContext, DistributedSystem, Namespace, Labeled] =
+    (namespace: Definition[SkuberContext, DistributedSystem, Namespace, Labeled]) =>
       Seq(
         Resource.weak(
           skuber.Namespace.from(
@@ -33,14 +36,14 @@ object Skuber {
         )
       )
 
-  implicit val configurationInterpreter: Interpreter[SkuberContext, Configuration] =
-    (cfg: Definition[SkuberContext, Configuration]) => {
+  implicit val configurationInterpreter: Interpreter[SkuberContext, Namespace, Configuration, Labeled] =
+    (cfg: Definition[SkuberContext, Namespace, Configuration, Labeled]) => {
       Seq(
         Resource.weak(
           ConfigMap(
             metadata = ObjectMeta(
               name = cfg.obj.name,
-              namespace = cfg.namespace.name,
+              namespace = cfg.holder.name,
               labels = cfg.obj.labels.toMap
             ),
             data = cfg.obj.data
@@ -49,14 +52,14 @@ object Skuber {
       )
     }
 
-  implicit val secretInterpreter: Interpreter[SkuberContext, Secret] =
-    (secret: Definition[SkuberContext, Secret]) => {
+  implicit val secretInterpreter: Interpreter[SkuberContext, Namespace, Secret, Labeled] =
+    (secret: Definition[SkuberContext, Namespace, Secret, Labeled]) => {
       Seq(
         Resource.weak(
           skuber.Secret(
             metadata = ObjectMeta(
               name = secret.obj.name,
-              namespace = secret.namespace.name,
+              namespace = secret.holder.name,
               labels = secret.obj.labels.toMap
             ),
             data = secret.obj.data.view.mapValues(_.getBytes).toMap
@@ -72,8 +75,8 @@ object Skuber {
       volume -> volumeMount
   }
 
-  implicit val applicationInterpreter: Interpreter[SkuberContext, Application] =
-    (app: Definition[SkuberContext, Application]) => {
+  implicit val applicationInterpreter: Interpreter[SkuberContext, Namespace, Application, Labeled] =
+    (app: Definition[SkuberContext, Namespace, Application, Labeled]) => {
       val env = app.obj.envs.map { env =>
         EnvVar(env.key, EnvVar.StringValue(env.value))
       }
@@ -98,8 +101,8 @@ object Skuber {
         volumeMounts = mounts.map(_._2)
       )
 
-      val dpl = deployment(app.namespace, app.obj, container, mounts.map(_._1))
-      val svc = service(app.namespace, app.obj)
+      val dpl = deployment(app.holder, app.obj, container, mounts.map(_._1))
+      val svc = service(app.holder, app.obj)
 
       Seq(Resource.weak(svc), Resource.weak(dpl))
     }
@@ -166,14 +169,14 @@ object Skuber {
       )
   }
 
-  implicit val connectionInterpreter: Interpreter[SkuberContext, Connection] =
-    (connection: Definition[SkuberContext, Connection]) => {
+  implicit val connectionInterpreter: Interpreter[SkuberContext, Namespace, Connection, Labeled] =
+    (connection: Definition[SkuberContext, Namespace, Connection, Labeled]) => {
       Seq(
         Resource.weak(
           NetworkPolicy(
             metadata = ObjectMeta(
               name = connection.obj.name,
-              namespace = connection.namespace.name,
+              namespace = connection.holder.name,
               labels = connection.obj.labels.toMap
             ),
             spec = Some(
@@ -363,15 +366,15 @@ object Skuber {
     }
   }
 
-  implicit val gatewayInterpreter: Interpreter[SkuberContext, Gateway] =
-    (gateway: Definition[SkuberContext, Gateway]) => {
+  implicit val gatewayInterpreter: Interpreter[SkuberContext, Namespace, Gateway, Labeled] =
+    (gateway: Definition[SkuberContext, Namespace, Gateway, Labeled]) => {
       Seq(
         Resource.weak(
           Ingress(
             apiVersion = "networking.k8s.io/v1beta1", // Skuber uses wrong api version
             metadata = ObjectMeta(
               name = gateway.obj.name,
-              namespace = gateway.namespace.name,
+              namespace = gateway.holder.name,
               labels = gateway.obj.labels.toMap
             ),
             spec = gateway.obj.protocols match {

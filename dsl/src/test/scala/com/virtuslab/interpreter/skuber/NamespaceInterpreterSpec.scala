@@ -11,7 +11,7 @@ class NamespaceInterpreterSpec extends InterpreterSpec with JsonMatchers {
   it should "serialize Namespace to JSON" in {
     implicit val (ds, ns) = builders[SkuberContext]()
 
-    val namespace = Skuber.namespaceInterpreter(Definition(ns.namespace)).head.asJsValue
+    val namespace = Skuber.namespaceInterpreter(Definition(ds.system, ns.namespace)).head.asJsValue
 
     namespace.should(matchJsonString(yamlToJson(s"""
         |---

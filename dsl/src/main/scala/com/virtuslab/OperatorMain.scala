@@ -11,7 +11,7 @@ object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
 
-    val system: DistributedSystem[SkuberContext] = DistributedSystem("test").inSystem { implicit ds =>
+    val system = DistributedSystem("test").inSystem { implicit ds: SystemBuilder[SkuberContext] =>
       import ds._
       namespaces(
         Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME

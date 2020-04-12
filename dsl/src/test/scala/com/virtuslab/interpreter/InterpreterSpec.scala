@@ -10,7 +10,11 @@ import scala.util.Random
 
 abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
 
-  def builders[Ctx <: Context](names: (String, String) = generateNames())(implicit ctx: Ctx): (SystemBuilder[Ctx], NamespaceBuilder[Ctx]) = {
+  def builders[Ctx <: Context](
+      names: (String, String) = generateNames()
+    )(implicit
+      ctx: Ctx
+    ): (SystemBuilder[Ctx], NamespaceBuilder[Ctx]) = {
     val (systemName, namespaceName) = names
     info(s"system: $systemName, namespace: $namespaceName, context: ${ctx.getClass.getSimpleName}")
 
@@ -47,7 +51,7 @@ abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
     }
   }
   object Ensure {
-    def apply[A](resources: Seq[(ShortMeta, A)]): Ensure[A] = Ensure(resources.toMap)
+    def apply[A](resources: Iterable[(ShortMeta, A)]): Ensure[A] = Ensure(resources.toMap)
   }
 
   def zipper[A, B, C, D](map1: Map[A, B], map2: Map[A, C])(f: (A, Option[B], Option[C]) => D): Map[A, D] = {

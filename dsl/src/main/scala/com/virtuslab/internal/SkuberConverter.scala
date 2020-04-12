@@ -14,7 +14,7 @@ case class ShortMeta(
 }
 
 class SkuberConverter(interpreter: SystemInterpreter[SkuberContext]) {
-  def toMetaAndJsValue: Seq[(ShortMeta, JsValue)] = {
+  def toMetaAndJsValue: Iterable[(ShortMeta, JsValue)] = {
     interpreter.resources.map { resource =>
       val r = resource.obj
       ShortMeta(r.apiVersion, r.kind, r.ns, r.name) -> Exporter.toJsValue(resource)

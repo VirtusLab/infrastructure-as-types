@@ -141,7 +141,8 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> matchJsonString(yamlToJson("""
+        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -169,8 +170,10 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> matchJsonString(yamlToJson("""
+          |""".stripMargin)
+        ),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -201,8 +204,10 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> matchJsonString(yamlToJson("""
+          |""".stripMargin)
+        ),
+        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> matchJsonString(
+          yamlToJson("""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -233,7 +238,8 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
-          |""".stripMargin)),
+          |""".stripMargin)
+        ),
         ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> matchJsonString(
           yamlToJson("""
           |---

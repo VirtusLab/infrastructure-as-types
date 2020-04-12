@@ -8,15 +8,15 @@ import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.interpreter.{ Context, SystemInterpreter }
 
 object Exporter {
-  def toYaml(interpreter: SystemInterpreter[SkuberContext]): Seq[String] = {
+  def toYaml(interpreter: SystemInterpreter[SkuberContext]): Iterable[String] = {
     toJsValues(interpreter).map(Yaml.prettyPrint)
   }
 
-  def toJson(interpreter: SystemInterpreter[SkuberContext]): Seq[String] = {
+  def toJson(interpreter: SystemInterpreter[SkuberContext]): Iterable[String] = {
     toJsValues(interpreter).map(Json.prettyPrint)
   }
 
-  private[virtuslab] def toJsValues(interpreter: SystemInterpreter[SkuberContext]): Seq[JsValue] = {
+  private[virtuslab] def toJsValues(interpreter: SystemInterpreter[SkuberContext]): Iterable[JsValue] = {
     interpreter.resources.map(toJsValue)
   }
 

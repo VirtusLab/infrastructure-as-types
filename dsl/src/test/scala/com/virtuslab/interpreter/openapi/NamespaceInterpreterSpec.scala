@@ -14,7 +14,7 @@ class NamespaceInterpreterSpec extends InterpreterSpec with JsonMatchers {
   it should "serialize Namespace to JSON" in {
     implicit val (ds, ns) = builders[OpenAPIContext]()
 
-    val namespace: Namespace = OpenAPI.namespaceInterpreter(Definition(ns.namespace)).head.asInstanceOf[Namespace] // FIXME
+    val namespace = OpenAPI.namespaceInterpreter(Definition(ds.system, ns.namespace)).head.asInstanceOf[Namespace] // FIXME
 
     import org.json4s.jackson.Serialization._
     implicit val formats: Formats = Serialization.formats(NoTypeHints)
