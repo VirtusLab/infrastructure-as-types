@@ -2,13 +2,14 @@ package com.virtuslab.interpreter.skuber
 
 import java.nio.file.Path
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Mountable._
 import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
 import com.virtuslab.interpreter.InterpreterSpec
-import play.api.libs.json.Json
+import com.virtuslab.json.Converters.playJsonToString
+import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
 class MountInterpreterSpec extends InterpreterSpec with JsonMatchers {
+
   import com.virtuslab.interpreter.skuber.Skuber._
   import skuber.json.format._
 
@@ -24,22 +25,22 @@ class MountInterpreterSpec extends InterpreterSpec with JsonMatchers {
     val mount = config.mount("test-mount", "test.txt", Path.of("/opt/foo.txt"))
     val (volume, volumeMount) = Skuber.mount(mount)
 
-    Json.toJson(volume).should(matchJsonString("""
-      |{
-      |  "name" : "test-mount",
-      |  "configMap" : {
-      |    "name" : "test-configmap"
-      |  }
-      |}
-      |""".stripMargin))
+    playJsonToString(volume).should(matchJsonString("""
+        |{
+        |  "name" : "test-mount",
+        |  "configMap" : {
+        |    "name" : "test-configmap"
+        |  }
+        |}
+        |""".stripMargin))
 
-    Json.toJson(volumeMount).should(matchJsonString("""
-      |{
-      |  "name" : "test-mount",
-      |  "mountPath" : "/opt/foo.txt",
-      |  "subPath" : "test.txt"
-      |}
-      |""".stripMargin))
+    playJsonToString(volumeMount).should(matchJsonString("""
+        |{
+        |  "name" : "test-mount",
+        |  "mountPath" : "/opt/foo.txt",
+        |  "subPath" : "test.txt"
+        |}
+        |""".stripMargin))
   }
 
   it should "generate volume mount based on secret entry" in {
@@ -54,21 +55,21 @@ class MountInterpreterSpec extends InterpreterSpec with JsonMatchers {
     val mount = secret.mount(name = "test-secret-mount", key = "test.txt", as = Path.of("/opt/test-secret.txt"))
     val (volume, volumeMount) = Skuber.mount(mount)
 
-    Json.toJson(volume) should matchJsonString("""
+    playJsonToString(volume).should(matchJsonString("""
         |{
         |  "name" : "test-secret-mount",
         |  "secret" : {
         |    "secretName" : "top-secret"
         |  }
         |}
-        |""".stripMargin)
-    Json.toJson(volumeMount) should matchJsonString("""
+        |""".stripMargin))
+    playJsonToString(volumeMount).should(matchJsonString("""
         |{
         |  "name" : "test-secret-mount",
         |  "mountPath" : "/opt/test-secret.txt",
         |  "subPath" : "test.txt"
         |}
-        |""".stripMargin)
+        |""".stripMargin))
   }
 
   //TODO: PV/PVC

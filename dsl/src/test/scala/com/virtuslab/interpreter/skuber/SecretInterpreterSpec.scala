@@ -1,22 +1,19 @@
 package com.virtuslab.interpreter.skuber
 
-import _root_.skuber.{ Secret => SSecret }
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.{ Definition, Labels, Name, Secret }
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import play.api.libs.json.Json
+import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
 class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
-  import skuber.json.format._
 
   it should "create empty secret" in {
     implicit val (ds, ns) = builders[SkuberContext]()
 
     val secret = Secret(Labels(Name("test")), data = Map.empty)
 
-    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJsValue
-    resource.should(matchJsonString(s"""
+    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJValue
+    resource.should(matchJson(s"""
         |{
         |  "kind" : "Secret",
         |  "apiVersion" : "v1",
@@ -36,8 +33,8 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
 
     val secret = Secret(Labels(Name("test")), data = Map("foo" -> "bar"))
 
-    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJsValue
-    resource should matchJsonString(s"""
+    val resource = Skuber.secretInterpreter(Definition(secret)).head.asJValue
+    resource.should(matchJson(s"""
        |{
        |  "kind" : "Secret",
        |  "apiVersion" : "v1",
@@ -52,7 +49,7 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
        |    "foo" : "YmFy"
        |  }
        |}
-       |""".stripMargin)
+       |""".stripMargin))
   }
 
 }

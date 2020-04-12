@@ -1,8 +1,9 @@
 package com.virtuslab.scalatest.json4s.jackson
 
+import com.virtuslab.json.json4s.jackson.JsonMethods
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
-import org.json4s.{ DefaultFormats, Diff, Formats, JValue }
+import org.json4s.{ Diff, Formats, JValue }
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers._
 import org.scalatest.matchers.should.Matchers
@@ -20,7 +21,15 @@ trait JsonMatchers {
       )
     }
 
-  def matchJson(right: String)(implicit formats: Formats): Matcher[String] =
+  def matchJson(right: String)(implicit formats: Formats): Matcher[JValue] =
+    Matcher[JValue] { leftJson =>
+      Try(parse(right)).toOption match {
+        case Some(rightJson) => matchJson(rightJson)(formats)(leftJson)
+        case _               => cantParseResult(write(leftJson), right)
+      }
+    }
+
+  def matchJsonString(right: String)(implicit formats: Formats): Matcher[String] =
     Matcher[String] { left =>
       (Try(parse(left)).toOption, Try(parse(right)).toOption) match {
         case (Some(leftJson), Some(rightJson)) => matchJson(rightJson)(formats)(leftJson)
@@ -29,7 +38,7 @@ trait JsonMatchers {
     }
 
   private def diffMessage(left: JValue, right: JValue)(implicit formats: Formats): String = {
-    val Diff(changed, added, deleted) = right diff left
+    val Diff(changed, added, deleted) = right.diff(left)
     val result = new StringBuilder(s""", expected:
         |${write(right)}
         |actual:
@@ -56,7 +65,7 @@ trait JsonMatchers {
 
 class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
 
-  implicit val formats: Formats = DefaultFormats
+  implicit val formats: Formats = JsonMethods.formats
 
   val json: String =
     """
@@ -72,7 +81,7 @@ class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
       // given:
       val actual = json
       // when:
-      actual should matchJson(json)
+      actual.should(matchJsonString(json))
     }
     "should print absent part of expected json" in {
       // given:
@@ -85,7 +94,7 @@ class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
         """.stripMargin
       // when:
       try {
-        actual should matchJson(json)
+        actual.should(matchJsonString(json))
       } catch {
         case e: Throwable =>
           e.getMessage should
@@ -112,7 +121,7 @@ class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
         """.stripMargin
       // when:
       try {
-        actual should matchJson(json)
+        actual.should(matchJsonString(json))
       } catch {
         case e: Throwable =>
           e.getMessage should
@@ -138,7 +147,7 @@ class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
         """.stripMargin
       // when:
       try {
-        actual should matchJson(json)
+        actual.should(matchJsonString(json))
       } catch {
         case e: Throwable =>
           e.getMessage should

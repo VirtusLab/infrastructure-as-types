@@ -2,6 +2,8 @@ package com.virtuslab.interpreter
 
 import com.virtuslab.dsl.{ DistributedSystem, Namespace, NamespaceBuilder, SystemBuilder }
 import com.virtuslab.internal.ShortMeta
+import com.virtuslab.json.json4s.jackson.JsonMethods
+import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.Matcher
 import org.scalatest.matchers.should.Matchers
@@ -9,6 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import scala.util.Random
 
 abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
+  implicit val formats: Formats = JsonMethods.formats
 
   def builders[Ctx <: Context](
       names: (String, String) = generateNames()

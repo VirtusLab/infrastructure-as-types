@@ -1,11 +1,11 @@
 package com.virtuslab.exporter
 
-import com.virtuslab.exporter.skuber.Resource
-import com.virtuslab.json.playjson.Yaml
-import play.api.libs.json.{ JsValue, Json }
 import _root_.skuber.ObjectResource
+import com.virtuslab.interpreter.SystemInterpreter
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.interpreter.{ Context, SystemInterpreter }
+import com.virtuslab.json.playjson.Yaml
+import com.virtuslab.materializer.skuber.Resource
+import play.api.libs.json.{ JsValue, Json }
 
 object Exporter {
   def toYaml(interpreter: SystemInterpreter[SkuberContext]): Iterable[String] = {
@@ -20,7 +20,5 @@ object Exporter {
     interpreter.resources.map(toJsValue)
   }
 
-  private[virtuslab] def toJsValue[A <: ObjectResource](resource: Resource[A]): JsValue =
-    Json.toJson(resource.obj)(resource.format)
-
+  private[virtuslab] def toJsValue[A <: ObjectResource](resource: Resource[A]): JsValue = resource.asJsValue
 }

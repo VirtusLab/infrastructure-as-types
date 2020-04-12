@@ -3,12 +3,13 @@ package com.virtuslab.json
 import com.virtuslab.json.json4s.jackson.YamlMethods
 import org.json4s
 import org.json4s.jackson.JsonMethods
+import play.api.libs.json.Writes
 import play.api.libs.{ json => pjson }
 
 object Converters {
-  def yamlToJson(yaml: String): String = {
-    JsonMethods.pretty(YamlMethods.parse(yaml))
-  }
+  def yamlToJson(yaml: String): String = JsonMethods.pretty(YamlMethods.parse(yaml))
+
+  def playJsonToString[T](o: T)(implicit tjs: Writes[T]): String = pjson.Json.prettyPrint(pjson.Json.toJson(o))
 
   def toJson4s(json: play.api.libs.json.JsValue): org.json4s.JValue = json match {
     case pjson.JsString(str)    => json4s.JString(str)

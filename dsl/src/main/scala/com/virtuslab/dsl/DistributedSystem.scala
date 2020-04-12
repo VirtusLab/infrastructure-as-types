@@ -76,7 +76,7 @@ case class SystemBuilder[Ctx <: Context](system: DistributedSystem) {
     ): RootDefinition[Ctx, DistributedSystem, Namespace] =
     Definition(
       ADistributedSystem(system.labels),
-      members = collect().asInstanceOf[List[Definition[Ctx, DistributedSystem, Namespace, Any]]] // FIXME
+      members = collect()
     )
 
   def name: String = system.name

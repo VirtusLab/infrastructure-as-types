@@ -1,6 +1,6 @@
 package com.virtuslab.deployer.skuber
 
-import com.virtuslab.exporter.skuber.Resource
+import com.virtuslab.materializer.skuber.Resource
 import com.virtuslab.interpreter.SystemInterpreter
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import skuber.api.client.LoggingContext
@@ -17,7 +17,7 @@ object SimpleDeployer {
       executor: ExecutionContext
     ): Unit = {
     val resources = interpreter.resources
-    resources.map(createOrUpdate(client))
+    resources.foreach(createOrUpdate(client))
   }
 
   def createOrUpdate(client: K8SRequestContext)(implicit executor: ExecutionContext): Resource[ObjectResource] => ObjectResource =

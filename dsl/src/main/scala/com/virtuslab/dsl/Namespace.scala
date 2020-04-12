@@ -42,7 +42,8 @@ case class NamespaceBuilder[Ctx <: Context](namespace: Namespace, systemBuilder:
       ev: Interpreter[Ctx, DistributedSystem, Namespace, Labeled]
     ): Definition[Ctx, DistributedSystem, Namespace, Labeled] = {
     val (as, cs) = collect()
-    val members = (as ++ cs).asInstanceOf[List[Definition[Ctx, Namespace, Labeled, Any]]] // FIXME
+    val members: List[Definition[Ctx, Namespace, Labeled, Labeled]] =
+      (as ++ cs).asInstanceOf[List[Definition[Ctx, Namespace, Labeled, Labeled]]]
     val ns: Definition[Ctx, DistributedSystem, Namespace, Labeled] = Definition(this.systemBuilder.system, namespace, members)
     systemBuilder.namespaces(ns)
     ns
