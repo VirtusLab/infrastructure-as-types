@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers
 import scala.util.Random
 
 abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
-  implicit val formats: Formats = JsonMethods.formats
+  implicit val formats: Formats = JsonMethods.defaultFormats
 
   def builders[Ctx <: Context](
       names: (String, String) = generateNames()

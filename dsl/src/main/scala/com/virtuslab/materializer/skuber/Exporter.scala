@@ -13,15 +13,9 @@ case class ShortMeta(
   override def toString: String = (apiVersion, kind, namespace, name).toString()
 }
 
-case object ShortMetaAndJsValue extends Materializer[SkuberContext, (ShortMeta, JsValue)] {
-  override def apply(r: SkuberContext#Ret): (ShortMeta, JsValue) =
-    ShortMeta(r.obj.apiVersion, r.obj.kind, r.obj.ns, r.obj.name) -> r.asJsValue
-}
-
-case object AsYaml extends Materializer[SkuberContext, String] {
-  override def apply(resource: SkuberContext#Ret): String = Yaml.prettyPrint(resource.asJsValue)
-}
-
-case object AsJson extends Materializer[SkuberContext, String] {
-  override def apply(resource: SkuberContext#Ret): String = Json.prettyPrint(resource.asJsValue)
+object Exporter {
+  implicit val shortMetaAndJsValue: Materializer[SkuberContext, (ShortMeta, JsValue)] =
+    (r: SkuberContext#Ret) => ShortMeta(r.obj.apiVersion, r.obj.kind, r.obj.ns, r.obj.name) -> r.asJsValue
+  implicit val asYaml: Materializer[SkuberContext, String] = (r: SkuberContext#Ret) => Yaml.prettyPrint(r.asJsValue)
+  implicit val asJson: Materializer[SkuberContext, String] = (r: SkuberContext#Ret) => Json.prettyPrint(r.asJsValue)
 }

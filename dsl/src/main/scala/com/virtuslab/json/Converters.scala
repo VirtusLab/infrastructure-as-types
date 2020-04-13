@@ -1,8 +1,7 @@
 package com.virtuslab.json
 
-import com.virtuslab.json.json4s.jackson.YamlMethods
+import com.virtuslab.json.json4s.jackson.{ JsonMethods, YamlMethods }
 import org.json4s
-import org.json4s.jackson.JsonMethods
 import play.api.libs.json.Writes
 import play.api.libs.{ json => pjson }
 

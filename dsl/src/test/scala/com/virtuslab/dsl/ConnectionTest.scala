@@ -4,7 +4,7 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.materializer.skuber.{ ShortMeta, ShortMetaAndJsValue }
+import com.virtuslab.materializer.skuber.{ Exporter, ShortMeta }
 
 class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
@@ -57,7 +57,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
         )
       }
 
-    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
 
     Ensure(resources)
       .contain(
@@ -381,7 +381,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     connections(conn1)
     namespaces(ns)
 
-    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
@@ -532,7 +532,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
     namespaces(ns)
 
-    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")

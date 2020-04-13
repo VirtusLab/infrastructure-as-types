@@ -5,9 +5,9 @@ import com.virtuslab.kubernetes.client.openapi.core.Serializers
 import org.json4s.{ DefaultFormats, Extraction, Formats, JValue }
 
 trait JsonMethods extends org.json4s.jackson.JsonMethods {
-  val formats: Formats = DefaultFormats ++ EnumsSerializers.all ++ Serializers.all
+  val defaultFormats: Formats = DefaultFormats ++ EnumsSerializers.all ++ Serializers.all
 
-  def asJValue(obj: Any): JValue = Extraction.decompose(obj)(formats)
+  def asJValue(obj: Any): JValue = Extraction.decompose(obj)(defaultFormats)
 }
 
 object JsonMethods extends JsonMethods

@@ -65,7 +65,7 @@ trait JsonMatchers {
 
 class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
 
-  implicit val formats: Formats = JsonMethods.formats
+  implicit val formats: Formats = JsonMethods.defaultFormats
 
   val json: String =
     """
