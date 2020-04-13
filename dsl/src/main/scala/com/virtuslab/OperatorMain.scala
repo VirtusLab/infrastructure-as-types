@@ -2,10 +2,9 @@ package com.virtuslab
 
 import java.nio.file.Path
 
-import com.virtuslab.deployer.skuber.SimpleDeployer
 import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
-import com.virtuslab.interpreter.SystemInterpreter
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
+import com.virtuslab.materializer.skuber.SimpleDeployer
 
 object OperatorMain extends AbstractMain with App {
 
@@ -14,7 +13,7 @@ object OperatorMain extends AbstractMain with App {
     val system = DistributedSystem("test").inSystem { implicit ds: SystemBuilder[SkuberContext] =>
       import ds._
       namespaces(
-        Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME
+        Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] =>
           import ns._
 
           val configuration = Configuration(
@@ -52,7 +51,7 @@ object OperatorMain extends AbstractMain with App {
       )
     }
 
-    SimpleDeployer.createOrUpdate(client, SystemInterpreter.of(system))
+    system.interpret().map(SimpleDeployer(client).createOrUpdate)
   }
 
   // Run

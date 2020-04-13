@@ -22,7 +22,10 @@ object Skuber {
   implicit val context: SkuberContext = new SkuberContext
 
   implicit val systemInterpreter: RootInterpreter[SkuberContext, DistributedSystem, Namespace] =
-    (_: RootDefinition[SkuberContext, DistributedSystem, Namespace]) => Seq()
+    (system: RootDefinition[SkuberContext, DistributedSystem, Namespace]) =>
+      system.members.flatMap { ns =>
+        ns.interpret() ++ ns.members.flatMap(_.interpret())
+      }
 
   implicit val namespaceInterpreter: Interpreter[SkuberContext, DistributedSystem, Namespace, Labeled] =
     (namespace: Definition[SkuberContext, DistributedSystem, Namespace, Labeled]) =>

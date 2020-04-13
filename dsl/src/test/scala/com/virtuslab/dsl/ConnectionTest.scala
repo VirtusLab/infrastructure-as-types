@@ -2,10 +2,9 @@ package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
-import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
-import com.virtuslab.interpreter.SystemInterpreter
-import com.virtuslab.json.Converters.yamlToJson
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
+import com.virtuslab.json.Converters.yamlToJson
+import com.virtuslab.materializer.skuber.{ ShortMeta, ShortMetaAndJsValue }
 
 class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
@@ -28,7 +27,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     val app3 = Application(Labels(Name("app-three"), backendRoleLabel), "image-app-three")
 
     backend
-      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
+      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] =>
         import ns._
 
         applications(
@@ -44,7 +43,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     val app2 = Application(Labels(Name("app-two"), frontendRoleLabel), "image-app-two", ports = Port(9090) :: Nil)
 
     frontend
-      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] => // FIXME ?
+      .inNamespace { implicit ns: NamespaceBuilder[SkuberContext] =>
         import ns._
 
         applications(
@@ -58,7 +57,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
         )
       }
 
-    val resources = SkuberConverter(SystemInterpreter.of(ds)).toMetaAndJsValue
+    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
 
     Ensure(resources)
       .contain(
@@ -382,7 +381,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     connections(conn1)
     namespaces(ns)
 
-    val resources = SkuberConverter(SystemInterpreter.of(systemBuilder)).toMetaAndJsValue
+    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
@@ -533,7 +532,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
     namespaces(ns)
 
-    val resources = SkuberConverter(SystemInterpreter.of(systemBuilder)).toMetaAndJsValue
+    val resources = ds.build().interpret().map(ShortMetaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")

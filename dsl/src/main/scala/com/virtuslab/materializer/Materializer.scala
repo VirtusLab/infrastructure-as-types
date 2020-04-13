@@ -1,3 +1,5 @@
 package com.virtuslab.materializer
 
-trait Materializer {}
+import com.virtuslab.interpreter.Context
+
+trait Materializer[Ctx <: Context, B] extends (Ctx#Ret => B)

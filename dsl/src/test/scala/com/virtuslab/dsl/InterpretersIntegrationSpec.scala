@@ -2,9 +2,9 @@ package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Port.NamedPort
-import com.virtuslab.internal.{ ShortMeta, SkuberConverter }
-import com.virtuslab.interpreter.{ InterpreterSpec, SystemInterpreter }
+import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.json.Converters.yamlToJson
+import com.virtuslab.materializer.skuber.{ ShortMeta, ShortMetaAndJsValue }
 
 class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
   import com.virtuslab.interpreter.skuber.Skuber._
@@ -26,7 +26,7 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
       )
     }
 
-    val resources = SkuberConverter(SystemInterpreter.of(system)).toMetaAndJsValue
+    val resources = system.interpret().map(ShortMetaAndJsValue)
 
     Ensure(resources)
       .contain(
