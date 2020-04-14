@@ -3,10 +3,11 @@ package com.virtuslab.dsl
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.dsl.Port.NamedPort
 import com.virtuslab.interpreter.InterpreterSpec
+import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.materializer.skuber.{ Exporter, ShortMeta }
+import com.virtuslab.materializer.skuber.{ Exporter, Metadata }
 
-class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
+class InterpretersIntegrationSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {
   import com.virtuslab.interpreter.skuber.Skuber._
 
   it should "create a simple system" in {
@@ -26,11 +27,11 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
       )
     }
 
-    val resources = system.interpret().map(Exporter.shortMetaAndJsValue)
+    val resources = system.interpret().map(Exporter.metaAndJsValue)
 
     Ensure(resources)
       .contain(
-        ShortMeta("v1", "Service", namespaceName, "app-one") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", namespaceName, "app-one") -> matchJsonString(yamlToJson(s"""
           |---
           |apiVersion: v1
           |kind: Service
@@ -49,7 +50,7 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
           |    targetPort: 9090
           |  sessionAffinity: None
           |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", namespaceName, "app-one") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", namespaceName, "app-one") -> matchJsonString(yamlToJson(s"""
           |---
           |apiVersion: apps/v1
           |kind: Deployment
@@ -78,7 +79,7 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)),
-        ShortMeta("v1", "Service", namespaceName, "app-two") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", namespaceName, "app-two") -> matchJsonString(yamlToJson(s"""
           |---
           |apiVersion: v1
           |kind: Service
@@ -98,7 +99,7 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
           |  selector:
           |    name: app-two
           |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", namespaceName, "app-two") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", namespaceName, "app-two") -> matchJsonString(yamlToJson(s"""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -128,7 +129,7 @@ class InterpretersIntegrationSpec extends InterpreterSpec with JsonMatchers {
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)),
-        ShortMeta("v1", "Namespace", "default", namespaceName) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", namespaceName) -> matchJsonString(yamlToJson(s"""
           |---
           |kind: Namespace
           |apiVersion: v1

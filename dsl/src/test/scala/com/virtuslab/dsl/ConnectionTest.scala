@@ -4,9 +4,10 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.materializer.skuber.{ Exporter, ShortMeta }
+import com.virtuslab.materializer.skuber.Metadata
+import com.virtuslab.materializer.skuber.Exporter
 
-class ConnectionTest extends InterpreterSpec with JsonMatchers {
+class ConnectionTest extends InterpreterSpec[SkuberContext] with JsonMatchers {
 
   it should "allow to express connections between two namespaces" in {
 
@@ -57,11 +58,11 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
         )
       }
 
-    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.metaAndJsValue)
 
     Ensure(resources)
       .contain(
-        ShortMeta("v1", "Namespace", "default", "frontend") -> matchJsonString(yamlToJson("""
+        Metadata("v1", "Namespace", "default", "frontend") -> matchJsonString(yamlToJson("""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -71,7 +72,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |    name: frontend
           |    role: frontend
           |""".stripMargin)),
-        ShortMeta("v1", "Namespace", "default", "backend") -> matchJsonString(yamlToJson("""
+        Metadata("v1", "Namespace", "default", "backend") -> matchJsonString(yamlToJson("""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -81,7 +82,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |    name: backend
           |    role: backend
           |""".stripMargin)),
-        ShortMeta("v1", "Service", "frontend", "app-one") -> matchJsonString(yamlToJson("""
+        Metadata("v1", "Service", "frontend", "app-one") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -102,7 +103,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        ShortMeta("v1", "Service", "frontend", "app-two") -> matchJsonString(yamlToJson("""
+        Metadata("v1", "Service", "frontend", "app-two") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -123,7 +124,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        ShortMeta("v1", "Service", "backend", "app-three") -> matchJsonString(yamlToJson("""
+        Metadata("v1", "Service", "backend", "app-three") -> matchJsonString(yamlToJson("""
           |---
           |kind: Service
           |apiVersion: v1
@@ -140,7 +141,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        ShortMeta("apps/v1", "Deployment", "backend", "app-three") -> matchJsonString(
+        Metadata("apps/v1", "Deployment", "backend", "app-three") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: Deployment
@@ -171,7 +172,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-two") -> matchJsonString(
+        Metadata("apps/v1", "Deployment", "frontend", "app-two") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: Deployment
@@ -205,7 +206,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        ShortMeta("apps/v1", "Deployment", "frontend", "app-one") -> matchJsonString(
+        Metadata("apps/v1", "Deployment", "frontend", "app-one") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: Deployment
@@ -239,7 +240,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-backend-app-one") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: NetworkPolicy
@@ -271,7 +272,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  - Egress
           |""".stripMargin)
         ),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three") -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "backend", "app-three-frontend-app-three") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: NetworkPolicy
@@ -303,7 +304,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
           |  - Egress
           |""".stripMargin)
         ),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one") -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "frontend", "app-one-app-two-app-one") -> matchJsonString(
           yamlToJson("""
           |---
           |kind: NetworkPolicy
@@ -339,7 +340,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
   }
 
   it should "allow to express complex customized connections" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
 
     import Expressions._
     import ds._
@@ -381,12 +382,12 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
     connections(conn1)
     namespaces(ns)
 
-    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.metaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
       .contain(
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
           matchJsonString(yamlToJson(s"""
             |---
             |kind: NetworkPolicy
@@ -419,7 +420,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
   }
 
   it should "allow for external connections" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
 
     import Expressions._
     import ds._
@@ -532,12 +533,12 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
 
     namespaces(ns)
 
-    val resources = ds.build().interpret().map(Exporter.shortMetaAndJsValue)
+    val resources = ds.build().interpret().map(Exporter.metaAndJsValue)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
       .contain(
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -554,7 +555,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Ingress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-ingress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-ingress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -569,7 +570,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Ingress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-egress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-egress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -586,7 +587,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-egress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-egress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -601,7 +602,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -617,7 +618,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  - Ingress
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -637,7 +638,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Ingress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
           matchJsonString(yamlToJson(s"""
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -658,7 +659,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-dns-access") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-dns-access") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -681,7 +682,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-kubernetes-access") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-kubernetes-access") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -704,7 +705,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "complex-ip-exclude") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "complex-ip-exclude") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -734,7 +735,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
             |  - Ingress
             |  - Egress
             |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "egress-external-tcp-443") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "egress-external-tcp-443") ->
           matchJsonString(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy
@@ -762,7 +763,7 @@ class ConnectionTest extends InterpreterSpec with JsonMatchers {
              |  policyTypes:
              |  - Egress
              |""".stripMargin)),
-        ShortMeta("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-external-egress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-external-egress") ->
           matchJsonString(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy

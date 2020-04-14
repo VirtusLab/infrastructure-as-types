@@ -7,10 +7,10 @@ import com.virtuslab.json.Converters.yamlToJson
 import com.virtuslab.json.json4s.jackson.JsonMethods.pretty
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
-class ConfigurationInterpreterSpec extends InterpreterSpec with JsonMatchers {
+class ConfigurationInterpreterSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {
 
   ignore should "ignore second label name when it's user defined" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
 
     val configuration = Configuration(
       Labels(Name("foo"), UntypedLabel("name", "bazz")),

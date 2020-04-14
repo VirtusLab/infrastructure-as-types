@@ -8,10 +8,10 @@ import com.virtuslab.json.Converters.yamlToJson
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import com.virtuslab.json.json4s.jackson.JsonMethods.pretty
 
-class GatewayInterpreterSpec extends InterpreterSpec with JsonMatchers {
+class GatewayInterpreterSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {
 
   it should "allow to define a simple Ingress definition" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
     val gateway = Gateway(
       Labels(Name("external")),
       Protocols(

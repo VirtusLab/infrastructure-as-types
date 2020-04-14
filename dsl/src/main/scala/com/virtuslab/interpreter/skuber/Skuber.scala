@@ -3,7 +3,7 @@ package com.virtuslab.interpreter.skuber
 import com.virtuslab.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.dsl._
 import com.virtuslab.interpreter.{ Context, Interpreter, RootInterpreter }
-import com.virtuslab.materializer.skuber.Resource
+import com.virtuslab.materializer.skuber.{ Metadata, Resource }
 import skuber.apps.v1.Deployment
 import skuber.ext.Ingress
 import skuber.json.ext.format._
@@ -15,17 +15,15 @@ import skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, Obje
 object Skuber {
 
   class SkuberContext extends Context {
-    override type T = ObjectResource
-    override type Ret = Resource[T]
+    override type Meta = Metadata
+    override type Base = ObjectResource
+    override type Interpretation = Resource[Base]
   }
 
   implicit val context: SkuberContext = new SkuberContext
 
   implicit val systemInterpreter: RootInterpreter[SkuberContext, DistributedSystem, Namespace] =
-    (system: RootDefinition[SkuberContext, DistributedSystem, Namespace]) =>
-      system.members.flatMap { ns =>
-        ns.interpret() ++ ns.members.flatMap(_.interpret())
-      }
+    (_: RootDefinition[SkuberContext, DistributedSystem, Namespace]) => Seq()
 
   implicit val namespaceInterpreter: Interpreter[SkuberContext, DistributedSystem, Namespace, Labeled] =
     (namespace: Definition[SkuberContext, DistributedSystem, Namespace, Labeled]) =>

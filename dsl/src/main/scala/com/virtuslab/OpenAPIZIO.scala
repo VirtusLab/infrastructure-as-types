@@ -15,7 +15,7 @@ import skuber.api.security.SecurityHelper
 import skuber.api.{ client, Configuration }
 import sttp.client.asynchttpclient.zio._
 import zio.console.Console
-import zio.{ ZIO, console, _ }
+import zio.{ console, App, ZEnv, ZIO }
 
 object OpenAPIZIO extends App {
   private val kubeconfig: Configuration = api.Configuration.parseKubeconfigFile().get

@@ -6,10 +6,10 @@ import com.virtuslab.interpreter.openapi.OpenAPI.OpenAPIContext
 import com.virtuslab.json.Converters.yamlToJson
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
-class NamespaceInterpreterSpec extends InterpreterSpec with JsonMatchers {
+class NamespaceInterpreterSpec extends InterpreterSpec[OpenAPIContext] with JsonMatchers {
 
   it should "serialize Namespace to JSON" in {
-    implicit val (ds, ns) = builders[OpenAPIContext]()
+    implicit val (ds, ns) = builders()
 
     val namespace = OpenAPI.namespaceInterpreter(Definition(ds.system, ns.namespace)).head.asJValue
 

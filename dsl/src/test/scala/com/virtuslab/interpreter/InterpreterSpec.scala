@@ -2,7 +2,6 @@ package com.virtuslab.interpreter
 
 import com.virtuslab.dsl.{ DistributedSystem, Namespace, NamespaceBuilder, SystemBuilder }
 import com.virtuslab.json.json4s.jackson.JsonMethods
-import com.virtuslab.materializer.skuber.ShortMeta
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.Matcher
@@ -10,10 +9,10 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.util.Random
 
-abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
+abstract class InterpreterSpec[Ctx <: Context] extends AnyFlatSpec with Matchers {
   implicit val formats: Formats = JsonMethods.defaultFormats
 
-  def builders[Ctx <: Context](
+  def builders(
       names: (String, String) = generateNames()
     )(implicit
       ctx: Ctx
@@ -35,16 +34,16 @@ abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
   def generatePrefixedName(prefix: String, maxRandomSuffix: Int = 5) =
     s"$prefix-${Random.alphanumeric.take(maxRandomSuffix).mkString}"
 
-  case class Ensure[A](resources: Map[ShortMeta, A]) {
-    def ignore(p: ShortMeta => Boolean): Ensure[A] = {
+  case class Ensure[A](resources: Map[Ctx#Meta, A]) {
+    def ignore(p: Ctx#Meta => Boolean): Ensure[A] = {
       resources.filter(e => p(e._1)).foreach {
         case (meta, _) => info(s"ignoring $meta")
       }
       Ensure(resources.filterNot(e => p(e._1)))
     }
-    def contain(cases: (ShortMeta, Matcher[A])*): Unit = contain(cases.toMap)
+    def contain(cases: (Ctx#Meta, Matcher[A])*): Unit = contain(cases.toMap)
 
-    def contain(cases: Map[ShortMeta, Matcher[A]]): Unit = {
+    def contain(cases: Map[Ctx#Meta, Matcher[A]]): Unit = {
       zipper(resources, cases) {
         case (_, Some(actual), Some(expected)) => actual.should(expected)
         case (meta, Some(_), None)             => fail(s"unexpected $meta (got the resource, but no test case)")
@@ -54,7 +53,7 @@ abstract class InterpreterSpec extends AnyFlatSpec with Matchers {
     }
   }
   object Ensure {
-    def apply[A](resources: Iterable[(ShortMeta, A)]): Ensure[A] = Ensure(resources.toMap)
+    def apply[A](resources: Iterable[(Ctx#Meta, A)]): Ensure[A] = Ensure(resources.toMap)
   }
 
   def zipper[A, B, C, D](map1: Map[A, B], map2: Map[A, C])(f: (A, Option[B], Option[C]) => D): Map[A, D] = {

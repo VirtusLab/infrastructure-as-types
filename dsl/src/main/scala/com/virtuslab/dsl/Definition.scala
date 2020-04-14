@@ -5,7 +5,7 @@ import com.virtuslab.interpreter.{ Context, Interpreter, RootInterpreter }
 trait RootDefinition[Ctx <: Context, A <: Labeled, T <: Labeled] {
   def obj: A
   def members: List[Definition[Ctx, A, T, Labeled]]
-  def interpret(): Iterable[Ctx#Ret]
+  def interpret(): Iterable[Ctx#Interpretation]
 }
 
 trait Definition[Ctx <: Context, H <: Labeled, A <: Labeled, T <: Labeled] extends RootDefinition[Ctx, A, T] {
@@ -21,7 +21,7 @@ object Definition {
       ctx: Ctx,
       ev: RootInterpreter[Ctx, A, T])
     extends RootDefinition[Ctx, A, T] {
-    def interpret(): Iterable[Ctx#Ret] = ev(this) ++ members.flatMap(_.interpret())
+    def interpret(): Iterable[Ctx#Interpretation] = ev(this) ++ members.flatMap(_.interpret())
   }
 
   final case class ADefinition[Ctx <: Context, H <: Labeled, A <: Labeled, T <: Labeled] private (
@@ -32,7 +32,7 @@ object Definition {
       ctx: Ctx,
       ev: Interpreter[Ctx, H, A, T])
     extends Definition[Ctx, H, A, T] {
-    def interpret(): Iterable[Ctx#Ret] = ev(this) ++ members.flatMap(_.interpret())
+    def interpret(): Iterable[Ctx#Interpretation] = ev(this) ++ members.flatMap(_.interpret())
   }
 
   def apply[Ctx <: Context, A <: Labeled, T <: Labeled](

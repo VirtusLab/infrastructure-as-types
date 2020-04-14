@@ -5,10 +5,10 @@ import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
-class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
+class SecretInterpreterSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {
 
   it should "create empty secret" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
 
     val secret = Secret(Labels(Name("test")), data = Map.empty)
 
@@ -29,7 +29,7 @@ class SecretInterpreterSpec extends InterpreterSpec with JsonMatchers {
   }
 
   it should "create secret with key and value" in {
-    implicit val (ds, ns) = builders[SkuberContext]()
+    implicit val (ds, ns) = builders()
 
     val secret = Secret(Labels(Name("test")), data = Map("foo" -> "bar"))
 
