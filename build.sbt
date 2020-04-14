@@ -18,6 +18,9 @@ lazy val dsl = (project in file("dsl"))
     organization := "com.virtuslab",
     scalaVersion := "2.13.1",
     libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client" %% "core" % "2.0.7",
+      "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.0.7",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.skuber" %% "skuber" % "2.4.0",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
