@@ -23,6 +23,8 @@ lazy val dsl = (project in file("dsl"))
       "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.skuber" %% "skuber" % "2.4.0",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
+      "com.chuusai" %% "shapeless" % "2.3.3",
+      "com.propensive" %% "magnolia" % "0.14.5",
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
       "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
     ),
