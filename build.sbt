@@ -12,6 +12,7 @@ lazy val kubernetes = (project in file("kubernetes"))
   )
 
 lazy val dsl = (project in file("dsl"))
+  .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full))
   .settings(
     name := "dsl",
     version := "0.1",
