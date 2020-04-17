@@ -81,9 +81,7 @@ object Interpreter {
     }
   }
 
-  implicit def gen[T]: Interpreter[T] = macro Magnolia.gen[T]
-
-  def apply[T](implicit a: Interpreter[T]): Typeclass[T] = a
+  def gen[T]: Interpreter[T] = macro Magnolia.gen[T]
 }
 
 final case class Namespace(name: String)
@@ -97,9 +95,6 @@ case class Secret(
     name: String,
     namespace: Namespace,
     data: Map[String, String])
-
-sealed trait Foo
-case object Bar extends Foo
 
 case class Application(
     name: String,
@@ -115,12 +110,11 @@ object Test extends App {
 
   case class MyNamespaceDef(
       namespace: Namespace = namespace,
-      foo: Foo = Bar,
       superApp: Application = Application(name = "bar", namespace = namespace),
       myConfiguration: Configuration = Configuration(name = "config-foo", namespace = namespace, data = Map.empty),
       mySecret: Secret = Secret("config-foo", namespace = namespace, data = Map.empty))
 
   val myNs = MyNamespaceDef()
 
-  println(Interpreter[MyNamespaceDef].interpret(myNs))
+  println(Interpreter.gen[MyNamespaceDef].interpret(myNs))
 }

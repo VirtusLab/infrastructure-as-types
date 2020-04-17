@@ -28,7 +28,7 @@ lazy val dsl = (project in file("dsl"))
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
       "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
     ),
-    scalacOptions ++= Seq("-deprecation"),
+    scalacOptions ++= Seq("-deprecation" /*"-Ymacro-debug-verbose"*/ /*"-Ymacro-debug-lite"*/),
     scalafmtOnCompile := true
   ).dependsOn(kubernetes)
 
