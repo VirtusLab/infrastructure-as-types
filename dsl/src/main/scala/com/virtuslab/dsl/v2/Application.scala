@@ -11,7 +11,7 @@ object openApi {
   import com.virtuslab.kubernetes.client.openapi.model
   implicit val formats: Formats = JsonMethods.defaultFormats
 
-  implicit val namespaceInterpreter: Interpreter[Namespace] = (obj: Namespace) => {
+  implicit val namespaceInterpreter: Interpreter[Namespace] = (obj: Namespace, namespace: Namespace) => {
     val namespace = model.Namespace(
       metadata = Some(
         model.ObjectMeta(
@@ -23,26 +23,26 @@ object openApi {
     Seq(JsonMethods.asJValue(namespace))
   }
 
-  implicit val configurationInterpreter: Interpreter[Configuration] = (obj: Configuration) => {
+  implicit val configurationInterpreter: Interpreter[Configuration] = (obj: Configuration, namespace: Namespace) => {
     val meta = model.ObjectMeta(
       name = Some(obj.name),
-      namespace = Some(obj.namespace.name)
+      namespace = Some(namespace.name)
     )
 
     val configMap = model.ConfigMap(metadata = Some(meta), data = Some(obj.data))
     Seq(JsonMethods.asJValue(configMap))
   }
 
-  implicit val secretInterpreter: Interpreter[Secret] = (obj: Secret) => {
-    val meta = model.ObjectMeta(name = Some(obj.name), namespace = Some(obj.namespace.name))
+  implicit val secretInterpreter: Interpreter[Secret] = (obj: Secret, namespace: Namespace) => {
+    val meta = model.ObjectMeta(name = Some(obj.name), namespace = Some(namespace.name))
     val data = obj.data.view.mapValues(_.getBytes).toMap
 
     val secret = model.Secret(metadata = Some(meta), data = Some(data))
     Seq(JsonMethods.asJValue(secret))
   }
 
-  implicit val applicationInterpreter: Interpreter[Application] = (obj: Application) => {
-    val meta = model.ObjectMeta(name = Some(obj.name), namespace = Some(obj.namespace.name))
+  implicit val applicationInterpreter: Interpreter[Application] = (obj: Application, namespace: Namespace) => {
+    val meta = model.ObjectMeta(name = Some(obj.name), namespace = Some(namespace.name))
 
     val container = model.Container(name = obj.name)
     val podSpec = model.PodSpec(containers = Seq(container))
@@ -56,28 +56,24 @@ object openApi {
     Seq(JsonMethods.asJValue(service), JsonMethods.asJValue(deployment))
   }
 
-//  implicit val fooInter: Interpreter[Bar.type] = (obj: Bar.type) => {
-//    println("foo")
-//    Seq(JsonMethods.asJValue(null))
-//  }
 }
 
 trait Interpreter[A] {
-  def interpret(obj: A): Seq[JValue]
+  def interpret(obj: A, ns: Namespace): Seq[JValue] //FIXME: change return type
 }
 
 object Interpreter {
   type Typeclass[T] = Interpreter[T]
 
-  def combine[T](ctx: CaseClass[Interpreter, T]): Interpreter[T] = (obj: T) => {
+  def combine[T](ctx: CaseClass[Interpreter, T]): Interpreter[T] = (obj: T, namespace: Namespace) => {
     ctx.parameters.flatMap { p =>
-      p.typeclass.interpret(p.dereference(obj))
+      p.typeclass.interpret(p.dereference(obj), namespace)
     }
   }
 
-  def dispatch[T](ctx: SealedTrait[Interpreter, T]): Interpreter[T] = (obj: T) => {
+  def dispatch[T](ctx: SealedTrait[Interpreter, T]): Interpreter[T] = (obj: T, namespace: Namespace) => {
     ctx.dispatch(obj) { sub =>
-      sub.typeclass.interpret(sub.cast(obj))
+      sub.typeclass.interpret(sub.cast(obj), namespace)
     }
   }
 
@@ -86,19 +82,12 @@ object Interpreter {
 
 final case class Namespace(name: String)
 
-case class Configuration(
-    name: String,
-    namespace: Namespace,
-    data: Map[String, String])
+case class Configuration(name: String, data: Map[String, String])
 
-case class Secret(
-    name: String,
-    namespace: Namespace,
-    data: Map[String, String])
+case class Secret(name: String, data: Map[String, String])
 
 case class Application(
     name: String,
-    namespace: Namespace,
     configurations: List[Configuration] = Nil,
     secrets: List[Secret] = Nil)
 
@@ -108,13 +97,14 @@ object Test extends App {
 
   private val namespace: Namespace = Namespace("foo")
 
-  case class MyNamespaceDef(
-      namespace: Namespace = namespace,
-      superApp: Application = Application(name = "bar", namespace = namespace),
-      myConfiguration: Configuration = Configuration(name = "config-foo", namespace = namespace, data = Map.empty),
-      mySecret: Secret = Secret("config-foo", namespace = namespace, data = Map.empty))
+  case class MyDef(
+      superApp: Application = Application(name = "bar"),
+      myConfiguration: Configuration = Configuration(name = "config-foo", data = Map.empty),
+      mySecret: Secret = Secret("config-foo", data = Map.empty))
 
-  val myNs = MyNamespaceDef()
+  val myNs = MyDef()
 
-  println(Interpreter.gen[MyNamespaceDef].interpret(myNs))
+  def materialize[A: Interpreter](obj: A): Seq[JValue] = {
+    Interpreter.gen[MyDef].interpret(myNs, namespace)
+  }
 }
