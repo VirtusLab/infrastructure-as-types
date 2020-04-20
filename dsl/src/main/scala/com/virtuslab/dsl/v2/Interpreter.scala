@@ -1,42 +1,45 @@
 package com.virtuslab.dsl.v2
 
-import magnolia._
+import play.api.libs.json.{JsValue, Json, Writes}
+import shapeless._
 
-import scala.language.experimental.macros
+object TypedAsFuck {
 
-object SeqToParams {
-  def apply[T](seq: Seq[T]): Any = {
-    seq match {
-      case Seq()           => ()
-      case Seq(v1)         => v1
-      case Seq(v1, v2)     => (v1, v2)
-      case Seq(v1, v2, v3) => (v1, v2, v3)
-      case _               => throw new IllegalArgumentException(s"Cannot convert $seq to params!")
-    }
-  }
-}
-
-trait Interpreter[A] {
-  type R
-  def interpret(obj: A, ns: Namespace): R
-}
-
-trait InterpreterDerivation {
-  type Typeclass[A] = Interpreter[A]
-
-  def combine[A, Ret](ctx: CaseClass[Typeclass, A]): Typeclass[A] = new Typeclass[A] {
-    override type R = Ret
-
-    override def interpret(obj: A, ns: Namespace): R = {
-      val params = ctx.parameters.map { p =>
-        p.typeclass.interpret(p.dereference(obj), ns)
-      }
-
-      SeqToParams(params).asInstanceOf[Ret]
-    }
+  trait Representable[A, R] {
+    def represent: R
   }
 
-  def dispatch[A](ctx: SealedTrait[Typeclass, A]): Typeclass[A] = ???
+  import scala.annotation.implicitNotFound
+  import scala.language.implicitConversions
 
-  def gen[A]: Typeclass[A] = macro Magnolia.gen[A]
+  implicit def toRepresentable[A: Writes]: A => Representable[A, JsValue] = a => new Representable[A, JsValue] {
+    def represent: JsValue = Json.toJson(a)
+  }
+
+  @implicitNotFound("You need more shit to convert from elements of ${A} to ${R}")
+  trait Interpreter[A, R] {
+    def interpret(obj: A, ns: Namespace): List[Representable[_, R]]
+  }
+
+  trait Support[T, R] {
+    def toRepresentables(t: T): List[Representable[_, R]]
+  }
+
+  implicit def hnilSupport[R]: Support[HNil, R] = (_: HNil) => List.empty
+
+
+  trait LowerFuckingImplicitScope {
+    implicit def hconsSupport[R, H, T <: HList](implicit reprHead: H => Representable[H, R], tailSupport: Support[T, R]): Support[H :: T, R] =
+      (t: H :: T) => List(reprHead(t.head)) ++ tailSupport.toRepresentables(t.tail)
+  }
+
+  object HigherFuckingImplicitScope extends LowerFuckingImplicitScope {
+    implicit def hconsSupportHighPrio[R, H, T <: HList](implicit reprHead: H => Representable[H, R], tailSupport: Support[T, R]): Support[H :: T, R] =
+      (t: H :: T) => List(reprHead(t.head)) ++ tailSupport.toRepresentables(t.tail)
+  }
+
+  implicit def genInterpreter[A, XD, R](implicit gen: Generic[A] { type Repr = XD }, support: Support[XD, R]): Interpreter[A, R] =
+    (obj: A, ns: Namespace) => support.toRepresentables(gen.to(obj))
+
+
 }

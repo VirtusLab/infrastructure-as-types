@@ -1,8 +1,8 @@
 package com.virtuslab
 
-import java.nio.file.Path
+import java.nio.file.{Path, Paths}
 
-import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
+import com.virtuslab.dsl.{Application, Configuration, DistributedSystem, Namespace, _}
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.materializer.skuber.SimpleDeployer
 
@@ -44,7 +44,7 @@ object OperatorMain extends AbstractMain with App {
               args = List("--config", "/opt/config.yaml"),
               configurations = List(configuration),
               ports = Port(8080) :: Nil,
-              mounts = configuration.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
+              mounts = configuration.mount("config", "config.yaml", Paths.get("/opt/")) :: Nil
             )
           )
         }
