@@ -27,7 +27,6 @@ trait HasShortDescription {
   def asShortString: String
 }
 
-@deprecated
 trait Selector extends HasShortDescription {
   def expressions: Expressions
   def protocols: Protocols

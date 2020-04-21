@@ -1,5 +1,6 @@
 package com.virtuslab.dsl.v2
 
+import org.json4s.JValue
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -7,8 +8,8 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers {
 
   it should "work" in {
     import openApi.interpreters._
-
-    object Foo extends InterpreterDerivation
+    import JValueTransformable._
+    object JValueInterpreter extends InterpreterDerivation[JValue]
 
     val namespace: Namespace = Namespace("foo")
 
@@ -19,7 +20,9 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers {
 
     val myNs = MyDef()
 
-    println(Foo.gen[MyDef].interpret(myNs, namespace))
+    val myDefInterpreter = JValueInterpreter.gen[MyDef]
+    val r = myDefInterpreter.interpret(myNs, namespace)
+    println(r)
   }
 
 }

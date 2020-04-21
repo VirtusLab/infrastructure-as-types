@@ -2,41 +2,25 @@ package com.virtuslab.dsl.v2
 
 import magnolia._
 
-import scala.language.experimental.macros
-
-object SeqToParams {
-  def apply[T](seq: Seq[T]): Any = {
-    seq match {
-      case Seq()           => ()
-      case Seq(v1)         => v1
-      case Seq(v1, v2)     => (v1, v2)
-      case Seq(v1, v2, v3) => (v1, v2, v3)
-      case _               => throw new IllegalArgumentException(s"Cannot convert $seq to params!")
-    }
-  }
+abstract class Interpreter[A, R] {
+  def interpret(obj: A, ns: Namespace): List[Support[_, R]]
 }
 
-trait Interpreter[A] {
-  type R
-  def interpret(obj: A, ns: Namespace): R
-}
+trait InterpreterDerivation[R] {
+  type Typeclass[A] = Interpreter[A, R]
 
-trait InterpreterDerivation {
-  type Typeclass[A] = Interpreter[A]
-
-  def combine[A, Ret](ctx: CaseClass[Typeclass, A]): Typeclass[A] = new Typeclass[A] {
-    override type R = Ret
-
-    override def interpret(obj: A, ns: Namespace): R = {
+  //noinspection TypeAnnotation
+  def combine[A](ctx: CaseClass[Typeclass, A]) = new Interpreter[A, R] {
+    override def interpret(obj: A, ns: Namespace): List[Support[_, R]] = {
       val params = ctx.parameters.map { p =>
         p.typeclass.interpret(p.dereference(obj), ns)
       }
-
-      SeqToParams(params).asInstanceOf[Ret]
+      params.flatten.toList
     }
   }
 
   def dispatch[A](ctx: SealedTrait[Typeclass, A]): Typeclass[A] = ???
 
+  import scala.language.experimental.macros
   def gen[A]: Typeclass[A] = macro Magnolia.gen[A]
 }
