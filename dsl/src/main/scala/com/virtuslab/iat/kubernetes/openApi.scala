@@ -3,6 +3,7 @@ package com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.core.Transformable.Transformer
 import com.virtuslab.iat.core._
 import com.virtuslab.iat.dsl.{ Application, Configuration, Namespace, Secret }
+import com.virtuslab.iat.json.json4s.JValueMetadataExtractor
 
 object openApi {
   import com.virtuslab.iat.json.json4s.JValueTransformable
@@ -12,6 +13,7 @@ object openApi {
   object json4s extends JValueTransformable {
     import org.json4s.JValue
     object Interpreter extends InterpreterDerivation[Namespace, JValue]
+    object MetaExtractor extends JValueMetadataExtractor
   }
   object playjason extends PlayJsonTransformable {
     import play.api.libs.json.JsValue
