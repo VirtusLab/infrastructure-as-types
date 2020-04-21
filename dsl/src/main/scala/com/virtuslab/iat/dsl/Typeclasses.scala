@@ -1,4 +1,4 @@
-package com.virtuslab.dsl.v2
+package com.virtuslab.iat.dsl
 
 final case class Namespace(name: String)
 
