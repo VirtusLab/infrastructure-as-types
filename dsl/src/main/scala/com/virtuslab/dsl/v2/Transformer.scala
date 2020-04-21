@@ -1,24 +1,23 @@
 package com.virtuslab.dsl.v2
 
-import com.virtuslab.json.json4s.jackson.JsonMethods
-import org.json4s.{ JValue }
-import play.api.libs.json.{ JsValue, Json, Writes }
+import com.virtuslab.dsl.v2.Transformable.Transformer
 
 import scala.annotation.implicitNotFound
 
-@implicitNotFound("implicit for Support[P=${P}, R=${R} not found")
-trait Support[P, R] {
-  def toTransformable: Transformable[P, R]
+sealed trait Support[P, R] {
+  def transform: R = transformable.transform
+  protected def transformable: Transformable[P, R] // available at construction
 }
 
 object Support {
-  def apply[P, R](p: P)(implicit t: Transformable.Transformer[P, R]): Support[P, R] = {
+  def apply[P, R](product: P)(implicit transformer: Transformer[P, R]): Support[P, R] = {
     new Support[P, R] {
-      override def toTransformable: Transformable[P, R] = t.apply(p)
+      override def transformable: Transformable[P, R] = transformer(product)
     }
   }
 }
 
+@implicitNotFound("implicit for Transformable[P=${P}, R=${R} not found")
 trait Transformable[P, R] {
   def transform: R
 }
@@ -27,11 +26,12 @@ object Transformable {
   type Transformer[A, B] = A => Transformable[A, B]
 }
 
-object PlayJsonTransformable extends PlayJsonTransformable
-object JValueTransformable extends JValueTransformable
+//trait Transformer[A, B] extends (A => Transformable[A, B])
 
 trait PlayJsonTransformable {
-  implicit def toTransformer[P: Writes]: Transformable.Transformer[P, JsValue] =
+  import play.api.libs.json.{ JsValue, Json, Writes }
+
+  implicit def transformer[P: Writes]: Transformer[P, JsValue] =
     p =>
       new Transformable[P, JsValue] {
         def transform: JsValue = Json.toJson(p)
@@ -39,13 +39,12 @@ trait PlayJsonTransformable {
 }
 
 trait JValueTransformable {
-  implicit def toTransformer[P /*: Writer*/ ]: Transformable.Transformer[P, JValue] =
+  import org.json4s.JValue
+  import com.virtuslab.json.json4s.jackson.JsonMethods
+
+  implicit def transformer[P /*: Writer*/ ]: Transformer[P, JValue] =
     p =>
       new Transformable[P, JValue] {
-        def transform: JValue = {
-          println(p)
-          println(p.getClass)
-          JsonMethods.asJValue /*[P]*/ (p)
-        }
+        def transform: JValue = JsonMethods.asJValue /*[P]*/ (p)
       }
 }

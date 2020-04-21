@@ -1,14 +1,14 @@
 package com.virtuslab.dsl.v2
 
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
-import org.json4s.JValue
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class MagnoliaBasedDslTest extends AnyFlatSpec with Matchers with JsonMatchers {
   it should "work" in {
     import openApi.interpreters._ // needed
-    import JValueTransformable._ // needed
+    import openApi.implementation.json4s._ // needed
+    import openApi.implementation.json4s.Transformer._ // needed
 
     val namespace: Namespace = Namespace("foo")
 
@@ -19,11 +19,10 @@ class MagnoliaBasedDslTest extends AnyFlatSpec with Matchers with JsonMatchers {
 
     val myNs = MyDef()
 
-    object JValueInterpreter extends InterpreterDerivation[JValue]
-    val myDefInterpreter: JValueInterpreter.Typeclass[MyDef] = JValueInterpreter.gen[MyDef]
+    val myDefInterpreter = Interpreter.gen[MyDef]
     val r = myDefInterpreter.interpret(myNs, namespace)
-    println(r)
-    println(r.map(_.toTransformable.transform))
 
+    println(r)
+    println(r.map(_.transform))
   }
 }
