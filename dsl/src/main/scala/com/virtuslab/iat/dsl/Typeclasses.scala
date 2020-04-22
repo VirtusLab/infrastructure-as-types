@@ -6,6 +6,18 @@ case class Configuration(labels: List[Label], data: Map[String, String]) extends
 
 case class Secret(labels: List[Label], data: Map[String, String]) extends Named with Labeled
 
+object Secret {
+  object ops {
+    import java.util.Base64
+    import java.nio.charset.StandardCharsets
+
+    def base64encode(value: String): Array[Byte] = {
+      val bytes = value.getBytes(StandardCharsets.UTF_8)
+      Base64.getEncoder.encode(bytes)
+    }
+  }
+}
+
 case class Application(
     labels: List[Label],
     configurations: List[Configuration] = Nil,

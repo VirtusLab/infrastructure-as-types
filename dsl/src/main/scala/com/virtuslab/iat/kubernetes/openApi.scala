@@ -23,6 +23,7 @@ object openApi {
   // TODO circe
 
   import Label.ops._
+  import Secret.ops._
 
   implicit def namespaceInterpreter[R](
       implicit
@@ -75,7 +76,7 @@ object openApi {
             labels = Some(obj.labels.asMap)
           )
         ),
-        data = Some(obj.data.view.mapValues(_.getBytes).toMap)
+        data = Some(obj.data.view.mapValues(base64encode).toMap)
       )
 
       Support(secret) :: Nil

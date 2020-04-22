@@ -17,7 +17,7 @@ class NamespaceInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatche
     import openApi._
     import openApi.json4s._
 
-    val ns: Namespace = Namespace(Name("foo") :: Nil)
+    val ns = Namespace(Name("foo") :: Nil)
 
     val namespace =
       namespaceInterpreter.interpret(ns, ns).map(_.transform).head
