@@ -6,7 +6,9 @@ case class Connection(
     ingress: Selector,
     egress: Selector)
   extends Labeled
-  with Transformable[Connection]
+  with Transformable[Connection] {
+  def name: String = labels.name.value
+}
 
 object Connection {
   def apply(

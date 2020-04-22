@@ -25,4 +25,6 @@ case class Application(
   extends Labeled
   with Containerized
   with Mounts
-  with Transformable[Application]
+  with Transformable[Application] {
+  def name: String = labels.name.value
+}

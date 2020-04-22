@@ -6,11 +6,11 @@ trait Transformable[A] { self: A =>
   def transform(f: A => A): A = f(self)
 }
 
-trait Named { self: Labeled =>
-  def name: String = labels.name.value
+trait Named {
+  def name: String
 }
 
-trait Labeled extends Named with Expressions {
+trait Labeled extends Expressions {
   def labels: Labels
 
   override def expressions: Set[Expression] = labels.all.toSet[Expression]

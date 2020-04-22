@@ -82,7 +82,9 @@ case class SystemBuilder[Ctx <: Context](system: DistributedSystem) {
   def name: String = system.name
 }
 
-trait DistributedSystem extends Labeled
+trait DistributedSystem extends Labeled {
+  def name: String = labels.name.value
+}
 
 object DistributedSystem {
   final case class ADistributedSystem[Ctx <: Context] private[dsl] (labels: Labels) extends DistributedSystem {

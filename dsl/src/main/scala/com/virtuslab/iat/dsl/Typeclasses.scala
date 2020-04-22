@@ -1,6 +1,8 @@
 package com.virtuslab.iat.dsl
 
-final case class Namespace(name: String)
+import com.virtuslab.dsl.{ Labeled, Labels, Named }
+
+final case class Namespace(name: String, labels: Labels) extends Named with Labeled
 
 case class Configuration(name: String, data: Map[String, String])
 

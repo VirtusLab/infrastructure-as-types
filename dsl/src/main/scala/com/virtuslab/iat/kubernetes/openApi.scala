@@ -29,7 +29,14 @@ object openApi {
     (obj: Namespace, unused: Namespace) => {
       Support(
         model.Namespace(
-          metadata = Some(model.ObjectMeta(name = Some(obj.name)))
+          apiVersion = Some("v1"),
+          kind = Some("Namespace"),
+          metadata = Some(
+            model.ObjectMeta(
+              name = Some(obj.name),
+              labels = Some(obj.labels.toMap)
+            )
+          )
         )
       ) :: Nil
     }

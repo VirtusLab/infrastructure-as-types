@@ -1,5 +1,6 @@
 package com.virtuslab.iat.kubernetes
 
+import com.virtuslab.dsl.{ Labels, Name }
 import com.virtuslab.iat.dsl.{ Application, Configuration, Namespace, Secret }
 import com.virtuslab.iat.test.EnsureMatchers
 import com.virtuslab.json.json4s.jackson.JsonMethods
@@ -18,7 +19,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with EnsureMat
         mySecret: Secret = Secret("config-foo", data = Map.empty))
 
     val group1 = Group1()
-    val namespace1: Namespace = Namespace("foo")
+    val namespace1: Namespace = Namespace("foo", Labels(Name("foo")))
 
     val myDefInterpreter = Interpreter.gen[Group1]
     val r = myDefInterpreter.interpret(group1, namespace1)

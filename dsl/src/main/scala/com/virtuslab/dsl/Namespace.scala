@@ -81,7 +81,9 @@ case class NamespaceBuilder[Ctx <: Context](namespace: Namespace, systemBuilder:
   }
 }
 
-trait Namespace extends Labeled
+trait Namespace extends Labeled {
+  def name: String = labels.name.value
+}
 
 object Namespace {
   final case class ANamespace[Ctx <: Context] private[dsl] (labels: Labels) extends Namespace {

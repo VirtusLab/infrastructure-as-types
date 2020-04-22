@@ -118,6 +118,7 @@ trait DistributedGraph extends GraphSpecific {
   import com.virtuslab.dsl.{ Labeled, Labels }
 
   trait DistributedSystem extends Labeled with DetachedReference[DistributedSystem] {
+    def name: String = labels.name.value
     def namespaces: List[Namespace]
     val _namespaces: DistributedSystem.Namespaces = DistributedSystem.Namespaces(this)
   }
@@ -131,6 +132,8 @@ trait DistributedGraph extends GraphSpecific {
   }
 
   trait Namespace extends Labeled with Reference[DistributedSystem.Namespaces, Namespace] {
+    def name: String = labels.name.value
+
     val applications: Namespace.Applications = Namespace.Applications(this)
     val gateways: Namespace.Gateways = Namespace.Gateways(this)
   }
@@ -143,6 +146,7 @@ trait DistributedGraph extends GraphSpecific {
   }
 
   trait Application extends Labeled with Reference[Namespace.Applications, Application] {
+    def name: String = labels.name.value
     val configurations: Application.Configurations = Application.Configurations(this)
   }
 
@@ -153,14 +157,18 @@ trait DistributedGraph extends GraphSpecific {
     def apply(labels: Labels, namespace: Namespace): Application = AnApplication(labels, namespace.applications)
   }
 
-  trait Gateway extends Labeled with Reference[Namespace.Gateways, Gateway]
+  trait Gateway extends Labeled with Reference[Namespace.Gateways, Gateway] {
+    def name: String = labels.name.value
+  }
   object Gateway {
     case class AGateway(labels: Labels, holder: Namespace.Gateways) extends Labeled with Gateway
     def apply(labels: Labels, namespace: Namespace): Gateway = AGateway(labels, namespace.gateways)
   }
 //  trait Connection extends Labeled with Definition[Namespace, Connection, Rule]
 
-  trait Configuration extends Labeled with Reference[Application.Configurations, Configuration]
+  trait Configuration extends Labeled with Reference[Application.Configurations, Configuration] {
+    def name: String = labels.name.value
+  }
   object Configuration {
     case class AConfiguration(labels: Labels, holder: Application.Configurations) extends Labeled with Configuration
     def apply(labels: Labels, application: Application): Configuration = AConfiguration(labels, application.configurations)
