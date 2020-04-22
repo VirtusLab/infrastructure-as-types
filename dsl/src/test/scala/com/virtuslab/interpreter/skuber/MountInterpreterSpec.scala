@@ -4,9 +4,9 @@ import java.nio.file.Path
 
 import com.virtuslab.dsl.Mountable._
 import com.virtuslab.dsl.{ Configuration, Labels, Name, Secret }
+import com.virtuslab.iat.json.converters.playJsonToString
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.json.Converters.playJsonToString
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
 class MountInterpreterSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {

@@ -1,11 +1,11 @@
-package com.virtuslab.json
+package com.virtuslab.iat.json
 
-import com.virtuslab.json.json4s.jackson.{ JsonMethods, YamlMethods }
-import org.json4s
-import play.api.libs.json.Writes
-import play.api.libs.{ json => pjson }
+object converters {
+  import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
+  import org.json4s
+  import play.api.libs.json.Writes
+  import play.api.libs.{ json => pjson }
 
-object Converters {
   def yamlToJson(yaml: String): String = JsonMethods.pretty(YamlMethods.parse(yaml))
 
   def playJsonToString[T](o: T)(implicit tjs: Writes[T]): String = pjson.Json.prettyPrint(pjson.Json.toJson(o))

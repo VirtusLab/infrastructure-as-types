@@ -1,10 +1,11 @@
-package com.virtuslab.json.json4s.jackson
+package com.virtuslab.iat.json4s.jackson
 
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.{ Formats, NoTypeHints }
 import org.json4s.jackson.Serialization
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import com.virtuslab.iat.json.json4s.jackson.YamlMethods
 
 class YamlTest extends AnyFlatSpec with Matchers with JsonMatchers {
 

@@ -1,7 +1,7 @@
 package com.virtuslab.interpreter
 
 import com.virtuslab.dsl.{ DistributedSystem, Namespace, NamespaceBuilder, SystemBuilder }
-import com.virtuslab.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.Matcher

@@ -3,8 +3,8 @@ package com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Namespace
 import com.virtuslab.iat.test.EnsureMatchers
-import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.converters.yamlToJson
+import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec

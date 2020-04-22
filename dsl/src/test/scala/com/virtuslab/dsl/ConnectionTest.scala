@@ -3,7 +3,7 @@ package com.virtuslab.dsl
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.json.Converters.yamlToJson
+import com.virtuslab.iat.json.converters.yamlToJson
 import com.virtuslab.materializer.skuber.Metadata
 import com.virtuslab.materializer.skuber.Exporter
 

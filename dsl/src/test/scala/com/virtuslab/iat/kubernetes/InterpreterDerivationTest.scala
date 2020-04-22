@@ -3,8 +3,8 @@ package com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.{ Application, Configuration, Namespace, Secret }
 import com.virtuslab.iat.test.EnsureMatchers
-import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.converters.yamlToJson
+import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
@@ -30,7 +30,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
       namespaceInterpreter.interpret(ns, ns).map(_.transform) ++
         myDefInterpreter.interpret(g1, ns).map(_.transform)
 
-    Ensure(Ensure.json4s.prepare(js))
+    Ensure(asMetaJsonString(js))
       .contain(
         Metadata("v1", "Namespace", "", ns.name) -> matchJsonString(yamlToJson(s"""
             |---

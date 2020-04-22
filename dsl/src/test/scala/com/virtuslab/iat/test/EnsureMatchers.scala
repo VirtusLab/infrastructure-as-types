@@ -34,25 +34,6 @@ trait EnsureMatchers { self: AnyFlatSpecLike with Matchers =>
     def apply[M, A](rs: Iterable[(M, A)]): Ensure[M, A] = new Ensure[M, A] {
       def resources: Map[M, A] = rs.toMap
     }
-
-    object json4s {
-      import com.virtuslab.iat.kubernetes.openApi.json4s.MetaExtractor
-      import com.virtuslab.json.json4s.jackson.JsonMethods
-      import org.json4s.JValue
-
-      def prepare(js: Seq[JValue]): Iterable[(Metadata, String)] = {
-        val st = js.map(JsonMethods.pretty)
-        val mt = js
-          .map(MetaExtractor.extract)
-          .map(
-            _.fold(
-              e => fail(s"metadata extraction failed: $e\nJson:\n${st}\n"),
-              v => v
-            )
-          )
-        mt.zip(st)
-      }
-    }
   }
 }
 

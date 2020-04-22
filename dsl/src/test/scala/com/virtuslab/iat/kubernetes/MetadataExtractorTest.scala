@@ -1,7 +1,6 @@
 package com.virtuslab.iat.kubernetes
 
 import com.virtuslab.iat.kubernetes.openApi.json4s
-import com.virtuslab.json.json4s.jackson.JsonMethods
 import com.virtuslab.kubernetes.client.openapi.model
 import com.virtuslab.kubernetes.client.openapi.model.ObjectMeta
 import org.scalatest.flatspec.AnyFlatSpec

@@ -1,10 +1,10 @@
 package com.virtuslab.interpreter.skuber
 
 import com.virtuslab.dsl._
+import com.virtuslab.iat.json.converters.yamlToJson
+import com.virtuslab.iat.json.json4s.jackson.JsonMethods.pretty
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.json.Converters.yamlToJson
-import com.virtuslab.json.json4s.jackson.JsonMethods.pretty
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 
 class ConfigurationInterpreterSpec extends InterpreterSpec[SkuberContext] with JsonMatchers {

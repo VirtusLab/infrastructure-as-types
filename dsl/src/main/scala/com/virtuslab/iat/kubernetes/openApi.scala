@@ -3,25 +3,40 @@ package com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.core.Transformable.Transformer
 import com.virtuslab.iat.core._
 import com.virtuslab.iat.dsl.{ Application, Configuration, Gateway, Label, Namespace, Secret }
-import com.virtuslab.iat.json.json4s.JValueMetadataExtractor
 
 object openApi {
   import com.virtuslab.iat.json.json4s.JValueTransformable
-  import com.virtuslab.iat.json.playjson.PlayJsonTransformable
-  import com.virtuslab.kubernetes.client.openapi.model
 
   object json4s extends JValueTransformable {
     import org.json4s.JValue
+    import com.virtuslab.iat.json.json4s.JValueMetadataExtractor
+    import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
+
     object Interpreter extends InterpreterDerivation[Namespace, JValue]
     object MetaExtractor extends JValueMetadataExtractor
-  }
-  object playjason extends PlayJsonTransformable {
-    import play.api.libs.json.JsValue
-    object Interpreter extends InterpreterDerivation[Namespace, JsValue]
+
+    def asMetaJValue(js: Seq[JValue]): Iterable[(Metadata, JValue)] = {
+      val mt = js
+        .map(MetaExtractor.extract)
+        .map(
+          _.fold(
+            e =>
+              throw new IllegalStateException( /* FIXME: how to make it compile-time? */
+                s"metadata extraction failed: $e\nJson:\n${js.map(JsonMethods.pretty)}\n"
+              ),
+            v => v
+          )
+        )
+      mt.zip(js)
+    }
+
+    def asMetaJsonString(js: Seq[JValue]): Iterable[(Metadata, String)] =
+      asMetaJValue(js).map(e => e._1 -> JsonMethods.pretty(e._2))
+    def asMetaYamlString(js: Seq[JValue]): Iterable[(Metadata, String)] =
+      asMetaJValue(js).map(e => e._1 -> YamlMethods.pretty(e._2))
   }
 
-  // TODO circe
-
+  import com.virtuslab.kubernetes.client.openapi.model
   import Label.ops._
   import Secret.ops._
 

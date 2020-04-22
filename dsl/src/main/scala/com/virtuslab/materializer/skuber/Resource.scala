@@ -1,7 +1,7 @@
 package com.virtuslab.materializer.skuber
 
+import com.virtuslab.iat.json.converters
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.json.Converters
 import com.virtuslab.materializer
 import org.json4s.JValue
 import play.api.libs.json.{ Format, JsValue }
@@ -22,5 +22,5 @@ case class Resource[A <: SkuberContext#Base: Format: ResourceDefinition](obj: A)
 
   override def weak: SkuberContext#Interpretation = this.asInstanceOf[SkuberContext#Interpretation]
   override def meta: SkuberContext#Meta = Metadata(obj.apiVersion, obj.kind, obj.ns, obj.name)
-  override def asJValue: JValue = Converters.toJson4s(asJsValue)
+  override def asJValue: JValue = converters.toJson4s(asJsValue)
 }

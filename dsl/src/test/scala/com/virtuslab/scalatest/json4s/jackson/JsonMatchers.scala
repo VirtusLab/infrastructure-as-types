@@ -1,6 +1,6 @@
 package com.virtuslab.scalatest.json4s.jackson
 
-import com.virtuslab.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
 import org.json4s.{ Diff, Formats, JValue }

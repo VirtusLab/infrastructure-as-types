@@ -1,7 +1,7 @@
 package com.virtuslab.materializer.skuber
 
+import com.virtuslab.iat.json.playjson.Yaml
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.json.playjson.Yaml
 import com.virtuslab.materializer.Materializer
 import play.api.libs.json.{ JsValue, Json }
 

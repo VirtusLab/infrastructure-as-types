@@ -1,4 +1,4 @@
-package com.virtuslab.json.playjson.jackson
+package com.virtuslab.iat.json.playjson.jackson
 
 import java.io.{ InputStream, StringWriter }
 

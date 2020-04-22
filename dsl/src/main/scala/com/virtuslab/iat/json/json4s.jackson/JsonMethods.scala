@@ -1,4 +1,4 @@
-package com.virtuslab.json.json4s.jackson
+package com.virtuslab.iat.json.json4s.jackson
 
 import com.virtuslab.kubernetes.client.openapi.api.EnumsSerializers
 import com.virtuslab.kubernetes.client.openapi.core.Serializers
