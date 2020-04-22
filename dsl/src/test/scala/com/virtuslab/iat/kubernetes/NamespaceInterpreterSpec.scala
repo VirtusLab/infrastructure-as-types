@@ -1,6 +1,6 @@
 package com.virtuslab.iat.kubernetes
 
-import com.virtuslab.dsl.{ Labels, Name }
+import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Namespace
 import com.virtuslab.iat.test.EnsureMatchers
 import com.virtuslab.json.Converters.yamlToJson
@@ -14,11 +14,13 @@ class NamespaceInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatche
   implicit val formats: Formats = JsonMethods.defaultFormats
 
   it should "serialize Namespace to JSON" in {
+    import openApi._
     import openApi.json4s._
 
-    val ns: Namespace = Namespace("foo", Labels(Name("foo")))
+    val ns: Namespace = Namespace(Name("foo") :: Nil)
 
-    val namespace = openApi.namespaceInterpreter.interpret(ns, ns).map(_.transform).head
+    val namespace =
+      namespaceInterpreter.interpret(ns, ns).map(_.transform).head
 
     namespace.should(matchJson(yamlToJson(s"""
         |---

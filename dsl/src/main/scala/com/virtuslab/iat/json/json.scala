@@ -18,24 +18,38 @@ object json4s {
   }
 
   trait JValueMetadataExtractor {
-    import org.json4s.JsonAST.{ JField, JObject, JString, JValue }
+    import org.json4s.JsonAST.{ JString, JValue }
 
     def extract(json: JValue): Either[String, Metadata] = {
-      val metas = for {
-        JString(apiVersion) <- json \ "apiVersion"
-        JString(kind) <- json \ "kind"
-        JObject(metadata) <- json \ "metadata"
-        JField("name", JString(name)) <- metadata
-        namespace = metadata.collectFirst { case JField("namespace", JString(namespace)) => namespace }
-      } yield Metadata(
-        apiVersion = apiVersion,
-        kind = kind,
-        name = name,
-        namespace = namespace.getOrElse("")
-      )
-      if (metas.size > 1) Left("expected 1 metadata, got: " + metas.size)
-      else if (metas.isEmpty) Left(s"expected apiVersion, kind, metadata.name, metadata.namespace is optional")
-      else Right(metas.head)
+      val apiVersion = json \ "apiVersion" match {
+        case JString(apiVersion) => Right(apiVersion)
+        case _                   => Left("apiVersion not found")
+      }
+      val kind = json \ "kind" match {
+        case JString(kind) => Right(kind)
+        case _             => Left("kind not found")
+      }
+      val name = json \ "metadata" \ "name" match {
+        case JString(name) => Right(name)
+        case _             => Left("metadata.name not found")
+      }
+      val namespace = json \ "metadata" \ "namespace" match {
+        case JString(namespace) => Right(namespace)
+        case _                  => Right("") // namespace is optional
+      }
+      val m = apiVersion :: kind :: name :: namespace :: Nil
+      val lefts = m.filter(_.isLeft).map(_.swap).map(_.toOption.get)
+      if (lefts.nonEmpty)
+        Left(lefts.mkString(", ") + "; JValue: " + json)
+      else
+        Right(
+          Metadata(
+            apiVersion = apiVersion.toOption.get,
+            kind = kind.toOption.get,
+            name = name.toOption.get,
+            namespace = namespace.getOrElse("")
+          )
+        )
     }
   }
 

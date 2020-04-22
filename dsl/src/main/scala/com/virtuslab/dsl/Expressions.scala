@@ -59,6 +59,7 @@ object Expressions {
 
   import scala.language.implicitConversions
 
+  //noinspection TypeAnnotation
   // this DSL enables equality and set based selector expressions analogous to the Kubernetes API
   // The following illustrates mappings from this DSL to k8s selector expressions syntax:
   // "production" -> "production"

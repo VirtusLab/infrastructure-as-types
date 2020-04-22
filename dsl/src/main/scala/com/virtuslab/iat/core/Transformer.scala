@@ -18,7 +18,7 @@ object Support {
 }
 
 @implicitNotFound("""
-    |implicit for Transformable[P=${P}, R=${R} not found,
+    |implicit for Transformable[P=${P}, R=${R}] not found,
     |make sure you have a correct implicit imported
     |or otherwise available in scope""".stripMargin)
 trait Transformable[P, R] {
