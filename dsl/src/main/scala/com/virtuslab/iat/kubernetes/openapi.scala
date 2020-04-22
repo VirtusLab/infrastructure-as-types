@@ -1,16 +1,17 @@
 package com.virtuslab.iat.kubernetes
 
 import com.virtuslab.iat.core.Transformable.Transformer
-import com.virtuslab.iat.core._
-import com.virtuslab.iat.dsl.{ Application, Configuration, Gateway, Label, Namespace, Secret }
+import com.virtuslab.iat.core.{ RootInterpreter, _ }
+import com.virtuslab.iat.dsl._
+import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
-object openApi {
+object openapi {
   import com.virtuslab.iat.json.json4s.JValueTransformable
 
   object json4s extends JValueTransformable {
-    import org.json4s.JValue
     import com.virtuslab.iat.json.json4s.JValueMetadataExtractor
     import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
+    import org.json4s.JValue
 
     object Interpreter extends InterpreterDerivation[Namespace, JValue]
     object MetaExtractor extends JValueMetadataExtractor
@@ -36,15 +37,15 @@ object openApi {
       asMetaJValue(js).map(e => e._1 -> YamlMethods.pretty(e._2))
   }
 
-  import com.virtuslab.kubernetes.client.openapi.model
   import Label.ops._
   import Secret.ops._
+  import com.virtuslab.kubernetes.client.openapi.model
 
   implicit def namespaceInterpreter[R](
       implicit
       t: Transformer[model.Namespace, R]
-    ): Interpreter[Namespace, Namespace, R] =
-    (obj: Namespace, unused: Namespace) => {
+    ): RootInterpreter[Namespace, R] =
+    (obj: Namespace) => {
       val namespace = model.Namespace(
         apiVersion = Some("v1"),
         kind = Some("Namespace"),
@@ -79,7 +80,10 @@ object openApi {
     Support(config) :: Nil
   }
 
-  implicit def secretInterpreter[R](implicit t: Transformer[model.Secret, R]): Interpreter[Secret, Namespace, R] =
+  implicit def secretInterpreter[R](
+      implicit
+      t: Transformer[model.Secret, R]
+    ): Interpreter[Secret, Namespace, R] =
     (obj: Secret, ns: Namespace) => {
       val secret = model.Secret(
         apiVersion = Some("v1"),
@@ -108,32 +112,16 @@ object openApi {
       labels = Some(obj.labels.asMap)
     )
 
-    val service = model.Service(
-      apiVersion = Some("v1"),
-      kind = Some("Service"),
-      metadata = Some(meta),
-      spec = Some(model.ServiceSpec())
-    )
-
-    val deployment = model.Deployment(
-      apiVersion = Some("apps/v1"),
-      kind = Some("Deployment"),
-      metadata = Some(meta),
-      spec = Some(
-        model.DeploymentSpec(
-          template = model.PodTemplateSpec(
-            spec = Some(
-              model.PodSpec(containers = Seq(model.Container(name = obj.name)))
-            )
-          )
-        )
-      )
-    )
+    val service = subinterpreter.applicationServiceInterpreter(meta)
+    val deployment = subinterpreter.applicationDeploymentInterpreter(meta, obj)
 
     Support(service) :: Support(deployment) :: Nil
   }
 
-  implicit def gatewayInterpreter[R](implicit t: Transformer[model.Ingress, R]): Interpreter[Gateway, Namespace, R] =
+  implicit def gatewayInterpreter[R](
+      implicit
+      t: Transformer[model.Ingress, R]
+    ): Interpreter[Gateway, Namespace, R] =
     (obj: Gateway, ns: Namespace) => {
       val ingress = model.Ingress(
         apiVersion = Some("networking.k8s.io/v1beta1"),
@@ -149,8 +137,40 @@ object openApi {
       Support(ingress) :: Nil
     }
 
-  implicit def labelInterpreter[R](implicit t: Transformer[(String, String), R]): Interpreter[Label, Nothing, R] =
-    (l: Label, unused: Nothing) => {
+  implicit def labelInterpreter[R](
+      implicit
+      t: Transformer[(String, String), R]
+    ): RootInterpreter[Label, R] =
+    (l: Label) => {
       Support(l.asTuple) :: Nil
     }
+
+  object subinterpreter {
+    def applicationServiceInterpreter(meta: model.ObjectMeta): Service = {
+      model.Service(
+        apiVersion = Some("v1"),
+        kind = Some("Service"),
+        metadata = Some(meta),
+        spec = Some(model.ServiceSpec())
+      )
+    }
+
+    def applicationDeploymentInterpreter(meta: ObjectMeta, obj: Application): Deployment = {
+      model.Deployment(
+        apiVersion = Some("apps/v1"),
+        kind = Some("Deployment"),
+        metadata = Some(meta),
+        spec = Some(
+          model.DeploymentSpec(
+            template = model.PodTemplateSpec(
+              spec = Some(
+                model.PodSpec(containers = Seq(model.Container(name = obj.name)))
+              )
+            )
+          )
+        )
+      )
+    }
+
+  }
 }

@@ -2,8 +2,7 @@ package com.virtuslab.iat.json.json4s.jackson
 
 import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_INTEGER_FOR_INTS
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.dataformat.yaml.{ YAMLFactory, YAMLGenerator }
 import org.json4s.JsonInput
 import org.json4s.jackson.{ Json4sScalaModule, JsonMethods }
 
@@ -22,6 +21,8 @@ trait YamlMethods extends JsonMethods {
   override def mapper: ObjectMapper = yamlMapper
 
   type YamlInput = JsonInput
+
+  def yamlToJson(yaml: String): String = JsonMethods.pretty(YamlMethods.parse(yaml))
 }
 
 object YamlMethods extends YamlMethods

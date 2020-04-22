@@ -1,11 +1,10 @@
 package com.virtuslab.dsl
 
 import com.stephenn.scalatest.playjson.JsonMatchers
+import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.iat.json.converters.yamlToJson
-import com.virtuslab.materializer.skuber.Metadata
-import com.virtuslab.materializer.skuber.Exporter
+import com.virtuslab.materializer.skuber.{ Exporter, Metadata }
 
 class ConnectionTest extends InterpreterSpec[SkuberContext] with JsonMatchers {
 

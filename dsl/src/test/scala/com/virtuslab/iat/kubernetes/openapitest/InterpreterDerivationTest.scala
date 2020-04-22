@@ -1,10 +1,11 @@
-package com.virtuslab.iat.kubernetes
+package com.virtuslab.iat.kubernetes.openapitest
 
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.{ Application, Configuration, Namespace, Secret }
-import com.virtuslab.iat.test.EnsureMatchers
-import com.virtuslab.iat.json.converters.yamlToJson
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
+import com.virtuslab.iat.kubernetes.{ openapi, Metadata }
+import com.virtuslab.iat.test.EnsureMatchers
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,8 +15,8 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
   implicit val formats: Formats = JsonMethods.defaultFormats
 
   it should "derive a one level nested interpreter" in {
-    import openApi._
-    import openApi.json4s._
+    import openapi._
+    import openapi.json4s._
 
     case class Group1(
         superApp: Application = Application(Name("bar") :: Nil),
@@ -27,7 +28,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
 
     val myDefInterpreter = Interpreter.gen[Group1]
     val js =
-      namespaceInterpreter.interpret(ns, ns).map(_.transform) ++
+      namespaceInterpreter.interpret(ns).map(_.transform) ++
         myDefInterpreter.interpret(g1, ns).map(_.transform)
 
     Ensure(asMetaJsonString(js))

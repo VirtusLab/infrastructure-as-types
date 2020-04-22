@@ -1,6 +1,7 @@
-package com.virtuslab.iat.kubernetes
+package com.virtuslab.iat.kubernetes.openapitest
 
-import com.virtuslab.iat.kubernetes.openApi.json4s
+import com.virtuslab.iat.kubernetes.Metadata
+import com.virtuslab.iat.kubernetes.openapi.json4s
 import com.virtuslab.kubernetes.client.openapi.model
 import com.virtuslab.kubernetes.client.openapi.model.ObjectMeta
 import org.scalatest.flatspec.AnyFlatSpec

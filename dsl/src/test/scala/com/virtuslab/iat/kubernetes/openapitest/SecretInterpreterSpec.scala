@@ -1,10 +1,11 @@
-package com.virtuslab.iat.kubernetes
+package com.virtuslab.iat.kubernetes.openapitest
 
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.{ Namespace, Secret }
-import com.virtuslab.iat.test.EnsureMatchers
-import com.virtuslab.iat.json.converters.yamlToJson
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
+import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
+import com.virtuslab.iat.kubernetes.openapi
+import com.virtuslab.iat.test.EnsureMatchers
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,14 +15,14 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
   implicit val formats: Formats = JsonMethods.defaultFormats
 
   it should "create empty secret" in {
-    import openApi._
-    import openApi.json4s._
+    import openapi._
+    import openapi.json4s._
 
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map.empty)
 
-    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).map(JsonMethods.pretty).head
-    secret.should(matchJsonString(yamlToJson(s"""
+    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).head
+    secret.should(matchJson(yamlToJson(s"""
         |---
         |kind: Secret
         |apiVersion: v1
@@ -35,8 +36,8 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
   }
 
   it should "create secret with key and value" in {
-    import openApi._
-    import openApi.json4s._
+    import openapi._
+    import openapi.json4s._
 
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map("foo" -> "admin"))

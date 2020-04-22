@@ -2,8 +2,8 @@ package com.virtuslab.interpreter.skuber
 
 import com.virtuslab.dsl.HTTP.Host
 import com.virtuslab.dsl._
-import com.virtuslab.iat.json.converters.yamlToJson
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods.pretty
+import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.interpreter.InterpreterSpec
 import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
 import com.virtuslab.scalatest.json4s.jackson.JsonMatchers

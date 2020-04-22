@@ -2,8 +2,9 @@ package com.virtuslab.iat.core
 
 import magnolia._
 
-trait RootInterpreter[A, R] {
+trait RootInterpreter[A, R] extends Interpreter[A, Nothing, R] {
   def interpret(obj: A): List[Support[_ /* reified in the Support */, R]]
+  override def interpret(obj: A, ctx: Nothing): List[Support[_, R]] = interpret(obj)
 }
 
 trait Interpreter[A, C, R] {
