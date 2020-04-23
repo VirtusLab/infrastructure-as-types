@@ -1,11 +1,21 @@
 package com.virtuslab.iat.json.json4s
 
+import com.virtuslab.iat.core.Transformable
+import com.virtuslab.iat.core.Transformable.Transformer
 import com.virtuslab.iat.kubernetes.Metadata
+import org.json4s
+import org.json4s.JValue
+import org.json4s.JsonAST.JString
 
 trait JValueMetadataExtractor {
-  import org.json4s.JsonAST.{ JString, JValue }
 
-  def extract(json: JValue): Either[String, Metadata] = {
+  implicit def jvalueMetadataTransformer: Transformer[JValue, Either[String, Metadata]] =
+    json =>
+      new Transformable[json4s.JValue, Either[String, Metadata]] {
+        override def transform: Either[String, Metadata] = extract(json)
+      }
+
+  protected def extract(json: JValue): Either[String, Metadata] = {
     val apiVersion = json \ "apiVersion" match {
       case JString(apiVersion) => Right(apiVersion)
       case _                   => Left("apiVersion not found")

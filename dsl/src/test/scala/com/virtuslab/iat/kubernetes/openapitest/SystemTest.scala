@@ -27,7 +27,7 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
     val g1 = Group1()
     val ns = Namespace(Name("theNamespace") :: Nil)
 
-    val js = (interpret(ns) ++ interpret(g1, ns)).map(_.transform)
+    val js = interpret(ns) ++ interpret(g1, ns)
 
     Ensure(asMetaJsonString(js))
       .contain(

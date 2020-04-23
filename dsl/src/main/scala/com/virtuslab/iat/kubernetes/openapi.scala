@@ -6,19 +6,23 @@ import com.virtuslab.iat.dsl._
 import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
 object openapi {
-  import com.virtuslab.iat.json.json4s.JValueTransformable
+  import com.virtuslab.iat.json.json4s.{ JValueMetadataExtractor, JValueTransformable }
 
-  object json4s extends JValueTransformable {
-    import com.virtuslab.iat.json.json4s.JValueMetadataExtractor
+  object json4s extends JValueTransformable with JValueMetadataExtractor {
     import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
     import org.json4s.JValue
 
     object InterpreterDerivation extends InterpreterDerivation[Namespace, JValue]
     object MetaExtractor extends JValueMetadataExtractor
 
-    def asMetaJValue(js: Seq[JValue]): Iterable[(Metadata, JValue)] = {
+    def asMetaJValue(
+        js: Seq[JValue]
+      )(implicit
+        transformer: Transformer[JValue, Either[String, Metadata]]
+      ): Iterable[(Metadata, JValue)] = {
       val mt = js
-        .map(MetaExtractor.extract)
+        .map(transformer)
+        .map(_.transform)
         .map(
           _.fold(
             e =>
@@ -35,14 +39,16 @@ object openapi {
       asMetaJValue(js).map(e => e._1 -> JsonMethods.pretty(e._2))
     def asMetaYamlString(js: Seq[JValue]): Iterable[(Metadata, String)] =
       asMetaJValue(js).map(e => e._1 -> YamlMethods.pretty(e._2))
+
+    def asJValue[A](a: A)(implicit t: Transformer[A, JValue]): JValue = t(a).transform
   }
 
   import Label.ops._
   import Secret.ops._
   import com.virtuslab.kubernetes.client.openapi.model
 
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_, R]] = Interpreter.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_, R]] = Interpreter.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit

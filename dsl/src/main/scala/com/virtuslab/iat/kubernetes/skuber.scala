@@ -20,8 +20,8 @@ object skuber {
   import Label.ops._
   import Secret.ops._
 
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_, R]] = Interpreter.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_, R]] = Interpreter.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit

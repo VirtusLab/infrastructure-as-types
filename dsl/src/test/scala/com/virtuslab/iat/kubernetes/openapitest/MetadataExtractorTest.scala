@@ -1,14 +1,16 @@
 package com.virtuslab.iat.kubernetes.openapitest
 
-import com.virtuslab.iat.kubernetes.Metadata
-import com.virtuslab.iat.kubernetes.openapi.json4s
+import com.virtuslab.iat.core.Transformable.Transformer
+import com.virtuslab.iat.kubernetes.{ openapi, Metadata }
 import com.virtuslab.kubernetes.client.openapi.model
 import com.virtuslab.kubernetes.client.openapi.model.ObjectMeta
+import org.json4s.JValue
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class MetadataExtractorTest extends AnyFlatSpec with Matchers {
   it should "extract metadata from JValue" in {
+    import openapi.json4s._
 
     val ns = model.Namespace(
       apiVersion = Some("v1"),
@@ -30,12 +32,14 @@ class MetadataExtractorTest extends AnyFlatSpec with Matchers {
       )
     )
 
-    val nsJson = json4s.transformer(ns).transform
-    val nsMeta = json4s.MetaExtractor.extract(nsJson)
+    val metaTransformer = implicitly[Transformer[JValue, Either[String, Metadata]]]
+
+    val nsJson = asJValue(ns)
+    val nsMeta = metaTransformer(nsJson).transform
     nsMeta should equal(Right(Metadata("v1", "Namespace", "", "ns1")))
 
-    val dpJson = json4s.transformer(dp).transform
-    val dpMeta = json4s.MetaExtractor.extract(dpJson)
+    val dpJson = asJValue(dp)
+    val dpMeta = metaTransformer(dpJson).transform
     dpMeta should equal(Right(Metadata("apps/v1", "Deployment", "ns1", "app1")))
   }
 }

@@ -31,6 +31,8 @@ trait InterpreterDerivation[C, R] {
 }
 
 object Interpreter {
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_, R]] = i.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_, R]] = i.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] =
+    i.interpret(obj).map(_.transform)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] =
+    i.interpret(obj, ctx).map(_.transform)
 }
