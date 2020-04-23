@@ -21,7 +21,7 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map.empty)
 
-    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).head
+    val secret = interpret(sec, ns).map(_.transform).head
     secret.should(matchJson(yamlToJson(s"""
         |---
         |kind: Secret
@@ -42,7 +42,7 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map("foo" -> "admin"))
 
-    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).map(JsonMethods.pretty).head
+    val secret = interpret(sec, ns).map(_.transform).map(JsonMethods.pretty).head
     secret.should(matchJsonString(yamlToJson(s"""
        |---
        |kind: Secret

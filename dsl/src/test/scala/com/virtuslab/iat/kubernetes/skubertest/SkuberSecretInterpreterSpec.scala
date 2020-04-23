@@ -19,7 +19,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map.empty)
 
-    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).head
+    val secret = interpret(sec, ns).map(_.transform).head
     secret.should(matchJsonString(yamlToJson(s"""
         |---
         |kind: Secret
@@ -39,7 +39,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map("foo" -> "admin"))
 
-    val secret = secretInterpreter.interpret(sec, ns).map(_.transform).head
+    val secret = interpret(sec, ns).map(_.transform).head
     secret.should(matchJsonString(yamlToJson(s"""
        |---
        |kind: Secret

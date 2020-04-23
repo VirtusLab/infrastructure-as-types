@@ -27,5 +27,10 @@ trait InterpreterDerivation[C, R] {
   }
 
   import scala.language.experimental.macros
-  def gen[A]: Typeclass[A] = macro Magnolia.gen[A]
+  implicit def gen[A]: Typeclass[A] = macro Magnolia.gen[A]
+}
+
+object Interpreter {
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_, R]] = i.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_, R]] = i.interpret(obj, ctx)
 }

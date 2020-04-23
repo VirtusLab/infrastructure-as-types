@@ -13,7 +13,7 @@ object openapi {
     import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
     import org.json4s.JValue
 
-    object Interpreter extends InterpreterDerivation[Namespace, JValue]
+    object InterpreterDerivation extends InterpreterDerivation[Namespace, JValue]
     object MetaExtractor extends JValueMetadataExtractor
 
     def asMetaJValue(js: Seq[JValue]): Iterable[(Metadata, JValue)] = {
@@ -40,6 +40,9 @@ object openapi {
   import Label.ops._
   import Secret.ops._
   import com.virtuslab.kubernetes.client.openapi.model
+
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_, R]] = Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_, R]] = Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit

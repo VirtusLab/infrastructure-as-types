@@ -17,6 +17,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
   it should "derive a one level nested interpreter" in {
     import openapi._
     import openapi.json4s._
+    import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
         superApp: Application = Application(Name("bar") :: Nil),
@@ -26,10 +27,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
     val g1 = Group1()
     val ns: Namespace = Namespace(Name("foo") :: Nil)
 
-    val myDefInterpreter = Interpreter.gen[Group1]
-    val js =
-      namespaceInterpreter.interpret(ns).map(_.transform) ++
-        myDefInterpreter.interpret(g1, ns).map(_.transform)
+    val js = (interpret(ns) ++ interpret(g1, ns)).map(_.transform)
 
     Ensure(asMetaJsonString(js))
       .contain(

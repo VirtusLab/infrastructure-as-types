@@ -20,8 +20,7 @@ class NamespaceInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     val ns = Namespace(Name("foo") :: Nil)
 
-    val namespace =
-      namespaceInterpreter.interpret(ns).map(_.transform).head
+    val namespace = interpret(ns).map(_.transform).head
 
     namespace.should(matchJson(yamlToJson(s"""
         |---

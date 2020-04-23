@@ -17,6 +17,7 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
   it should "serialize Namespace to JSON" in {
     import openapi._
     import openapi.json4s._
+    import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
         app1: Application = Application(Name("anApp") :: Nil),
@@ -26,10 +27,7 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
     val g1 = Group1()
     val ns = Namespace(Name("theNamespace") :: Nil)
 
-    val myDefInterpreter = Interpreter.gen[Group1]
-    val js =
-      namespaceInterpreter.interpret(ns).map(_.transform) ++
-        myDefInterpreter.interpret(g1, ns).map(_.transform)
+    val js = (interpret(ns) ++ interpret(g1, ns)).map(_.transform)
 
     Ensure(asMetaJsonString(js))
       .contain(
