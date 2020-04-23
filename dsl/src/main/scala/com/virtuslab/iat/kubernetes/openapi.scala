@@ -13,7 +13,6 @@ object openapi {
     import org.json4s.JValue
 
     object InterpreterDerivation extends InterpreterDerivation[Namespace, JValue]
-    object MetaExtractor extends JValueMetadataExtractor
 
     def asMetaJValue(
         js: Seq[JValue]
@@ -41,6 +40,8 @@ object openapi {
       asMetaJValue(js).map(e => e._1 -> YamlMethods.pretty(e._2))
 
     def asJValue[A](a: A)(implicit t: Transformer[A, JValue]): JValue = t(a).transform
+    def asJsonString[A](a: A)(implicit t: Transformer[A, JValue]): String = JsonMethods.pretty(asJValue(a))
+    def asYamlString[A](a: A)(implicit t: Transformer[A, JValue]): String = YamlMethods.pretty(asJValue(a))
   }
 
   import Label.ops._
