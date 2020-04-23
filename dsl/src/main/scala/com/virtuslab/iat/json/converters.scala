@@ -2,10 +2,7 @@ package com.virtuslab.iat.json
 
 object converters {
   import org.json4s
-  import play.api.libs.json.Writes
   import play.api.libs.{ json => pjson }
-
-  def playJsonToString[T](o: T)(implicit tjs: Writes[T]): String = pjson.Json.prettyPrint(pjson.Json.toJson(o))
 
   def toJson4s(json: play.api.libs.json.JsValue): org.json4s.JValue = json match {
     case pjson.JsString(str)    => json4s.JString(str)

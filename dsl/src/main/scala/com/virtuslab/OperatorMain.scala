@@ -2,25 +2,24 @@ package com.virtuslab
 
 import java.nio.file.Path
 
-import com.virtuslab.dsl.{ Application, Configuration, DistributedSystem, Namespace, _ }
-import com.virtuslab.interpreter.skuber.Skuber.SkuberContext
-import com.virtuslab.materializer.skuber.SimpleDeployer
+import com.virtuslab.iat.dsl.Label.Name
+import com.virtuslab.iat.dsl.Port
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Namespace }
+import com.virtuslab.iat.kubernetes
 
 object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
+    import kubernetes.skuber._
+    import kubernetes.skuber.deployment.InterpreterDerivation._
+    import com.virtuslab.iat.dsl.kubernetes.Mountable._
 
-    val system = DistributedSystem("test").inSystem { implicit ds: SystemBuilder[SkuberContext] =>
-      import ds._
-      namespaces(
-        Namespace("test").inNamespace { implicit ns: NamespaceBuilder[SkuberContext] =>
-          import ns._
-
-          val configuration = Configuration(
-            labels = Labels(Name("app")),
-            data = Map(
-              "config.yaml" ->
-                """
+    val ns = Namespace(Name("test") :: Nil)
+    val conf = Configuration(
+      Name("app") :: Nil,
+      data = Map(
+        "config.yaml" ->
+          """
                 |listen: :8080
                 |logRequests: true
                 |connectors:
@@ -28,30 +27,25 @@ object OperatorMain extends AbstractMain with App {
                 |  uri: file:///opt/test.txt
                 |  pathPrefix: /health
                 |""".stripMargin,
-              "test.txt" ->
-                """
+        "test.txt" ->
+          """
                 |I'm testy tester, being tested ;-)
                 |""".stripMargin
-            )
-          )
-
-          import com.virtuslab.dsl.Mountable._
-          applications(
-            Application(
-              labels = Labels(Name("app")),
-              image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
-              command = List("cloud-file-server"),
-              args = List("--config", "/opt/config.yaml"),
-              configurations = List(configuration),
-              ports = Port(8080) :: Nil,
-              mounts = configuration.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
-            )
-          )
-        }
       )
-    }
+    )
 
-    system.interpret().map(SimpleDeployer(client).createOrUpdate)
+    val app = Application(
+      Name("app") :: Nil,
+      image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
+      command = List("cloud-file-server"),
+      args = List("--config", "/opt/config.yaml"),
+      configurations = List(conf),
+      ports = Port(8080) :: Nil,
+      mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
+    )
+
+    val system = (app, conf)
+//    val rs = interpret(ns) ++ interpret(system, ns) // FIXME
   }
 
   // Run

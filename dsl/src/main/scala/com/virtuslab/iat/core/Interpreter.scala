@@ -2,17 +2,17 @@ package com.virtuslab.iat.core
 
 import magnolia._
 
-trait RootInterpreter[A, R] extends Interpreter[A, Nothing, R] {
-  def interpret(obj: A): List[Support[_ /* reified in the Support */, R]]
-  override def interpret(obj: A, ctx: Nothing): List[Support[_, R]] = interpret(obj)
+trait RootInterpreter[A, P, R] extends Interpreter[A, Nothing, P, R] {
+  def interpret(obj: A): List[Support[_ <: P /* reified in the Support */, R]]
+  override def interpret(obj: A, ctx: Nothing): List[Support[_ <: P, R]] = interpret(obj)
 }
 
-trait Interpreter[A, C, R] {
-  def interpret(obj: A, ctx: C): List[Support[_ /* reified in the Support */, R]]
+trait Interpreter[A, C, P, R] {
+  def interpret(obj: A, ctx: C): List[Support[_ <: P /* reified in the Support */, R]]
 }
 
-trait InterpreterDerivation[C, R] {
-  type Typeclass[A] = Interpreter[A, C, R]
+trait InterpreterDerivation[C, P, R] {
+  type Typeclass[A] = Interpreter[A, C, P, R]
 
   def combine[A](caseClass: CaseClass[Typeclass, A]): Typeclass[A] = (obj: A, ctx: C) => {
     caseClass.parameters.flatMap { p =>
@@ -31,8 +31,8 @@ trait InterpreterDerivation[C, R] {
 }
 
 object Interpreter {
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] =
+  def interpret[A, P, R](obj: A)(implicit i: RootInterpreter[A, P, R]): List[R] =
     i.interpret(obj).map(_.transform)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] =
+  def interpret[A, C, P, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, P, R]): List[R] =
     i.interpret(obj, ctx).map(_.transform)
 }

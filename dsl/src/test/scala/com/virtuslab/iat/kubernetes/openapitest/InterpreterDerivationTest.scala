@@ -1,7 +1,7 @@
 package com.virtuslab.iat.kubernetes.openapitest
 
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ Application, Configuration, Namespace, Secret }
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Namespace, Secret }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes.{ openapi, Metadata }
@@ -20,7 +20,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
     import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
-        superApp: Application = Application(Name("bar") :: Nil),
+        superApp: Application = Application(Name("bar") :: Nil, image = ""),
         myConfiguration: Configuration = Configuration(Name("conf-bar") :: Nil, data = Map.empty),
         mySecret: Secret = Secret(Name("sec-bar") :: Nil, data = Map.empty))
 

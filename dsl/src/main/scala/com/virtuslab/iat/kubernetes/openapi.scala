@@ -1,18 +1,26 @@
 package com.virtuslab.iat.kubernetes
 
+import com.virtuslab.iat.core
+import com.virtuslab.iat.core.Support
 import com.virtuslab.iat.core.Transformable.Transformer
-import com.virtuslab.iat.core.{ RootInterpreter, _ }
 import com.virtuslab.iat.dsl._
+import com.virtuslab.iat.dsl.kubernetes._
+import com.virtuslab.iat.materialization.openapi.{ JValueMetadataExtractor, JValueTransformable }
+import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
 object openapi {
-  import com.virtuslab.iat.json.json4s.{ JValueMetadataExtractor, JValueTransformable }
+  import com.virtuslab.iat.materialization.openapi.JValueTransformable
+
+  type Base = ApiModel
+  type RootInterpreter[A, R] = core.RootInterpreter[A, Base, R]
+  type Interpreter[A, C, R] = core.Interpreter[A, C, Base, R]
 
   object json4s extends JValueTransformable with JValueMetadataExtractor {
     import com.virtuslab.iat.json.json4s.jackson.{ JsonMethods, YamlMethods }
     import org.json4s.JValue
 
-    object InterpreterDerivation extends InterpreterDerivation[Namespace, JValue]
+    object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, JValue]
 
     def asMetaJValue(
         js: Seq[JValue]
@@ -48,8 +56,8 @@ object openapi {
   import Secret.ops._
   import com.virtuslab.kubernetes.client.openapi.model
 
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = Interpreter.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = Interpreter.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = core.Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = core.Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit
@@ -145,14 +153,6 @@ object openapi {
         )
       )
       Support(ingress) :: Nil
-    }
-
-  implicit def labelInterpreter[R](
-      implicit
-      t: Transformer[(String, String), R]
-    ): RootInterpreter[Label, R] =
-    (l: Label) => {
-      Support(l.asTuple) :: Nil
     }
 
   object subinterpreter {

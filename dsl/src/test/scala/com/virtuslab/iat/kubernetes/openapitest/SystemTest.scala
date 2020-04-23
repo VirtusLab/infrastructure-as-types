@@ -1,7 +1,8 @@
 package com.virtuslab.iat.kubernetes.openapitest
 
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ Application, Configuration, Gateway, Namespace }
+import com.virtuslab.iat.dsl.Protocols
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Gateway, Namespace }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.kubernetes.{ openapi, Metadata }
 import com.virtuslab.iat.test.EnsureMatchers
@@ -20,9 +21,9 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
     import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
-        app1: Application = Application(Name("anApp") :: Nil),
+        app1: Application = Application(Name("anApp") :: Nil, image = ""),
         conf1: Configuration = Configuration(Name("aConf") :: Nil, Map()),
-        gw1: Gateway = Gateway(Name("aGate") :: Nil))
+        gw1: Gateway = Gateway(Name("aGate") :: Nil, Protocols.Any))
 
     val g1 = Group1()
     val ns = Namespace(Name("theNamespace") :: Nil)

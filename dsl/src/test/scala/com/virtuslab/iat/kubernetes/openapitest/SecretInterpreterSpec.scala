@@ -1,7 +1,7 @@
 package com.virtuslab.iat.kubernetes.openapitest
 
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ Namespace, Secret }
+import com.virtuslab.iat.dsl.kubernetes.{ Namespace, Secret }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes.openapi

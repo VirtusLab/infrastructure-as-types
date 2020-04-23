@@ -2,7 +2,7 @@ package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.dsl.Label.{ Name, UntypedLabel }
-import com.virtuslab.iat.dsl.{ Configuration, Namespace }
+import com.virtuslab.iat.dsl.kubernetes.{ Configuration, Namespace }
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.test.EnsureMatchers

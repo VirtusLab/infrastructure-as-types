@@ -2,7 +2,7 @@ package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ Namespace, Secret }
+import com.virtuslab.iat.dsl.kubernetes.{ Namespace, Secret }
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.test.EnsureMatchers
@@ -51,6 +51,6 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
        |    name: ${sec.name}
        |data:
        |  foo: YWRtaW4=
-       |""".stripMargin))) // FIXME is this encoding right?
+       |""".stripMargin)))
   }
 }

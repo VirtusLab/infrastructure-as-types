@@ -23,7 +23,7 @@ trait EnsureMatchers { self: AnyFlatSpecLike with Matchers =>
     def contain(cases: Map[M, Matcher[A]]): Unit = {
       zipper(resources, cases) {
         case (_, Some(actual), Some(expected)) => actual.should(expected)
-        case (meta, Some(_), None)             => fail(s"unexpected $meta (got the resource, but no test case)")
+        case (meta, Some(_), None)             => fail(s"unexpected $meta result (got the resource, but no test case)")
         case (meta, None, Some(_))             => fail(s"unexpected $meta test case (got the test case but no resource)")
         case (meta, None, None)                => fail(s"unexpected $meta -> None/None, this should never happen")
       }

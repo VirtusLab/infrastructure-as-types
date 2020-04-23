@@ -9,13 +9,9 @@ trait Label {
 }
 
 object Label {
-  def apply[A](a: A)(v: A => String): Label = new Label {
-    override def key: String = a.getClass.getSimpleName.toLowerCase
-    override def value: String = v(a)
+  final case class Name(value: String) extends Label {
+    override def key: String = "name"
   }
-
-  final case class Name(value: String)
-  implicit val nameLabel: Name => Label = name => Label(name)(_.value)
 
   type UntypedLabel = Label
   object UntypedLabel {
