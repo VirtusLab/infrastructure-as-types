@@ -30,7 +30,7 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
 
     val js = interpret(ns) ++ interpret(g1, ns)
 
-    Ensure(asMetaJsonString(js))
+    Ensure(asMetaJsonString(js.map(_.result)))
       .contain(
         Metadata("v1", "Namespace", "", ns.name) -> matchJsonString(yamlToJson(s"""
             |---

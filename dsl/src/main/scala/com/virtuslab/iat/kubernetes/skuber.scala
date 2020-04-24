@@ -5,15 +5,15 @@ import _root_.skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelecto
 import _root_.skuber.ext.Ingress
 import _root_.skuber.networking.NetworkPolicy
 import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
+import _root_.skuber.ResourceDefinition
 import com.virtuslab.iat.core
 import com.virtuslab.iat.core.Support
-import com.virtuslab.iat.core.Transformable.Transformer
 import com.virtuslab.iat.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes.{ Namespace, _ }
 import com.virtuslab.iat.json.playjson.Yaml
-import com.virtuslab.iat.materialization.skuber.{ ObjectResourceMetadataExtractor, PlayJsonTransformable, SimpleDeploymentTransformable }
-import play.api.libs.json.{ JsValue, Json, Writes }
+import com.virtuslab.iat.materialization.skuber.{ ObjectResourceMetadataExtractor, PlayJsonTransformable, UpsertDeployment }
+import play.api.libs.json.{ Format, JsValue, Json, Writes }
 
 object skuber {
 
@@ -21,8 +21,27 @@ object skuber {
   type RootInterpreter[A, R] = core.RootInterpreter[A, Base, R]
   type Interpreter[A, C, R] = core.Interpreter[A, C, Base, R]
 
-  object deployment extends SimpleDeploymentTransformable {
-    object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, Base]
+  trait STransformer[P <: Base, R] {
+    def apply(p: P)(implicit f: Format[P], d: ResourceDefinition[P]): R
+  }
+
+  case class SSupport[P <: Base: Format: ResourceDefinition, R](product: P, transformer: STransformer[P, R])
+    extends Support[P, R] {
+    def format: Format[P] = implicitly[Format[P]]
+    def definition: ResourceDefinition[P] = implicitly[ResourceDefinition[P]]
+    override def result: R = {
+      transformer(product)(format, definition)
+    }
+  }
+
+  object SSupport {
+    def apply[P <: Base: Format: ResourceDefinition, R](p: P)(implicit t: STransformer[P, R]): Support[P, R] =
+      SSupport[P, R](p, t)
+  }
+
+  object deployment {
+    object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, List[Base]]
+    object Upsert extends UpsertDeployment
   }
 
   object metadata extends ObjectResourceMetadataExtractor {
@@ -39,14 +58,19 @@ object skuber {
     def asYamlString[T: Writes](o: T): String = Yaml.prettyPrint(asJsValue(o))
   }
 
+  import _root_.skuber.json.format._
+  import _root_.skuber.json.ext.format._
+
   import Label.ops._
 
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = core.Interpreter.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = core.Interpreter.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_ <: Base, R]] =
+    core.Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_ <: Base, R]] =
+    core.Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit
-      t: Transformer[SNamespace, R]
+      t: STransformer[SNamespace, R]
     ): RootInterpreter[Namespace, R] =
     (obj: Namespace) => {
       val namespace = SNamespace.from(
@@ -56,12 +80,12 @@ object skuber {
         )
       )
 
-      Support(namespace) :: Nil
+      SSupport(namespace) :: Nil
     }
 
   implicit def configurationInterpreter[R](
       implicit
-      t: Transformer[ConfigMap, R]
+      t: STransformer[ConfigMap, R]
     ): Interpreter[Configuration, Namespace, R] =
     (obj: Configuration, ns: Namespace) => {
       val conf = ConfigMap(
@@ -69,12 +93,12 @@ object skuber {
         data = obj.data
       )
 
-      Support(conf) :: Nil
+      SSupport(conf) :: Nil
     }
 
   implicit def secretInterpreter[R](
       implicit
-      t: Transformer[SSecret, R]
+      t: STransformer[SSecret, R]
     ): Interpreter[Secret, Namespace, R] =
     (obj: Secret, ns: Namespace) => {
       val secret = SSecret(
@@ -82,23 +106,23 @@ object skuber {
         data = obj.data.view.mapValues(_.getBytes).toMap
       )
 
-      Support(secret) :: Nil
+      SSupport(secret) :: Nil
     }
 
   implicit def applicationInterpreter[R](
       implicit
-      t1: Transformer[Service, R],
-      t2: Transformer[Deployment, R]
+      t1: STransformer[Service, R],
+      t2: STransformer[Deployment, R]
     ): Interpreter[Application, Namespace, R] = (obj: Application, ns: Namespace) => {
     val service = subinterpreter.serviceInterpreter(obj, ns)
     val deployment = subinterpreter.deploymentInterpreter(obj, ns)
 
-    Support(service) :: Support(deployment) :: Nil
+    SSupport(service) :: SSupport(deployment) :: Nil
   }
 
   implicit def gatewayInterpreter[R](
       implicit
-      t: Transformer[Ingress, R]
+      t: STransformer[Ingress, R]
     ): Interpreter[Gateway, Namespace, R] = (obj: Gateway, ns: Namespace) => {
     val ing = Ingress(
       apiVersion = "networking.k8s.io/v1beta1", // Skuber uses wrong api version
@@ -131,12 +155,12 @@ object skuber {
           )
       }
     )
-    Support(ing) :: Nil
+    SSupport(ing) :: Nil
   }
 
   implicit def connectionInterpreter[R](
       implicit
-      t: Transformer[NetworkPolicy, R]
+      t: STransformer[NetworkPolicy, R]
     ): Interpreter[Connection, Namespace, R] = (obj: Connection, ns: Namespace) => {
     val netpol = NetworkPolicy(
       metadata = subinterpreter.objectMetaInterpreter(obj, ns),
@@ -276,7 +300,7 @@ object skuber {
       )
     )
 
-    Support(netpol) :: Nil
+    SSupport(netpol) :: Nil
   }
 
   object subinterpreter {

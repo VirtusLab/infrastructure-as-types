@@ -20,8 +20,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
 
   it should "allow to express connections between two namespaces" in {
     import dsl.kubernetes.Connection.ops._
-    import kubernetes.skuber._
-    import kubernetes.skuber.metadata._
 
     case class Role(value: String) extends Label {
       override def key: String = "role"
@@ -43,6 +41,8 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
     val connApp1app2 = app1.communicatesWith(app2).named("app1-app2-app1")
 
+    import kubernetes.skuber._
+    import kubernetes.skuber.metadata._
     val resources = interpret(backend) ++
       interpret(app3, backend) ++
       interpret(connApp3, backend) ++
@@ -52,7 +52,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
       interpret(connApp1, frontend) ++
       interpret(connApp1app2, frontend)
 
-    Ensure(resources)
+    Ensure(resources.map(_.result))
       .contain(
         Metadata("v1", "Namespace", "default", frontend.name) -> matchJsonString(yamlToJson(s"""
           |---
@@ -370,7 +370,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
 
     val resources = interpret(app1, ns) ++ interpret(conn1, ns)
 
-    Ensure(resources)
+    Ensure(resources.map(_.result))
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
@@ -519,7 +519,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
 
     val resources = interpret(ns) ++ interpret(g1, ns)
 
-    Ensure(resources)
+    Ensure(resources.map(_.result))
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->

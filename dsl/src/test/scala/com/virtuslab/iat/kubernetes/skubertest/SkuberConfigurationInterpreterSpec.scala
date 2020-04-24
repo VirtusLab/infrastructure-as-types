@@ -22,7 +22,7 @@ class SkuberConfigurationInterpreterSpec extends AnyFlatSpec with Matchers with 
       data = Map.empty
     )
 
-    val config = interpret(conf, ns).head
+    val config = interpret(conf, ns).map(_.result).head
 
     config.should(matchJsonString(yamlToJson(s"""
       |---

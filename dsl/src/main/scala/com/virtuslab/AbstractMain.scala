@@ -20,7 +20,7 @@ abstract class AbstractMain {
   private val ourContext: Context = kubeconfig.contexts("gke_infrastructure-as-types_us-central1-a_standard-cluster-1")
   private val configWithContext = kubeconfig.useContext(ourContext)
 
-  protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
+  implicit protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
 
   def close(): Unit = {
     actorMaterializer.shutdown()

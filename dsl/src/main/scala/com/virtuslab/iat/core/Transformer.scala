@@ -4,15 +4,16 @@ import com.virtuslab.iat.core.Transformable.Transformer
 
 import scala.annotation.implicitNotFound
 
-sealed trait Support[P, R] {
-  def transform: R = transformable.transform
-  protected def transformable: Transformable[P, R] // available at construction
+trait Support[P, R] {
+  def product: P
+  def result: R
 }
 
 object Support {
-  def apply[P, R](product: P)(implicit transformer: Transformer[P, R]): Support[P, R] = {
+  def apply[P, R](p: P)(implicit transformer: Transformer[P, R]): Support[P, R] = {
     new Support[P, R] {
-      override def transformable: Transformable[P, R] = transformer(product)
+      override def product: P = p
+      override def result: R = transformer(product).transform
     }
   }
 }
@@ -26,5 +27,5 @@ trait Transformable[P, R] {
 }
 
 object Transformable {
-  type Transformer[A, B] = A => Transformable[A, B]
+  type Transformer[P, R] = P => Transformable[P, R]
 }

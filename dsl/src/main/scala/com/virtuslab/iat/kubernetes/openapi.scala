@@ -5,7 +5,7 @@ import com.virtuslab.iat.core.Support
 import com.virtuslab.iat.core.Transformable.Transformer
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
-import com.virtuslab.iat.materialization.openapi.{ JValueMetadataExtractor, JValueTransformable }
+import com.virtuslab.iat.materialization.openapi.JValueMetadataExtractor
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
@@ -56,8 +56,10 @@ object openapi {
   import Secret.ops._
   import com.virtuslab.kubernetes.client.openapi.model
 
-  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[R] = core.Interpreter.interpret(obj)
-  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[R] = core.Interpreter.interpret(obj, ctx)
+  def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_ <: Base, R]] =
+    core.Interpreter.interpret(obj)
+  def interpret[A, C, R](obj: A, ctx: C)(implicit i: Interpreter[A, C, R]): List[Support[_ <: Base, R]] =
+    core.Interpreter.interpret(obj, ctx)
 
   implicit def namespaceInterpreter[R](
       implicit

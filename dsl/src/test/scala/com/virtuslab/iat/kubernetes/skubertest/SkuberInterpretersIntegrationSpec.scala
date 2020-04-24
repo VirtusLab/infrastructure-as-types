@@ -34,7 +34,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
 
     val resources = interpret(ns) ++ interpret(app1, ns) ++ interpret(app2, ns)
 
-    Ensure(resources)
+    Ensure(resources.map(_.result))
       .contain(
         Metadata("v1", "Service", ns.name, "app-one") -> matchJsonString(yamlToJson(s"""
           |---

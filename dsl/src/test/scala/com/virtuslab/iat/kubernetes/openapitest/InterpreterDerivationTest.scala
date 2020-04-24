@@ -27,9 +27,9 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
     val g1 = Group1()
     val ns: Namespace = Namespace(Name("foo") :: Nil)
 
-    val js = interpret(ns) ++ interpret(g1, ns)
+    val rs = interpret(ns) ++ interpret(g1, ns)
 
-    Ensure(asMetaJsonString(js))
+    Ensure(asMetaJsonString(rs.map(_.result)))
       .contain(
         Metadata("v1", "Namespace", "", ns.name) -> matchJsonString(yamlToJson(s"""
             |---

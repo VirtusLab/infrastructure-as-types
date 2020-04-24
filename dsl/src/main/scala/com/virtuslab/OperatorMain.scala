@@ -6,12 +6,11 @@ import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Port
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Namespace }
 import com.virtuslab.iat.kubernetes
+import skuber.api.client.LoggingContext
 
 object OperatorMain extends AbstractMain with App {
 
   def deploy(): Unit = {
-    import kubernetes.skuber._
-    import kubernetes.skuber.deployment.InterpreterDerivation._
     import com.virtuslab.iat.dsl.kubernetes.Mountable._
 
     val ns = Namespace(Name("test") :: Nil)
@@ -44,8 +43,21 @@ object OperatorMain extends AbstractMain with App {
       mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
     )
 
-    val system = (app, conf)
-//    val rs = interpret(ns) ++ interpret(system, ns) // FIXME
+    case class System(app: Application = app, conf: Configuration = conf)
+    val system = System(app, conf) // FIXME
+
+    import skuber.json.format._
+    import skuber.json.ext.format._
+    implicit val lc: LoggingContext = LoggingContext.lc
+    import kubernetes.skuber._
+    import kubernetes.skuber.deployment.InterpreterDerivation._
+    import kubernetes.skuber.deployment.Upsert._
+
+    val rs = interpret(ns) ++
+      interpret(app, ns) ++
+      interpret(conf, ns)
+
+    println(rs.map(_.result))
   }
 
   // Run
