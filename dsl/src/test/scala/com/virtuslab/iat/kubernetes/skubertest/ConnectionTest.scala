@@ -31,26 +31,32 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
     val backendRole = Role("backend")
     val backend = Namespace(Name("backend") :: backendRole :: Nil)
 
-    info(s"namespaces: ${frontend.name}, ${backend.name}")
-
-    val app3 = Application(Name("app-three") :: backendRole :: Nil, image = "image-app-three")
+    val app3 = Application(
+      Name("app-three") :: backendRole :: Nil,
+      image = "image-app-three"
+    )
     val connApp3 = app3.communicatesWith(frontend).named("app3-frontend-app3")
 
-    val app1 = Application(Name("app-one") :: frontendRole :: Nil, image = "image-app-one", ports = Port(9090) :: Nil)
-    val app2 = Application(Name("app-two") :: frontendRole :: Nil, image = "image-app-two", ports = Port(9090) :: Nil)
+    val app1 = Application(
+      Name("app-one") :: frontendRole :: Nil,
+      image = "image-app-one",
+      ports = Port(9090) :: Nil
+    )
+    val app2 = Application(
+      Name("app-two") :: frontendRole :: Nil,
+      image = "image-app-two",
+      ports = Port(9090) :: Nil
+    )
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
     val connApp1app2 = app1.communicatesWith(app2).named("app1-app2-app1")
 
     import kubernetes.skuber._
     import kubernetes.skuber.metadata._
+    import kubernetes.skuber.metadata.InterpreterDerivation._
     val resources = interpret(backend) ++
-      interpret(app3, backend) ++
-      interpret(connApp3, backend) ++
+      interpret((app3, connApp3), backend) ++
       interpret(frontend) ++
-      interpret(app1, frontend) ++
-      interpret(app2, frontend) ++
-      interpret(connApp1, frontend) ++
-      interpret(connApp1app2, frontend)
+      interpret((app1, app2, connApp1, connApp1app2), frontend)
 
     Ensure(resources.map(_.result))
       .contain(
