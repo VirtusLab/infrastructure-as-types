@@ -11,7 +11,7 @@
   */
 package com.virtuslab.kubernetes.client.openapi.model
 
-import com.virtuslab.kubernetes.client.custom.ArrayByte
+import com.virtuslab.kubernetes.client.custom.B64Encoded
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
 /**
@@ -19,5 +19,5 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
   */
 case class RawExtension(
     /* Raw is the underlying serialization of this object. */
-    raw: ArrayByte)
+    raw: B64Encoded)
   extends ApiModel

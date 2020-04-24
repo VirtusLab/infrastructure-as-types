@@ -11,7 +11,7 @@
   */
 package com.virtuslab.kubernetes.client.openapi.model
 
-import com.virtuslab.kubernetes.client.custom.ArrayByte
+import com.virtuslab.kubernetes.client.custom.B64Encoded
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 
 /**
@@ -19,7 +19,7 @@ import com.virtuslab.kubernetes.client.openapi.core.ApiModel
   */
 case class APIServiceSpec(
     /* CABundle is a PEM encoded CA bundle which will be used to validate an API server's serving certificate. If unspecified, system trust roots on the apiserver are used. */
-    caBundle: Option[ArrayByte] = None,
+    caBundle: Option[B64Encoded] = None,
     /* Group is the API group name this server hosts */
     group: Option[String] = None,
     /* GroupPriorityMininum is the priority this group should have at least. Higher priority means that the group is preferred by clients over lower priority ones. Note that other versions of this group might specify even higher GroupPriorityMininum values such that the whole group gets a higher priority. The primary sort is based on GroupPriorityMinimum, ordered highest number to lowest (20 before 10). The secondary sort is based on the alphabetical comparison of the name of the object.  (v1.bar before v1.foo) We'd recommend something like: *.k8s.io (except extensions) at 18000 and PaaSes (OpenShift, Deis) are recommended to be in the 2000s */

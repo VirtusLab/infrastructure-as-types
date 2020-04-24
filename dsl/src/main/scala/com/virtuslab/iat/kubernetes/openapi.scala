@@ -6,6 +6,7 @@ import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
 import com.virtuslab.iat.materialization.openapi.JValueMetadataExtractor
+import com.virtuslab.kubernetes.client.custom.B64Encoded
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
@@ -114,7 +115,7 @@ object openapi {
             labels = Some(obj.labels.asMap)
           )
         ),
-        data = Some(obj.data.view.mapValues(base64encode).toMap)
+        data = Some(obj.data.view.mapValues(B64Encoded.apply).toMap)
       )
 
       Support(secret) :: Nil

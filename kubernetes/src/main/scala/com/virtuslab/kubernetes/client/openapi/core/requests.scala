@@ -32,8 +32,6 @@ sealed trait Credentials {
   def asQueryParam: Option[(String, String)] = None
 }
 
-case object NoCredentials extends Credentials
-
 sealed case class BasicCredentials(user: String, password: String) extends Credentials
 
 sealed case class BearerToken(token: String) extends Credentials

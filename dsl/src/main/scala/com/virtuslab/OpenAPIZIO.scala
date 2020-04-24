@@ -25,7 +25,7 @@ object OpenAPIZIO extends App {
   override def run(args: List[String]): ZIO[ZEnv, Nothing, Int] = {
     val server = ourContext.cluster.server
     val auth: Credentials = ourUser match {
-      case NoAuth | _: CertAuth      => NoCredentials // No auth header or TLS certificate
+      case NoAuth | _: CertAuth      => ??? //NoCredentials // No auth header or TLS certificate
       case BasicAuth(user, password) => BasicCredentials(user, password)
       case auth: AccessTokenAuth     => BearerToken(auth.accessToken)
     }

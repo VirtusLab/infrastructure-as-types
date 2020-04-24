@@ -30,11 +30,11 @@ typeMappings:
 #  int-or-string: IntOrString
 #  quantity: Quantity
 #  patch: V1Patch
-  ByteArray: ArrayByte
+  ByteArray: B64Encoded
   object: JObject
 importMappings:
 #  IntOrString: com.virtuslab.kubernetes.client.custom.IntOrString
 #  Quantity: com.virtuslab.kubernetes.client.custom.Quantity
 #  V1Patch: com.virtuslab.kubernetes.client.custom.V1Patch
-  ArrayByte: com.virtuslab.kubernetes.client.custom.ArrayByte
+  B64Encoded: com.virtuslab.kubernetes.client.custom.B64Encoded
   JObject: org.json4s.JObject
