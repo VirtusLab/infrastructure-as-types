@@ -1,6 +1,6 @@
 package com.virtuslab.iat.kubernetes.openapitest
 
-import com.virtuslab.iat.core.Transformable.Transformer
+import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.kubernetes.{ openapi, Metadata }
 import com.virtuslab.kubernetes.client.openapi.model
 import com.virtuslab.kubernetes.client.openapi.model.ObjectMeta
@@ -35,11 +35,11 @@ class MetadataExtractorTest extends AnyFlatSpec with Matchers {
     val metaTransformer = implicitly[Transformer[JValue, Either[String, Metadata]]]
 
     val nsJson = asJValue(ns)
-    val nsMeta = metaTransformer(nsJson).transform
+    val nsMeta = metaTransformer(nsJson)
     nsMeta should equal(Right(Metadata("v1", "Namespace", "", "ns1")))
 
     val dpJson = asJValue(dp)
-    val dpMeta = metaTransformer(dpJson).transform
+    val dpMeta = metaTransformer(dpJson)
     dpMeta should equal(Right(Metadata("apps/v1", "Deployment", "ns1", "app1")))
   }
 }

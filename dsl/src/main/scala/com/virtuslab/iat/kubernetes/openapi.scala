@@ -2,7 +2,7 @@ package com.virtuslab.iat.kubernetes
 
 import com.virtuslab.iat.core
 import com.virtuslab.iat.core.Support
-import com.virtuslab.iat.core.Transformable.Transformer
+import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
 import com.virtuslab.iat.materialization.openapi.JValueMetadataExtractor
@@ -29,7 +29,6 @@ object openapi {
       ): Iterable[(Metadata, JValue)] = {
       val mt = js
         .map(transformer)
-        .map(_.transform)
         .map(
           _.fold(
             e =>
@@ -47,7 +46,7 @@ object openapi {
     def asMetaYamlString(js: Seq[JValue]): Iterable[(Metadata, String)] =
       asMetaJValue(js).map(e => e._1 -> YamlMethods.pretty(e._2))
 
-    def asJValue[A](a: A)(implicit t: Transformer[A, JValue]): JValue = t(a).transform
+    def asJValue[A](a: A)(implicit t: Transformer[A, JValue]): JValue = t(a)
     def asJsonString[A](a: A)(implicit t: Transformer[A, JValue]): String = JsonMethods.pretty(asJValue(a))
     def asYamlString[A](a: A)(implicit t: Transformer[A, JValue]): String = YamlMethods.pretty(asJValue(a))
   }
