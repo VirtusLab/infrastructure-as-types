@@ -54,6 +54,6 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
        |    name: ${sec.name}
        |data:
        |  foo: YWRtaW4=
-       |""".stripMargin))) // FIXME is this encoding right?
+       |""".stripMargin)))
   }
 }

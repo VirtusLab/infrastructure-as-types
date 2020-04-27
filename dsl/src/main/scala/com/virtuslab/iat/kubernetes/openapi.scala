@@ -36,7 +36,7 @@ object openapi {
               throw new IllegalStateException( /* FIXME: how to make it compile-time? */
                 s"metadata extraction failed: $e\nJson:\n${js.map(JsonMethods.pretty)}\n"
               ),
-            v => v
+            identity
           )
         )
       mt.zip(js)
