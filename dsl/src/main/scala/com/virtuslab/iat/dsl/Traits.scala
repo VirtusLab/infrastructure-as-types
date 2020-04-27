@@ -15,3 +15,7 @@ trait Labeled {
 trait Patchable[A] { self: A =>
   def patch(f: A => A): A = f(self)
 }
+
+trait Interpretable[A] { self: A =>
+  def reference: A = self
+}

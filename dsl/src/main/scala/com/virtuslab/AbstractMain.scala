@@ -3,7 +3,7 @@ package com.virtuslab
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import skuber.api.Configuration
-import skuber.api.client.Context
+import skuber.api.client.{ Context, LoggingContext }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContextExecutor }
@@ -12,7 +12,7 @@ abstract class AbstractMain {
 
   import skuber._
 
-  implicit private val system: ActorSystem = ActorSystem("bartektolama")
+  implicit private val system: ActorSystem = ActorSystem("a-system")
   implicit private val actorMaterializer: ActorMaterializer = ActorMaterializer()
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 
@@ -21,6 +21,7 @@ abstract class AbstractMain {
   private val configWithContext = kubeconfig.useContext(ourContext)
 
   implicit protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
+  implicit protected val lc: LoggingContext = LoggingContext.lc
 
   def close(): Unit = {
     actorMaterializer.shutdown()

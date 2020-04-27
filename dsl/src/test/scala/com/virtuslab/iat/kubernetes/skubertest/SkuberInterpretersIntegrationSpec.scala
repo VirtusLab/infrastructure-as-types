@@ -4,7 +4,7 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Port
 import com.virtuslab.iat.dsl.Port.NamedPort
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Namespace }
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes
@@ -20,18 +20,27 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
   import skuber.json.format._
 
   it should "create a simple system" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.metadata._
-
     val ns = Namespace(Name("foo") :: Nil)
-    val app1 = Application(Name("app-one") :: Nil, image = "image-app-one", ports = Port(9090) :: Nil)
+    val app1 = Application(
+      Name("app-one") :: Nil,
+      Container(
+        Name("app") :: Nil,
+        image = "image-app-one",
+        ports = Port(9090) :: Nil
+      ) :: Nil
+    )
 
     val app2 = Application(
       Name("app-two") :: Nil,
-      image = "image-app-two",
-      ports = NamedPort("http-port", 9090) :: Nil
+      Container(
+        Name("app") :: Nil,
+        image = "image-app-two",
+        ports = NamedPort("http-port", 9090) :: Nil
+      ) :: Nil
     )
 
+    import kubernetes.skuber._
+    import kubernetes.skuber.metadata._
     val resources = interpret(ns) ++ interpret(app1, ns) ++ interpret(app2, ns)
 
     Ensure(resources.map(_.result))
@@ -75,7 +84,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |        name: app-one
           |    spec:
           |      containers:
-          |      - name: app-one
+          |      - name: app
           |        image: image-app-one
           |        imagePullPolicy: IfNotPresent
           |        ports:
@@ -124,7 +133,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |        name: app-two
           |    spec:
           |      containers:
-          |      - name: app-two
+          |      - name: app
           |        image: image-app-two
           |        imagePullPolicy: IfNotPresent
           |        ports:

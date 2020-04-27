@@ -21,7 +21,7 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
     import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
-        app1: Application = Application(Name("anApp") :: Nil, image = ""),
+        app1: Application = Application(Name("anApp") :: Nil),
         conf1: Configuration = Configuration(Name("aConf") :: Nil, Map()),
         gw1: Gateway = Gateway(Name("aGate") :: Nil, Protocols.Any))
 

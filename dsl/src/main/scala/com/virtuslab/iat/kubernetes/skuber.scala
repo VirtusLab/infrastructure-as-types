@@ -1,17 +1,18 @@
 package com.virtuslab.iat.kubernetes
 
 import _root_.skuber.apps.v1.Deployment
-import _root_.skuber.{ ConfigMap, Container, EnvVar, HTTPGetAction, LabelSelector, ObjectMeta, ObjectResource, Pod, Probe, Service, Volume, Namespace => SNamespace, Protocol => SProtocol, Secret => SSecret }
+import _root_.skuber.{ ConfigMap, EnvVar, LabelSelector, ObjectMeta, ObjectResource, Pod, Service, Volume, Container => SContainer, Namespace => SNamespace, Protocol => SProtocol, Secret => SSecret }
 import _root_.skuber.ext.Ingress
 import _root_.skuber.networking.NetworkPolicy
-import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Port, Spec }
+import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IPBlock, IngressRule, Peer, Spec, Port => SPort }
 import _root_.skuber.ResourceDefinition
 import com.virtuslab.iat.core
-import com.virtuslab.iat.core.Support
+import com.virtuslab.iat.core.{ Resource, Support }
 import com.virtuslab.iat.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.iat.dsl._
-import com.virtuslab.iat.dsl.kubernetes.{ Namespace, _ }
+import com.virtuslab.iat.dsl.kubernetes.{ Container, Namespace, _ }
 import com.virtuslab.iat.json.playjson.Yaml
+import com.virtuslab.iat.kubernetes.interpreter.skuber.{ BaseDeinterpreters, BaseInterpreters, EffectsOps, InterpretableOps }
 import com.virtuslab.iat.materialization.skuber.{ ObjectResourceMetadataExtractor, PlayJsonTransformable, UpsertDeployment }
 import play.api.libs.json.{ Format, JsValue, Json, Writes }
 
@@ -23,6 +24,12 @@ object skuber {
 
   trait STransformer[P <: Base, R] {
     def apply(p: P)(implicit f: Format[P], d: ResourceDefinition[P]): R
+  }
+
+  case class SResource[P <: Base: Format: ResourceDefinition](product: P) extends Resource[P] {
+    def format: Format[P] = implicitly[Format[P]]
+    def definition: ResourceDefinition[P] = implicitly[ResourceDefinition[P]]
+    def asMetaJsValue: (Metadata, JsValue) = metadata.asMetaJsValue(product)(format) // FIXME, should not be here
   }
 
   case class SSupport[P <: Base: Format: ResourceDefinition, R](product: P, transformer: STransformer[P, R])
@@ -39,13 +46,26 @@ object skuber {
       SSupport[P, R](p, t)
   }
 
-  object deployment {
+  object deployment extends BaseInterpreters with BaseDeinterpreters with InterpretableOps with EffectsOps {
     object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, List[Base]]
     object Upsert extends UpsertDeployment
+
+    override type Error = Throwable
+    override type Resource[B <: Base] = SResource[B]
+    override type Result[B] = core.Result[B]
+    override type MaybeResult[B <: Base] = Result[Either[Error, B]]
+
+    override def resource[B <: Base: Format: ResourceDefinition](o: B): SResource[B] = SResource(o)
+    override def result[B <: Base](o: Either[Error, B]): Result[Either[Throwable, B]] = new MaybeResult[B] {
+      override def result: Either[Error, B] = o
+    }
   }
 
-  object metadata extends ObjectResourceMetadataExtractor {
+  object metadata extends ObjectResourceMetadataExtractor with BaseInterpreters with InterpretableOps {
     object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, (Metadata, JsValue)]
+
+    override type Resource[B <: Base] = SResource[B]
+    override def resource[B <: Base: Format: ResourceDefinition](o: B): SResource[B] = SResource(o)
   }
 
   object playjson extends PlayJsonTransformable {
@@ -58,10 +78,9 @@ object skuber {
     def asYamlString[T: Writes](o: T): String = Yaml.prettyPrint(asJsValue(o))
   }
 
-  import _root_.skuber.json.format._
-  import _root_.skuber.json.ext.format._
-
   import Label.ops._
+  import _root_.skuber.json.ext.format._
+  import _root_.skuber.json.format._
 
   def interpret[A, R](obj: A)(implicit i: RootInterpreter[A, R]): List[Support[_ <: Base, R]] =
     core.Interpreter.interpret(obj)
@@ -320,7 +339,8 @@ object skuber {
           )
         )
       )
-      obj.ports
+      obj.containers
+        .flatMap(_.ports)
         .foldLeft(svc) {
           case (svc, NamedPort(name, number)) =>
             svc.exposeOnPort(
@@ -342,29 +362,7 @@ object skuber {
     }
 
     def deploymentInterpreter(obj: Application, ns: Namespace): Deployment = {
-      val env = obj.envs.map { env =>
-        EnvVar(env.key, EnvVar.StringValue(env.value))
-      }
-
       val mounts = obj.mounts.map(mountInterpreter)
-
-      val container = Container(
-        name = obj.name,
-        image = obj.image,
-        command = obj.command,
-        args = obj.args,
-        env = env,
-        ports = obj.ports.flatMap {
-          case NamedPort(name, number) => Container.Port(containerPort = number, name = name) :: Nil
-          case APort(number)           => Container.Port(containerPort = number) :: Nil
-          case _                       => Nil
-        },
-        livenessProbe = obj.ping.map(ping => Probe(action = HTTPGetAction(ping.url))),
-        readinessProbe = obj.healthCheck.map(
-          healthCheck => Probe(action = HTTPGetAction(healthCheck.url))
-        ),
-        volumeMounts = mounts.map(_._2)
-      )
 
       val dplSpec = Deployment.Spec(
         selector = LabelSelector(
@@ -374,7 +372,7 @@ object skuber {
           .Spec(
             spec = Some(
               Pod.Spec(
-                containers = container :: Nil,
+                containers = obj.containers.map(c => containerInterpreter(c, mounts)),
                 volumes = mounts.map(_._1)
               )
             )
@@ -387,6 +385,24 @@ object skuber {
       Deployment(
         metadata = subinterpreter.objectMetaInterpreter(obj, ns),
         spec = Some(dplSpec)
+      )
+    }
+
+    def containerInterpreter(c: Container, mounts: List[(Volume, Volume.Mount)]): SContainer = {
+      SContainer(
+        name = c.name,
+        image = c.image,
+        command = c.command,
+        args = c.args,
+        env = c.envs.map { env =>
+          EnvVar(env.key, EnvVar.StringValue(env.value))
+        },
+        ports = c.ports.flatMap {
+          case NamedPort(name, number) => SContainer.Port(containerPort = number, name = name) :: Nil
+          case APort(number)           => SContainer.Port(containerPort = number) :: Nil
+          case _                       => Nil
+        },
+        volumeMounts = mounts.map(_._2)
       )
     }
 
@@ -434,13 +450,13 @@ object skuber {
     }
 
     object ports {
-      def apply(ps: Protocols): List[Port] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
+      def apply(ps: Protocols): List[SPort] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
 
-      def apply(p: Protocol.L4): Option[Port] = p match {
-        case UDP(port: APort)     => Some(Port(Left(port.number), SProtocol.UDP))
-        case UDP(port: NamedPort) => Some(Port(Left(port.number), SProtocol.UDP))
-        case TCP(port: APort)     => Some(Port(Left(port.number), SProtocol.TCP))
-        case TCP(port: NamedPort) => Some(Port(Left(port.number), SProtocol.TCP))
+      def apply(p: Protocol.L4): Option[SPort] = p match {
+        case UDP(port: APort)     => Some(SPort(Left(port.number), SProtocol.UDP))
+        case UDP(port: NamedPort) => Some(SPort(Left(port.number), SProtocol.UDP))
+        case TCP(port: APort)     => Some(SPort(Left(port.number), SProtocol.TCP))
+        case TCP(port: NamedPort) => Some(SPort(Left(port.number), SProtocol.TCP))
         case _                    => None
       }
     }

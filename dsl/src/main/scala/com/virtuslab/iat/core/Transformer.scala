@@ -2,8 +2,16 @@ package com.virtuslab.iat.core
 
 import scala.annotation.implicitNotFound
 
-trait Support[P, R] {
+trait Support[P, R] extends Resource[P] with Result[R] {
   def product: P
+  def result: R
+}
+
+trait Resource[P] {
+  def product: P
+}
+
+trait Result[R] {
   def result: R
 }
 

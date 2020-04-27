@@ -11,7 +11,7 @@ import com.virtuslab.iat.test.EnsureMatchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class MountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
+class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
   import skuber.json.format._
 
   it should "generate volume mount based on config map entry" in {

@@ -3,11 +3,11 @@ package com.virtuslab.iat.materialization.skuber
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.kubernetes.skuber.{ Base, STransformer }
 import play.api.libs.json.{ Format, JsValue, Json, Writes }
-import skuber.{ ObjectResource, ResourceDefinition }
+import skuber.ResourceDefinition
 
 trait ObjectResourceMetadataExtractor {
 
-  implicit def transformer[P <: ObjectResource: Writes]: STransformer[P, (Metadata, JsValue)] =
+  implicit def transformer[P <: Base]: STransformer[P, (Metadata, JsValue)] =
     new STransformer[P, (Metadata, JsValue)] {
       override def apply(p: P)(implicit f: Format[P], d: ResourceDefinition[P]): (Metadata, JsValue) =
         asMetaJsValue(p)

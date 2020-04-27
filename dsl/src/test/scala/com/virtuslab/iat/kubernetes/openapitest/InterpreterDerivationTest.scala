@@ -20,7 +20,7 @@ class InterpreterDerivationTest extends AnyFlatSpec with Matchers with JsonMatch
     import openapi.json4s.InterpreterDerivation._
 
     case class Group1(
-        superApp: Application = Application(Name("bar") :: Nil, image = ""),
+        superApp: Application = Application(Name("bar") :: Nil),
         myConfiguration: Configuration = Configuration(Name("conf-bar") :: Nil, data = Map.empty),
         mySecret: Secret = Secret(Name("sec-bar") :: Nil, data = Map.empty))
 

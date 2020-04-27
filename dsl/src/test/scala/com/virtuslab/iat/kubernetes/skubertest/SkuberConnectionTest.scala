@@ -1,7 +1,7 @@
 package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
-import com.virtuslab.iat.dsl.Label.{ Name, UntypedLabel }
+import com.virtuslab.iat.dsl.Label.{ Name, Role, UntypedLabel }
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
@@ -13,17 +13,11 @@ import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
+class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
   implicit val formats: Formats = JsonMethods.defaultFormats
-
-  import skuber.json.format._
 
   it should "allow to express connections between two namespaces" in {
     import dsl.kubernetes.Connection.ops._
-
-    case class Role(value: String) extends Label {
-      override def key: String = "role"
-    }
 
     val frontendRole = Role("frontend")
     val frontend = Namespace(Name("frontend") :: frontendRole :: Nil)
@@ -33,19 +27,25 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
 
     val app3 = Application(
       Name("app-three") :: backendRole :: Nil,
-      image = "image-app-three"
+      Container(Name("app") :: Nil, image = "image-app-three") :: Nil
     )
     val connApp3 = app3.communicatesWith(frontend).named("app3-frontend-app3")
 
     val app1 = Application(
       Name("app-one") :: frontendRole :: Nil,
-      image = "image-app-one",
-      ports = Port(9090) :: Nil
+      Container(
+        Name("app") :: Nil,
+        image = "image-app-one",
+        ports = Port(9090) :: Nil
+      ) :: Nil
     )
     val app2 = Application(
       Name("app-two") :: frontendRole :: Nil,
-      image = "image-app-two",
-      ports = Port(9090) :: Nil
+      Container(
+        Name("app") :: Nil,
+        image = "image-app-two",
+        ports = Port(9090) :: Nil
+      ) :: Nil
     )
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
     val connApp1app2 = app1.communicatesWith(app2).named("app1-app2-app1")
@@ -53,6 +53,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
     import kubernetes.skuber._
     import kubernetes.skuber.metadata._
     import kubernetes.skuber.metadata.InterpreterDerivation._
+
     val resources = interpret(backend) ++
       interpret((app3, connApp3), backend) ++
       interpret(frontend) ++
@@ -163,7 +164,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
           |        role: backend
           |    spec:
           |      containers:
-          |      - name: app-three
+          |      - name: app
           |        image: image-app-three
           |        imagePullPolicy: IfNotPresent
           |      restartPolicy: Always
@@ -194,7 +195,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
           |        role: frontend
           |    spec:
           |      containers:
-          |      - name: app-two
+          |      - name: app
           |        image: image-app-two
           |        ports:
           |        - containerPort: 9090
@@ -228,7 +229,7 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
           |        role: frontend
           |    spec:
           |      containers:
-          |      - name: app-one
+          |      - name: app
           |        image: image-app-one
           |        ports:
           |        - containerPort: 9090
@@ -340,11 +341,12 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
   it should "allow to express complex customized connections" in {
     import dsl.Expressions._
     import dsl.kubernetes.Connection.ops._
-    import kubernetes.skuber._
-    import kubernetes.skuber.metadata._
 
     val ns = Namespace(Name("foo") :: Nil)
-    val app1 = Application(Name("app-one") :: Nil, image = "test")
+    val app1 = Application(
+      Name("app-one") :: Nil,
+      Container(Name("app") :: Nil, image = "test") :: Nil
+    )
 
     val conn1 = app1
       .communicatesWith(namespaceLabeled("role".is("backend")))
@@ -373,6 +375,9 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
           c.egress
         )
       }
+
+    import kubernetes.skuber._
+    import kubernetes.skuber.metadata._
 
     val resources = interpret(app1, ns) ++ interpret(conn1, ns)
 
@@ -413,9 +418,6 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
 
   it should "allow for external connections" in {
     import dsl.Expressions._
-    import kubernetes.skuber._
-    import kubernetes.skuber.metadata.InterpreterDerivation._
-    import kubernetes.skuber.metadata._
 
     val ns = Namespace(Name("foo") :: Nil)
     val g1 = (
@@ -522,6 +524,10 @@ class ConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with En
         )
       )
     )
+
+    import kubernetes.skuber._
+    import kubernetes.skuber.metadata._
+    import kubernetes.skuber.metadata.InterpreterDerivation._
 
     val resources = interpret(ns) ++ interpret(g1, ns)
 
