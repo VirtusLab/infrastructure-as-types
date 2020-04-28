@@ -26,6 +26,7 @@ lazy val dsl = (project in file("dsl"))
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
       "com.chuusai" %% "shapeless" % "2.3.3",
       "com.propensive" %% "magnolia" % "0.14.5",
+      "com.softwaremill.quicklens" %% "quicklens" % "1.5.0",
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
       "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
     ),

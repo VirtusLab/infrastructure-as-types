@@ -22,5 +22,5 @@ case class Container(
     command: List[String] = Nil,
     args: List[String] = Nil,
     envs: List[EnvironmentVariable] = Nil,
-    ports: List[Port] = Nil
-) extends dsl.Container
+    ports: List[Port] = Nil)
+  extends dsl.Container

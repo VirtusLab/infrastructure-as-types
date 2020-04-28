@@ -34,25 +34,13 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
 
     def redisMasterDetails(s: Service, dpl: Deployment): (Service, Deployment) = {
       // format: off
-      (s, dpl.copy(spec = dpl.spec.map(dspec =>
-        dspec.copy(
-          template = dspec.template.copy(
-            spec = dspec.template.spec.map(pspec =>
-              pspec.copy(
-                containers = pspec.containers.map {
-                  case c: SContainer if c.name == redisMaster.containers.head.name => c.copy(
-                    resources = Some(Resource.Requirements(
-                      requests = Map(
-                        "cpu" -> Quantity("100m"),
-                        "memory" -> Quantity("100Mi")
-                      )
-                    ))
-                  )
-                }
-              )
-            )
-          )
-        ))))
+      import com.softwaremill.quicklens._
+      (s, dpl.modify(_.spec.each.template.spec.each.containers.each.resources).setTo(Some(Resource.Requirements(
+        requests = Map(
+          "cpu" -> Quantity("100m"),
+          "memory" -> Quantity("100Mi")
+        )
+      ))))
     }
 
     import kubernetes.skuber._
