@@ -16,12 +16,7 @@ import org.scalatest.matchers.should.Matchers
 class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
   implicit val formats: Formats = JsonMethods.defaultFormats
 
-  import skuber.json.ext.format._
-
   it should "allow to define a simple Ingress definition" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.playjson._
-
     val ns = Namespace(Name("foo") :: Nil)
     val gateway = Gateway(
       Name("external") :: Nil,
@@ -30,7 +25,10 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
       )
     )
 
-    val ingress = interpret(gateway, ns).map(_.result).head
+    import kubernetes.skuber.playjson._
+    import skuber.json.ext.format._
+
+    val ingress = gateway.interpret(ns).map(_.result).head
 
     ingress.should(matchJsonString(yamlToJson(s"""
         |apiVersion: networking.k8s.io/v1beta1

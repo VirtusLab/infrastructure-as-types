@@ -10,16 +10,16 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
-  import skuber.json.format._
 
   it should "create empty secret" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.playjson._
-
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map.empty)
 
-    val secret = interpret(sec, ns).map(_.result).head
+    import kubernetes.skuber.playjson._
+    import skuber.json.format._
+
+    val secret = sec.interpret(ns).map(_.result).head
+
     secret.should(matchJsonString(yamlToJson(s"""
         |---
         |kind: Secret
@@ -33,13 +33,14 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
   }
 
   it should "create secret with key and value" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.playjson._
-
     val ns = Namespace(Name("foo") :: Nil)
     val sec = Secret(Name("test") :: Nil, data = Map("foo" -> "admin"))
 
-    val secret = interpret(sec, ns).map(_.result).head
+    import kubernetes.skuber.playjson._
+    import skuber.json.format._
+
+    val secret = sec.interpret(ns).map(_.result).head
+
     secret.should(matchJsonString(yamlToJson(s"""
        |---
        |kind: Secret

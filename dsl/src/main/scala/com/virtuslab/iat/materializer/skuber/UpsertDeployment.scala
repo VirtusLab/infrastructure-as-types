@@ -1,4 +1,4 @@
-package com.virtuslab.iat.materialization.skuber
+package com.virtuslab.iat.materializer.skuber
 
 import com.virtuslab.iat.kubernetes.skuber.deployment.{ result, MaybeResult, Processor }
 import com.virtuslab.iat.kubernetes.skuber.{ Base, SResource }
@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 trait UpsertDeployment {
-  def deployer[P <: Base](
+  def apply[P <: Base](
       implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
@@ -24,11 +24,11 @@ trait UpsertDeployment {
       )
     }
 
-  def deploy[P <: Base](
+  def apply[P <: Base](
       p: SResource[P]
     )(implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
-    ): MaybeResult[P] = deployer[P].process(p)
+    ): MaybeResult[P] = apply[P].process(p)
 }

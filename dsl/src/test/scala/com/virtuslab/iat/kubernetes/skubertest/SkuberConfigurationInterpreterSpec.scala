@@ -10,19 +10,18 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SkuberConfigurationInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
-  import skuber.json.format._
 
   ignore should "ignore second label name when it's user defined" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.playjson._
-
     val ns = Namespace(Name("foo") :: Nil)
     val conf = Configuration(
       Name("foo") :: UntypedLabel("name", "bazz") :: Nil,
       data = Map.empty
     )
 
-    val config = interpret(conf, ns).map(_.result).head
+    import kubernetes.skuber.playjson._
+    import skuber.json.format._
+
+    val config = conf.interpret(ns).head.result
 
     config.should(matchJsonString(yamlToJson(s"""
       |---

@@ -5,13 +5,13 @@ import com.virtuslab.iat.core.Support
 import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
-import com.virtuslab.iat.materialization.openapi.JValueMetadataExtractor
+import com.virtuslab.iat.materializer.openapi.JValueMetadataExtractor
 import com.virtuslab.kubernetes.client.custom.B64Encoded
 import com.virtuslab.kubernetes.client.openapi.core.ApiModel
 import com.virtuslab.kubernetes.client.openapi.model.{ Deployment, ObjectMeta, Service }
 
 object openapi {
-  import com.virtuslab.iat.materialization.openapi.JValueTransformable
+  import com.virtuslab.iat.materializer.openapi.JValueTransformable
 
   type Base = ApiModel
   type RootInterpreter[A, R] = core.RootInterpreter[A, Base, R]

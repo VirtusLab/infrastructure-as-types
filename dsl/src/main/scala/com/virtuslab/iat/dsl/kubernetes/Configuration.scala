@@ -9,6 +9,7 @@ case class Configuration(labels: List[Label], data: Map[String, String])
   with Labeled
   with KeyValue
   with Patchable[Configuration]
+  with Interpretable[Configuration]
 
 object Configuration {
   implicit val mountSource: MountSource[Configuration] = (obj: Configuration) => {

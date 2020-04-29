@@ -12,6 +12,7 @@ case class Connection(
   extends Named
   with Labeled
   with Patchable[Connection]
+  with Interpretable[Connection]
 
 trait ConnectionBuilder {
   def named(name: String): Connection

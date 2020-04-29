@@ -12,7 +12,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
-  import skuber.json.format._
 
   it should "generate volume mount based on config map entry" in {
     import kubernetes.skuber._
@@ -26,6 +25,8 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     )
     val mount = config.mount("test-mount", "test.txt", Path.of("/opt/foo.txt"))
     val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
+
+    import skuber.json.format._
 
     asJsonString(volume).should(matchJson("""
         |{
@@ -46,8 +47,6 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
   }
 
   it should "generate volume mount based on secret entry" in {
-    import kubernetes.skuber._
-    import kubernetes.skuber.playjson._
     import dsl.kubernetes.Mountable._
 
     val secret = Secret(
@@ -56,6 +55,11 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
         |I'm testy tester, being tested ;-)
         |""".stripMargin)
     )
+
+    import kubernetes.skuber._
+    import kubernetes.skuber.playjson._
+    import skuber.json.format._
+
     val mount = secret.mount(name = "test-secret-mount", key = "test.txt", as = Path.of("/opt/test-secret.txt"))
     val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
 

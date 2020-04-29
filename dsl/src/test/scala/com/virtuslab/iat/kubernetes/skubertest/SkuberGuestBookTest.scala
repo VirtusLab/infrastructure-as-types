@@ -12,7 +12,6 @@ import com.virtuslab.iat.test.EnsureMatchers
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import play.api.libs.json.JsValue
 import skuber.Resource.Quantity
 import skuber.{ Resource, Service }
 
@@ -73,6 +72,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       replicas(2)
     )
 
+    // format: off
     val frontendDetails = resourceRequirements(
       Resource.Requirements(
         requests = Map(
@@ -82,30 +82,22 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       )
     ).andThen(
       replicas(3)
-    )
-    .andThen(
+    ).andThen(
       serviceType(Service.Type.NodePort)
     )
 
-    import _root_.skuber.json.format._
-    import kubernetes.skuber._
     import kubernetes.skuber.metadata._
+    import skuber.json.format._
 
-    val resources: List[(Metadata, JsValue)] =
-      guestbook.interpret.map(_.asMetaJsValue) ++
-        redisMaster
-          .interpret(guestbook, redisMasterDetails)
-          .map((r: SResource[_ <: Base]) => r.asMetaJsValue) ++
-        redisSlave
-          .interpret(guestbook, redisSlaveDetails)
-          .map((r: SResource[_ <: Base]) => r.asMetaJsValue) ++
-        frontend
-          .interpret(guestbook, frontendDetails)
-          .map((r: SResource[_ <: Base]) => r.asMetaJsValue)
+    val resources =
+      guestbook.interpret ++
+        redisMaster.interpret(guestbook, redisMasterDetails) ++
+        redisSlave.interpret(guestbook, redisSlaveDetails) ++
+        frontend.interpret(guestbook, frontendDetails)
 
     implicit val formats: Formats = JsonMethods.defaultFormats
 
-    Ensure(resources)
+    Ensure(resources.map(_.result))
       .contain(
         Metadata("v1", "Namespace", "default", guestbook.name) -> matchJsonString(yamlToJson(s"""
             |---

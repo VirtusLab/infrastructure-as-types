@@ -2,10 +2,11 @@ package com.virtuslab.iat.kubernetes.interpreter.skuber
 
 import com.virtuslab.iat.core
 import com.virtuslab.iat.dsl.Interpretable
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Namespace }
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Connection, Namespace }
 import com.virtuslab.iat.kubernetes.skuber.Base
 import play.api.libs.json.Format
 import skuber.apps.v1.Deployment
+import skuber.networking.NetworkPolicy
 import skuber.{ ResourceDefinition, Service, Namespace => SNamespace }
 
 trait EffectsOps {
@@ -83,4 +84,5 @@ trait EffectsOps {
 
   implicit class NamespaceEffectsOps(ns: Namespace) extends RootEffectsOps1[Namespace, SNamespace](ns)
   implicit class ApplicationEffectsOps(app: Application) extends EffectsOps2[Application, Namespace, Service, Deployment](app)
+  implicit class ConnectionRepresentableOps(c: Connection) extends EffectsOps1[Connection, Namespace, NetworkPolicy](c)
 }

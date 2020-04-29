@@ -7,9 +7,7 @@ import com.virtuslab.iat.dsl.Port
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Container, Namespace }
 import com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.kubernetes.skuber
-import _root_.skuber.apps.v1.Deployment
-import _root_.skuber.Service
-import _root_.skuber.{ Container => SContainer }
+import _root_.skuber.Resource
 
 object OperatorMain extends AbstractMain with App {
 
@@ -49,33 +47,27 @@ object OperatorMain extends AbstractMain with App {
       mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
     )
 
-    val appDetails = (s: Service, dpl: Deployment) => {
-      // format: off
-      (s, dpl.copy(spec = dpl.spec.map(dspec =>
-        dspec.copy(
-          template = dspec.template.copy(
-            spec = dspec.template.spec.map(pspec =>
-              pspec.copy(
-                containers = pspec.containers.map {
-                  case c: SContainer if c.name == "app" => c.copy(
-                    resources = None
-                  )
-                }
-              )
-            )
-          )
-      ))))
-    }
+    import kubernetes.skuber.details._
+    val appDetails = resourceRequirements(_.name == "app",
+                                          Resource.Requirements(
+                                            requests = Map(
+                                              "cpu" -> "100m",
+                                              "memory" -> "10Mi"
+                                            ),
+                                            limits = Map(
+                                              "cpu" -> "200m",
+                                              "memory" -> "200Mi"
+                                            )
+                                          ))
 
     import kubernetes.skuber._
     import kubernetes.skuber.deployment._
-    import kubernetes.skuber.deployment.Upsert
     import _root_.skuber.json.format._
 
-    implicit def deploy[P <: Base]: Processor[P] = Upsert.deployer
+    implicit def deploy[P <: Base]: Processor[P] = Upsert.apply[P]
 
     val n: Either[skuber.deployment.Error, Namespace] = ns.process()
-    val a: Either[skuber.deployment.Error, Application] = app.process(ns, appDetails.tupled)
+    val a: Either[skuber.deployment.Error, Application] = app.process(ns, appDetails)
 
     println(n)
     println(a)

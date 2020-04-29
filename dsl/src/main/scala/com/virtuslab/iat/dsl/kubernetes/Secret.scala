@@ -1,10 +1,15 @@
 package com.virtuslab.iat.dsl.kubernetes
 
-import com.virtuslab.iat.dsl.{ KeyValue, Label, Labeled, Named, Patchable }
+import com.virtuslab.iat.dsl.{ Interpretable, KeyValue, Label, Labeled, Named, Patchable }
 import com.virtuslab.iat.dsl.kubernetes.Mountable.MountSource
 import skuber.Volume.{ Secret => SecretVolumeSource }
 
-case class Secret(labels: List[Label], data: Map[String, String]) extends Named with Labeled with KeyValue with Patchable[Secret]
+case class Secret(labels: List[Label], data: Map[String, String])
+  extends Named
+  with Labeled
+  with KeyValue
+  with Patchable[Secret]
+  with Interpretable[Secret]
 
 object Secret {
   implicit val mountSource: MountSource[Secret] = (obj: Secret) => {

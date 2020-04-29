@@ -1,4 +1,4 @@
-package com.virtuslab.iat.materialization.openapi
+package com.virtuslab.iat.materializer.openapi
 
 import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods

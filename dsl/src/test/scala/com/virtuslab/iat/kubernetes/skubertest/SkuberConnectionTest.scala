@@ -6,9 +6,9 @@ import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes._
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
-import com.virtuslab.iat.{ dsl, kubernetes }
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.test.EnsureMatchers
+import com.virtuslab.iat.{ dsl, kubernetes }
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -50,14 +50,18 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
     val connApp1app2 = app1.communicatesWith(app2).named("app1-app2-app1")
 
-    import kubernetes.skuber._
     import kubernetes.skuber.metadata._
-    import kubernetes.skuber.metadata.InterpreterDerivation._
+//    import kubernetes.skuber.metadata.InterpreterDerivation._ FIXME: use derivation
+    import skuber.json.format._
 
-    val resources = interpret(backend) ++
-      interpret((app3, connApp3), backend) ++
-      interpret(frontend) ++
-      interpret((app1, app2, connApp1, connApp1app2), frontend)
+    val resources = backend.interpret ++
+      app3.interpret(backend) ++
+      connApp3.interpret(backend) ++
+      frontend.interpret ++
+      app1.interpret(frontend) ++
+      app2.interpret(frontend) ++
+      connApp1.interpret(frontend) ++
+      connApp1app2.interpret(frontend)
 
     Ensure(resources.map(_.result))
       .contain(
@@ -376,10 +380,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
         )
       }
 
-    import kubernetes.skuber._
     import kubernetes.skuber.metadata._
+    import skuber.json.format._
 
-    val resources = interpret(app1, ns) ++ interpret(conn1, ns)
+    val resources = app1.interpret(ns) ++ conn1.interpret(ns)
 
     Ensure(resources.map(_.result))
       .ignore(_.kind != "NetworkPolicy")
@@ -420,7 +424,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     import dsl.Expressions._
 
     val ns = Namespace(Name("foo") :: Nil)
-    val g1 = (
+    val g1 = List(
       Connection(
         name = "allow-all-ingress",
         resourceSelector = NoSelector,
@@ -525,11 +529,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       )
     )
 
-    import kubernetes.skuber._
     import kubernetes.skuber.metadata._
-    import kubernetes.skuber.metadata.InterpreterDerivation._
+    import skuber.json.format._
 
-    val resources = interpret(ns) ++ interpret(g1, ns)
+    val resources = ns.interpret ++ g1.flatMap(_.interpret(ns))
 
     Ensure(resources.map(_.result))
       .ignore(_.kind != "NetworkPolicy")

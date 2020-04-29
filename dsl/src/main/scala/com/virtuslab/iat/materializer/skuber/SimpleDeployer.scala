@@ -1,4 +1,4 @@
-package com.virtuslab.iat.materialization.skuber
+package com.virtuslab.iat.materializer.skuber
 
 import play.api.libs.json.Format
 import skuber.api.client.LoggingContext

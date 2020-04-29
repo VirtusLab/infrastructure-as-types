@@ -19,10 +19,10 @@ class SkuberLabelExpressionsTest extends AnyFlatSpec with Matchers {
     requirement shouldEqual Seq(ExistsRequirement("live"))
 
     val complex = Expressions(
-      "partition" in ("customerA", "customerB"),
-      "environment" is "qa",
-      "environment" isNot "dev",
-      "live" doesNotExist
+      "partition".in("customerA", "customerB"),
+      "environment".is("qa"),
+      "environment".isNot("dev"),
+      "live".doesNotExist
     )
     val requirements = subinterpreter.expressions(complex)
     requirements shouldEqual Seq(

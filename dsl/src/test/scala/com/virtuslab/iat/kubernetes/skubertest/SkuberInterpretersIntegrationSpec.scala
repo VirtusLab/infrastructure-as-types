@@ -17,8 +17,6 @@ import org.scalatest.matchers.should.Matchers
 class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
   implicit val formats: Formats = JsonMethods.defaultFormats
 
-  import skuber.json.format._
-
   it should "create a simple system" in {
     val ns = Namespace(Name("foo") :: Nil)
     val app1 = Application(
@@ -39,9 +37,10 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
       ) :: Nil
     )
 
-    import kubernetes.skuber._
     import kubernetes.skuber.metadata._
-    val resources = interpret(ns) ++ interpret(app1, ns) ++ interpret(app2, ns)
+    import skuber.json.format._
+
+    val resources = ns.interpret ++ (app1 :: app2 :: Nil).flatMap(_.interpret(ns))
 
     Ensure(resources.map(_.result))
       .contain(
