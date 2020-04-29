@@ -9,15 +9,5 @@ trait Container extends Named with Labeled with Patchable[Container] {
   def image: String
   def command: List[String]
   def args: List[String]
-  def envs: List[EnvironmentVariable]
-}
-
-trait EnvironmentVariable {
-  def key: String
-  def value: String
-}
-
-object EnvironmentVariable {
-  case class AnEnvironmentVariable(key: String, value: String) extends EnvironmentVariable
-  def apply(key: String, value: String): EnvironmentVariable = AnEnvironmentVariable(key, value)
+  def envs: List[(String, String)]
 }

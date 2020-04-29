@@ -21,6 +21,6 @@ case class Container(
     image: String,
     command: List[String] = Nil,
     args: List[String] = Nil,
-    envs: List[EnvironmentVariable] = Nil,
+    envs: List[(String, String)] = Nil,
     ports: List[Port] = Nil)
   extends dsl.Container

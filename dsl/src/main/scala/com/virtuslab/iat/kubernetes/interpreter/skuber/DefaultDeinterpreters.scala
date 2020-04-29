@@ -7,7 +7,7 @@ import com.virtuslab.iat.dsl.Label
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Namespace }
 import com.virtuslab.iat.kubernetes.skuber.Base
 
-trait BaseDeinterpreters {
+trait DefaultDeinterpreters {
   import Label.ops._
 
   type Error

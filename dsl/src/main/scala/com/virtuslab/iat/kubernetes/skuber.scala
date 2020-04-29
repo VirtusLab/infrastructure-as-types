@@ -12,7 +12,7 @@ import com.virtuslab.iat.dsl.Port.{ APort, NamedPort }
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.kubernetes.{ Container, Namespace, _ }
 import com.virtuslab.iat.json.playjson.Yaml
-import com.virtuslab.iat.kubernetes.interpreter.skuber.{ BaseDeinterpreters, BaseInterpreters, EffectsOps, InterpretableOps }
+import com.virtuslab.iat.kubernetes.interpreter.skuber.{ DefaultDeinterpreters, DefaultDetails, DefaultInterpreters, EffectsOps, InterpretableOps }
 import com.virtuslab.iat.materialization.skuber.{ ObjectResourceMetadataExtractor, PlayJsonTransformable, UpsertDeployment }
 import play.api.libs.json.{ Format, JsValue, Json, Writes }
 
@@ -46,7 +46,7 @@ object skuber {
       SSupport[P, R](p, t)
   }
 
-  object deployment extends BaseInterpreters with BaseDeinterpreters with InterpretableOps with EffectsOps {
+  object deployment extends DefaultInterpreters with DefaultDeinterpreters with InterpretableOps with EffectsOps {
     object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, List[Base]]
     object Upsert extends UpsertDeployment
 
@@ -61,7 +61,7 @@ object skuber {
     }
   }
 
-  object metadata extends ObjectResourceMetadataExtractor with BaseInterpreters with InterpretableOps {
+  object metadata extends ObjectResourceMetadataExtractor with DefaultInterpreters with InterpretableOps {
     object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, (Metadata, JsValue)]
 
     override type Resource[B <: Base] = SResource[B]
@@ -395,7 +395,7 @@ object skuber {
         command = c.command,
         args = c.args,
         env = c.envs.map { env =>
-          EnvVar(env.key, EnvVar.StringValue(env.value))
+          EnvVar(env._1, EnvVar.StringValue(env._2))
         },
         ports = c.ports.flatMap {
           case NamedPort(name, number) => SContainer.Port(containerPort = number, name = name) :: Nil
@@ -462,4 +462,6 @@ object skuber {
     }
 
   }
+
+  object details extends DefaultDetails
 }

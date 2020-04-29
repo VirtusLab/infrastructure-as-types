@@ -6,7 +6,7 @@ import com.virtuslab.iat.dsl.Label
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Namespace }
 import com.virtuslab.iat.kubernetes.skuber.subinterpreter
 
-trait BaseInterpreters {
+trait DefaultInterpreters {
   import Label.ops._
 
   implicit val namespaceInterpreter2: Namespace => SNamespace =
