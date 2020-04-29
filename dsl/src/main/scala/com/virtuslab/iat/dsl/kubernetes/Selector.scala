@@ -43,10 +43,10 @@ case class SelectedIPs(ips: Protocol.HasCidr*) extends Selector with CIDRs {
   def ports(ports: Protocol.HasPort*): SelectedIPsAndPorts = SelectedIPsAndPorts(ips, ports)
 }
 
-case class SelectedPorts(ports: Protocol.HasPort*) extends Selector with Ports {
+case class SelectedPorts(ports: Seq[Protocol.HasPort]) extends Selector with Ports {
   override def expressions: Expressions = Expressions.Any
   override def protocols: Protocols = Protocols.port(ports: _*)
-  def apply(ports: Protocol.HasPort*): SelectedPorts = SelectedPorts(ports: _*)
+  def apply(ports: Protocol.HasPort*): SelectedPorts = SelectedPorts(ports)
 }
 
 case class SelectedIPsAndPorts(ips: Seq[Protocol.HasCidr], ports: Seq[Protocol.HasPort]) extends Selector with CIDRs with Ports {

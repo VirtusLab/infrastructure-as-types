@@ -2,13 +2,13 @@ package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.Port
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace }
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace, SelectedIPs }
+import com.virtuslab.iat.dsl.{ IP, Port }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
-import com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.test.EnsureMatchers
+import com.virtuslab.iat.{ dsl, kubernetes }
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -49,6 +49,29 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
         envs = "GET_HOSTS_FROM" -> "dns" :: Nil
       ) :: Nil
     )
+
+    import dsl.kubernetes.Connection.ops._
+
+    // external traffic - from external sources
+    val connExtFront = frontend
+      .communicatesWith(
+        SelectedIPs(IP.Range("0.0.0.0/0")).ports(frontend.allPorts: _*)
+      )
+      .ingressOnly
+      .named("external-frontend")
+
+    // internal traffic - between components
+    val connFrontRedis = frontend.communicatesWith(redisMaster).egressOnly.labeled(Name("front-redis") :: App("guestbook") :: Nil)
+    val connRedisMS = redisMaster
+      .communicatesWith(redisSlave)
+      .labeled(Name("redis-master-slave") :: App("guestbook") :: Nil)
+    val connRedisSM = redisSlave
+      .communicatesWith(redisMaster)
+      .labeled(Name("redis-slave-master") :: App("guestbook") :: Nil)
+
+    // cluster traffic - to in-cluster services
+    val connFrontDns = frontend.communicatesWith(kubernetesDns).egressOnly.named("front-k8s-dns")
+    val connRedisSlaveDns = redisSlave.communicatesWith(kubernetesDns).egressOnly.named("redis-slave-k8s-dns")
 
     import kubernetes.skuber.details._
 
@@ -93,7 +116,10 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       guestbook.interpret ++
         redisMaster.interpret(guestbook, redisMasterDetails) ++
         redisSlave.interpret(guestbook, redisSlaveDetails) ++
-        frontend.interpret(guestbook, frontendDetails)
+        frontend.interpret(guestbook, frontendDetails) ++
+        (connExtFront :: connFrontRedis :: connRedisMS :: connRedisSM
+          :: connFrontDns :: connRedisSlaveDns :: Nil
+        ).flatMap(_.interpret(guestbook))
 
     implicit val formats: Formats = JsonMethods.defaultFormats
 
@@ -314,6 +340,204 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    name: frontend
             |    app: guestbook
             |    tier: frontend
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connExtFront.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connExtFront.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connExtFront.name}
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: frontend
+            |      app: guestbook
+            |      tier: frontend
+            |  ingress:
+            |  - ports:
+            |    - port: 80
+            |      protocol: TCP
+            |    from:
+            |    - ipBlock:
+            |        cidr: "0.0.0.0/0"
+            |  policyTypes:
+            |    - Ingress
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontRedis.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connFrontRedis.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connFrontRedis.name}
+            |    app: guestbook
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: frontend
+            |      app: guestbook
+            |      tier: frontend
+            |  egress:
+            |  - ports:
+            |    - port: 6379
+            |      protocol: TCP
+            |    to:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: redis-master
+            |          app: redis
+            |          role: master
+            |          tier: backend
+            |  policyTypes:
+            |    - Egress
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisMS.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connRedisMS.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connRedisMS.name}
+            |    app: guestbook
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: redis-master
+            |      app: redis
+            |      role: master
+            |      tier: backend
+            |  ingress:
+            |  - ports:
+            |    - port: 6379
+            |      protocol: TCP
+            |    from:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: redis-slave
+            |          app: redis
+            |          role: slave
+            |          tier: backend
+            |  egress:
+            |  - ports:
+            |    - port: 6379
+            |      protocol: TCP
+            |    to:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: redis-slave
+            |          app: redis
+            |          role: slave
+            |          tier: backend
+            |  policyTypes:
+            |    - Ingress
+            |    - Egress
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSM.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connRedisSM.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connRedisSM.name}
+            |    app: guestbook
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: redis-slave
+            |      app: redis
+            |      role: slave
+            |      tier: backend
+            |  ingress:
+            |  - ports:
+            |    - port: 6379
+            |      protocol: TCP
+            |    from:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: redis-master
+            |          app: redis
+            |          role: master
+            |          tier: backend
+            |  egress:
+            |  - ports:
+            |    - port: 6379
+            |      protocol: TCP
+            |    to:
+            |    - podSelector:
+            |        matchLabels:
+            |          name: redis-master
+            |          app: redis
+            |          role: master
+            |          tier: backend
+            |  policyTypes:
+            |    - Ingress
+            |    - Egress
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontDns.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connFrontDns.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connFrontDns.name}
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: frontend
+            |      app: guestbook
+            |      tier: frontend
+            |  egress:
+            |  - ports:
+            |    - port: 53
+            |      protocol: UDP
+            |    - port: 53
+            |      protocol: TCP
+            |    to:
+            |    - namespaceSelector:
+            |        matchLabels:
+            |          name: kube-system
+            |  policyTypes:
+            |  - Egress
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSlaveDns.name) -> matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: ${connRedisSlaveDns.name}
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: ${connRedisSlaveDns.name}
+            |spec:
+            |  podSelector:
+            |    matchLabels:
+            |      name: redis-slave
+            |      app: redis
+            |      role: slave
+            |      tier: backend
+            |  egress:
+            |  - ports:
+            |    - port: 53
+            |      protocol: UDP
+            |    - port: 53
+            |      protocol: TCP
+            |    to:
+            |    - namespaceSelector:
+            |        matchLabels:
+            |          name: kube-system
+            |  policyTypes:
+            |  - Egress
             |""".stripMargin))
       )
   }

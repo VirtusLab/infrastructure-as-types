@@ -266,10 +266,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |          role: backend
           |  egress:
           |  - to:
-          |    - podSelector:
+          |    - namespaceSelector:
           |        matchLabels:
-          |          name: app-one
-          |          role: frontend
+          |          name: backend
+          |          role: backend
           |  policyTypes:
           |  - Ingress
           |  - Egress
@@ -298,10 +298,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |          role: frontend
           |  egress:
           |  - to:
-          |    - podSelector:
+          |    - namespaceSelector:
           |        matchLabels:
-          |          name: app-three
-          |          role: backend
+          |          name: frontend
+          |          role: frontend
           |  policyTypes:
           |  - Ingress
           |  - Egress
@@ -323,16 +323,22 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |      name: app-one
           |      role: frontend
           |  ingress:
-          |  - from:
+          |  - ports:
+          |    - port: 9090
+          |      protocol: TCP
+          |    from:
           |    - podSelector:
           |        matchLabels:
           |          name: app-two
           |          role: frontend
           |  egress:
-          |  - to:
+          |  - ports:
+          |    - port: 9090
+          |      protocol: TCP
+          |    to:
           |    - podSelector:
           |        matchLabels:
-          |          name: app-one
+          |          name: app-two
           |          role: frontend
           |  policyTypes:
           |  - Ingress
@@ -412,7 +418,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - to:
             |    - podSelector:
             |        matchLabels:
-            |          name: app-one
+            |          role: backend
             |  policyTypes:
             |  - Ingress
             |  - Egress

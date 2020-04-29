@@ -17,6 +17,8 @@ case class Connection(
 trait ConnectionBuilder {
   def named(name: String): Connection
   def labeled(labels: List[Label]): Connection
+  def egressOnly: ConnectionBuilder
+  def ingressOnly: ConnectionBuilder
 }
 object ConnectionBuilder {
   def apply(
@@ -30,6 +32,17 @@ object ConnectionBuilder {
       resourceSelector = resourceSelector,
       ingress = ingress,
       egress = egress
+    )
+
+    override def egressOnly: ConnectionBuilder = ConnectionBuilder(
+      resourceSelector = resourceSelector,
+      ingress = NoSelector,
+      egress = egress
+    )
+    override def ingressOnly: ConnectionBuilder = ConnectionBuilder(
+      resourceSelector = resourceSelector,
+      ingress = ingress,
+      egress = NoSelector
     )
   }
 }
@@ -48,6 +61,23 @@ object Connection {
   )
 
   object ops {
+    import Label.ops._
+
+    def kubernetesDns: NamespaceSelector =
+      SelectedNamespaces(
+        expressions = Expressions((Name("kube-system") :: Nil).asExpressions: _*),
+        protocols = Protocols(
+          Protocol.Layers(l4 = UDP(53)),
+          Protocol.Layers(l4 = TCP(53))
+        )
+      )
+
+    def kubernetesApi: NamespaceSelector =
+      SelectedNamespaces(
+        expressions = Expressions((Name("default") :: Nil).asExpressions: _*),
+        protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
+      )
+
     def applicationLabeled(expressions: Expression*): ApplicationSelector =
       SelectedApplications(
         expressions = Expressions(expressions: _*),
@@ -64,8 +94,8 @@ object Connection {
       def communicatesWith(other: Application): ConnectionBuilder = {
         communicatesWith(
           SelectedApplications(
-            Expressions(other.labels.map(l => Expressions.IsEqualExpression(l.key, l.value)): _*),
-            Protocols.Any
+            Expressions(other.labels.asExpressions: _*),
+            Protocols.port(other.containers.flatMap(_.ports).map(TCP(_)): _*)
           )
         )
       }
@@ -73,23 +103,23 @@ object Connection {
       def communicatesWith(other: Namespace): ConnectionBuilder = {
         communicatesWith(
           SelectedNamespaces(
-            Expressions(other.labels.map(l => Expressions.IsEqualExpression(l.key, l.value)): _*),
+            Expressions(other.labels.asExpressions: _*),
             Protocols.Any
           )
         )
       }
 
       def communicatesWith(other: Selector): ConnectionBuilder = {
+        // FIXME: un-HACK-me, hardcoded TCP
+        val appPorts: Seq[Protocol.HasPort] = app.containers.flatMap(_.ports).map(TCP(_))
+        val appProtocols = Protocols.port(appPorts: _*)
         ConnectionBuilder(
           resourceSelector = SelectedApplications(
-            Expressions(app.labels.map(l => Expressions.IsEqualExpression(l.key, l.value)): _*),
-            Protocols.Any
+            Expressions(app.labels.asExpressions: _*),
+            appProtocols
           ),
           ingress = other,
-          egress = SelectedApplications(
-            Expressions(app.labels.map(l => Expressions.IsEqualExpression(l.key, l.value)): _*),
-            Protocols.Any
-          )
+          egress = other
         )
       }
     }

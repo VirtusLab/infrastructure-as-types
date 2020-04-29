@@ -1,6 +1,7 @@
 package com.virtuslab.iat.dsl.kubernetes
 
 import com.virtuslab.iat.dsl
+import com.virtuslab.iat.dsl.Protocol.HasPort
 import com.virtuslab.iat.dsl._
 
 case class Application(
@@ -14,7 +15,9 @@ case class Application(
   with Containerized
   with Mounts
   with Patchable[Application]
-  with Interpretable[Application]
+  with Interpretable[Application] {
+  def allPorts: List[HasPort] = containers.flatMap(_.ports).map(TCP(_)) // FIXME: hardcoded TCP
+}
 
 case class Container(
     labels: List[Label],
