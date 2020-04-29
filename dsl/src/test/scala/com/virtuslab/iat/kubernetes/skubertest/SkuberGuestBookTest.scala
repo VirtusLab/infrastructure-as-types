@@ -14,7 +14,7 @@ import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import org.json4s.Formats
 import play.api.libs.json.JsValue
 import skuber.Resource.Quantity
-import skuber.{ Resource, Service, Container => SContainer }
+import skuber.{ Resource, Service }
 import skuber.apps.v1.Deployment
 
 class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
@@ -32,7 +32,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       ) :: Nil
     )
 
-    def redisMasterDetails(s: Service, dpl: Deployment): (Service, Deployment) = {
+    val redisMasterDetails = (s: Service, dpl: Deployment) => {
       // format: off
       import com.softwaremill.quicklens._
       (s, dpl.modify(_.spec.each.template.spec.each.containers.each.resources).setTo(Some(Resource.Requirements(
@@ -50,7 +50,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
     val resources: List[(Metadata, JsValue)] =
       guestbook.interpret.map(_.asMetaJsValue) ++
         redisMaster
-          .interpret(guestbook, t => redisMasterDetails(t._1, t._2))
+          .interpret(guestbook, redisMasterDetails.tupled)
           .map((r: SResource[_ <: Base]) => r.asMetaJsValue)
 
     implicit val formats: Formats = JsonMethods.defaultFormats

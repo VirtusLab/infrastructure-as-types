@@ -49,7 +49,7 @@ object OperatorMain extends AbstractMain with App {
       mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
     )
 
-    def appDetails(s: Service, dpl: Deployment): (Service, Deployment) = {
+    val appDetails = (s: Service, dpl: Deployment) => {
       // format: off
       (s, dpl.copy(spec = dpl.spec.map(dspec =>
         dspec.copy(
@@ -75,7 +75,7 @@ object OperatorMain extends AbstractMain with App {
     implicit def deploy[P <: Base]: Processor[P] = Upsert.deployer
 
     val n: Either[skuber.deployment.Error, Namespace] = ns.process()
-    val a: Either[skuber.deployment.Error, Application] = app.process(ns, t => appDetails(t._1, t._2))
+    val a: Either[skuber.deployment.Error, Application] = app.process(ns, appDetails.tupled)
 
     println(n)
     println(a)
