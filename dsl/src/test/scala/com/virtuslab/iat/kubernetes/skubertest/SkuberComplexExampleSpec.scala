@@ -92,7 +92,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       cassandra.interpret(namespace) ++
       postgres.interpret(namespace) ++
       kafka.interpret(namespace) ++
-      (conApiKafka :: conApiView :: conViewPostgres :: conKafkaProcessor :: conProcessorCassandra :: Nil)
+      (connExtApi :: conApiKafka :: conApiView :: conViewPostgres :: conKafkaProcessor :: conProcessorCassandra :: Nil)
         .flatMap(_.interpret(namespace))
 
     Ensure(resource.map(_.result))
@@ -393,6 +393,29 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |        imagePullPolicy: IfNotPresent
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
+             |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "external-api") -> matchJsonString(yamlToJson(s"""
+             |---
+             |kind: NetworkPolicy
+             |apiVersion: networking.k8s.io/v1
+             |metadata:
+             |  name: external-api
+             |  namespace: ${namespace.name}
+             |  labels:
+             |    name: external-api
+             |spec:
+             |  podSelector:
+             |    matchLabels:
+             |      name: api
+             |  ingress:
+             |  - ports:
+             |    - port: 80
+             |      protocol: TCP
+             |    from:
+             |    - ipBlock:
+             |        cidr: 0.0.0.0/0
+             |  policyTypes:
+             |  - Ingress
              |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "api-kafka") -> matchJsonString(yamlToJson(s"""
              |---
