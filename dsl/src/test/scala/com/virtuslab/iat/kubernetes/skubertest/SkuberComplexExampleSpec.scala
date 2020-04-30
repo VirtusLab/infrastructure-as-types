@@ -86,7 +86,8 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
     import kubernetes.skuber.metadata._
     import skuber.json.format._
 
-    val resource = api.interpret(namespace) ++
+    val resource = namespace.interpret ++
+      api.interpret(namespace) ++
       processor.interpret(namespace) ++
       view.interpret(namespace) ++
       cassandra.interpret(namespace) ++
@@ -97,6 +98,15 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     Ensure(resource.map(_.result))
       .contain(
+        Metadata("v1", "Namespace", "default", "reactive-system") -> matchJsonString(yamlToJson(s"""
+             |---
+             |kind: Namespace
+             |apiVersion: v1
+             |metadata:
+             |  name: reactive-system
+             |  labels:
+             |    name: reactive-system
+             |""".stripMargin)),
         Metadata("v1", "Service", "reactive-system", "api") -> matchJsonString(yamlToJson(s"""
              |---
              |kind: Service
