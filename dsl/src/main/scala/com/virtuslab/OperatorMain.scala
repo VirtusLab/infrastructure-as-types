@@ -48,23 +48,25 @@ object OperatorMain extends AbstractMain with App {
     )
 
     import kubernetes.skuber.details._
-    val appDetails = resourceRequirements(_.name == "app",
-                                          Resource.Requirements(
-                                            requests = Map(
-                                              "cpu" -> "100m",
-                                              "memory" -> "10Mi"
-                                            ),
-                                            limits = Map(
-                                              "cpu" -> "200m",
-                                              "memory" -> "200Mi"
-                                            )
-                                          ))
+    val appDetails = resourceRequirements(
+      _.name == "app",
+      Resource.Requirements(
+        requests = Map(
+          "cpu" -> "100m",
+          "memory" -> "10Mi"
+        ),
+        limits = Map(
+          "cpu" -> "200m",
+          "memory" -> "200Mi"
+        )
+      )
+    )
 
     import kubernetes.skuber._
     import kubernetes.skuber.deployment._
     import _root_.skuber.json.format._
 
-    implicit def deploy[P <: Base]: Processor[P] = Upsert.apply[P]
+    implicit def deploy[P <: Base]: Processor[P] = Upsert.processor
 
     val n: Either[skuber.deployment.Error, Namespace] = ns.process()
     val a: Either[skuber.deployment.Error, Application] = app.process(ns, appDetails)

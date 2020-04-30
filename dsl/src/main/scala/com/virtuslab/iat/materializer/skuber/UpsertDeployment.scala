@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 trait UpsertDeployment {
-  def apply[P <: Base](
+  def processor[P <: Base](
       implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
@@ -30,5 +30,5 @@ trait UpsertDeployment {
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
-    ): MaybeResult[P] = apply[P].process(p)
+    ): MaybeResult[P] = processor[P].process(p)
 }
