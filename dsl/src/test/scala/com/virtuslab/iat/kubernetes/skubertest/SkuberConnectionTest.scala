@@ -50,20 +50,19 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
     val connApp1app2 = app1.communicatesWith(app2).named("app1-app2-app1")
 
-    import kubernetes.skuber.metadata._
-//    import kubernetes.skuber.metadata.InterpreterDerivation._ FIXME: use derivation
+    import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resources = backend.interpret ++
-      app3.interpret(backend) ++
-      connApp3.interpret(backend) ++
-      frontend.interpret ++
-      app1.interpret(frontend) ++
-      app2.interpret(frontend) ++
-      connApp1.interpret(frontend) ++
-      connApp1app2.interpret(frontend)
+    val resources =
+      (backend :: frontend :: Nil).flatMap(_.interpret.asMetaJsValues) ++
+        app1.interpret(frontend).asMetaJsValues ++
+        app2.interpret(frontend).asMetaJsValues ++
+        app3.interpret(backend).asMetaJsValues ++
+        connApp1.interpret(frontend).asMetaJsValues ++
+        connApp3.interpret(backend).asMetaJsValues ++
+        connApp1app2.interpret(frontend).asMetaJsValues
 
-    Ensure(resources.map(_.result))
+    Ensure(resources)
       .contain(
         Metadata("v1", "Namespace", "default", frontend.name) -> matchJsonString(yamlToJson(s"""
           |---
@@ -386,12 +385,14 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
         )
       }
 
-    import kubernetes.skuber.metadata._
+    import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resources = app1.interpret(ns) ++ conn1.interpret(ns)
+    val resources =
+      app1.interpret(ns).reduce(_.asMetaJsValues) ++
+        conn1.interpret(ns).asMetaJsValues
 
-    Ensure(resources.map(_.result))
+    Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
@@ -535,12 +536,14 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       )
     )
 
-    import kubernetes.skuber.metadata._
+    import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resources = ns.interpret ++ g1.flatMap(_.interpret(ns))
+    val resources =
+      ns.interpret.asMetaJsValues ++
+        g1.flatMap(_.interpret(ns).asMetaJsValues)
 
-    Ensure(resources.map(_.result))
+    Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->

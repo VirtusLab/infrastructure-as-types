@@ -28,7 +28,7 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
     import kubernetes.skuber.playjson._
     import skuber.json.ext.format._
 
-    val ingress = gateway.interpret(ns).map(_.result).head
+    val ingress = gateway.interpret(ns).asJsValues.head
 
     ingress.should(matchJsonString(yamlToJson(s"""
         |apiVersion: networking.k8s.io/v1beta1

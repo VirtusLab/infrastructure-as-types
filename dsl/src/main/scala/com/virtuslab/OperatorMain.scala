@@ -2,12 +2,11 @@ package com.virtuslab
 
 import java.nio.file.Path
 
+import _root_.skuber.Resource
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Port
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Container, Namespace }
 import com.virtuslab.iat.kubernetes
-import com.virtuslab.iat.kubernetes.skuber
-import _root_.skuber.Resource
 
 object OperatorMain extends AbstractMain with App {
 
@@ -62,14 +61,16 @@ object OperatorMain extends AbstractMain with App {
       )
     )
 
-    import kubernetes.skuber._
     import kubernetes.skuber.deployment._
-    import _root_.skuber.json.format._
+    import skuber.json.format._
 
-    implicit def deploy[P <: Base]: Processor[P] = Upsert.processor
-
-    val n: Either[skuber.deployment.Error, Namespace] = ns.process()
-    val a: Either[skuber.deployment.Error, Application] = app.process(ns, appDetails)
+    val n: Either[Throwable, Namespace] = ns.interpret.upsert.deinterpret
+    val a: Either[Throwable, Application] =
+      app
+        .interpret(ns)
+        .map(appDetails)
+        .map(_.upsert)
+        .reduce(_.deinterpret)
 
     println(n)
     println(a)

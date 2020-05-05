@@ -21,7 +21,7 @@ class SkuberConfigurationInterpreterSpec extends AnyFlatSpec with Matchers with 
     import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val config = conf.interpret(ns).head.result
+    val config = conf.interpret(ns).asJsValues.head
 
     config.should(matchJsonString(yamlToJson(s"""
       |---

@@ -7,7 +7,6 @@ import com.virtuslab.iat.dsl.Port.NamedPort
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace }
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
-import com.virtuslab.iat.kubernetes
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.test.EnsureMatchers
 import org.json4s.Formats
@@ -37,12 +36,19 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
       ) :: Nil
     )
 
-    import kubernetes.skuber.metadata._
+    import com.virtuslab.iat.kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resources = ns.interpret ++ (app1 :: app2 :: Nil).flatMap(_.interpret(ns))
+    val resources =
+      ns.interpret.asMetaJsValues ++
+        app1
+          .interpret(ns)
+          .reduce(_.asMetaJsValues) ++
+        app2
+          .interpret(ns)
+          .reduce(_.asMetaJsValues)
 
-    Ensure(resources.map(_.result))
+    Ensure(resources)
       .contain(
         Metadata("v1", "Service", ns.name, "app-one") -> matchJsonString(yamlToJson(s"""
           |---

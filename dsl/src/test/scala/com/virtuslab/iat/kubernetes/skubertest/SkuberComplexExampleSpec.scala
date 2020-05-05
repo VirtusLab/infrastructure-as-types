@@ -1,13 +1,13 @@
 package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
-import com.virtuslab.iat.{ dsl, kubernetes }
 import com.virtuslab.iat.dsl.Label.{ App, Name }
-import com.virtuslab.iat.dsl.{ IP, Port }
 import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace, SelectedIPs }
+import com.virtuslab.iat.dsl.{ IP, Port }
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.test.EnsureMatchers
+import com.virtuslab.iat.{ dsl, kubernetes }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -83,20 +83,16 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
     val conKafkaProcessor = kafka.communicatesWith(processor).ingressOnly.named("kafka-processor")
     val conProcessorCassandra = processor.communicatesWith(cassandra).egressOnly.named("processor-cassandra")
 
-    import kubernetes.skuber.metadata._
+    import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resource = namespace.interpret ++
-      api.interpret(namespace) ++
-      processor.interpret(namespace) ++
-      view.interpret(namespace) ++
-      cassandra.interpret(namespace) ++
-      postgres.interpret(namespace) ++
-      kafka.interpret(namespace) ++
+    val resource = namespace.interpret.asMetaJsValues ++
+      (api :: processor :: view :: cassandra :: postgres :: kafka :: Nil)
+        .flatMap(_.interpret(namespace).reduce(_.asMetaJsValues)) ++
       (connExtApi :: conApiKafka :: conApiView :: conViewPostgres :: conKafkaProcessor :: conProcessorCassandra :: Nil)
-        .flatMap(_.interpret(namespace))
+        .flatMap(_.interpret(namespace).asMetaJsValues)
 
-    Ensure(resource.map(_.result))
+    Ensure(resource)
       .contain(
         Metadata("v1", "Namespace", "default", "reactive-system") -> matchJsonString(yamlToJson(s"""
              |---

@@ -109,21 +109,21 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       serviceType(Service.Type.NodePort)
     )
 
-    import kubernetes.skuber.metadata._
+    import kubernetes.skuber.playjson._
     import skuber.json.format._
 
     val resources =
-      guestbook.interpret ++
-        redisMaster.interpret(guestbook, redisMasterDetails) ++
-        redisSlave.interpret(guestbook, redisSlaveDetails) ++
-        frontend.interpret(guestbook, frontendDetails) ++
-        (connExtFront :: connFrontRedis :: connRedisMS :: connRedisSM
-          :: connFrontDns :: connRedisSlaveDns :: Nil
-        ).flatMap(_.interpret(guestbook))
+      guestbook.interpret.asMetaJsValues ++
+        redisMaster.interpret(guestbook).map(redisMasterDetails).reduce(_.asMetaJsValues) ++
+        redisSlave.interpret(guestbook).map(redisSlaveDetails).reduce(_.asMetaJsValues) ++
+        frontend.interpret(guestbook).map(frontendDetails).reduce(_.asMetaJsValues) ++
+        List(
+          connExtFront, connFrontRedis, connRedisMS, connRedisSM, connFrontDns, connRedisSlaveDns
+        ).flatMap(_.interpret(guestbook).asMetaJsValues)
 
     implicit val formats: Formats = JsonMethods.defaultFormats
 
-    Ensure(resources.map(_.result))
+    Ensure(resources)
       .contain(
         Metadata("v1", "Namespace", "default", guestbook.name) -> matchJsonString(yamlToJson(s"""
             |---

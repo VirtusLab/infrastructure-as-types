@@ -18,7 +18,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val secret = sec.interpret(ns).map(_.result).head
+    val secret = sec.interpret(ns).asJsValues.head
 
     secret.should(matchJsonString(yamlToJson(s"""
         |---
@@ -39,7 +39,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val secret = sec.interpret(ns).map(_.result).head
+    val secret = sec.interpret(ns).asJsValues.head
 
     secret.should(matchJsonString(yamlToJson(s"""
        |---

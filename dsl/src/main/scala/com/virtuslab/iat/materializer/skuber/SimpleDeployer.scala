@@ -1,41 +1,42 @@
 package com.virtuslab.iat.materializer.skuber
 
+import com.virtuslab.iat.kubernetes.skuber.Base
 import play.api.libs.json.Format
 import skuber.api.client.LoggingContext
-import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
+import skuber.{ K8SException, K8SRequestContext, ResourceDefinition }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.util.Try
 
-case class SimpleDeployer(client: K8SRequestContext) {
+object SimpleDeployer {
 
-  def createOrUpdate[T <: ObjectResource](
-      o: T
+  protected def futureUpsert[A <: Base: Format: ResourceDefinition](
+      o: A
     )(implicit
       executor: ExecutionContext,
-      format: Format[T],
-      definition: ResourceDefinition[T],
+      client: K8SRequestContext,
       lc: LoggingContext
-    ): T = {
-    val future = _createOrUpdate(o)
-    val result = Await.result(future, 1.minute)
-    println(s"Successfully created or updated '$result' on Kubernetes cluster")
-    result
+    ): Future[A] = {
+
+    client.create(o) recoverWith {
+      case ex: K8SException if ex.status.code.contains(409) =>
+        client.update(o)
+    }
   }
 
-  private def _createOrUpdate[T <: ObjectResource](
-      o: T
+  def upsert[A <: Base: Format: ResourceDefinition](
+      o: A
     )(implicit
       executor: ExecutionContext,
-      format: Format[T],
-      definition: ResourceDefinition[T],
+      client: K8SRequestContext,
       lc: LoggingContext
-    ): Future[T] = {
-    import skuber._
-
-    client.create(o)(format, definition, lc) recoverWith {
-      case ex: K8SException if ex.status.code.contains(409) =>
-        client.update(o)(format, definition, lc)
-    }
+    ): Either[Throwable, A] = {
+    Try {
+      val future = futureUpsert(o)
+      val result = Await.result(future, 1.minute)
+      println(s"Successfully created or updated '$result' on Kubernetes cluster")
+      result
+    }.toEither
   }
 }
