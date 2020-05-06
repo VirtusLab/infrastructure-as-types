@@ -54,7 +54,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     import skuber.json.format._
 
     val resources =
-      (backend :: frontend :: Nil).flatMap(_.interpret.asMetaJsValues) ++
+      List(backend, frontend).flatMap(_.interpret.asMetaJsValues) ++
         app1.interpret(frontend).asMetaJsValues ++
         app2.interpret(frontend).asMetaJsValues ++
         app3.interpret(backend).asMetaJsValues ++

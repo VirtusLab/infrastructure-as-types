@@ -1,4 +1,7 @@
-import sbt.Keys.scalacOptions
+import sbt.Keys.{scalacOptions, version}
+
+val projectVersion = "0.3.5"
+val projectScalaVersion = "2.13.1"
 
 lazy val kubernetes = (project in file("kubernetes"))
   .settings(
@@ -12,19 +15,14 @@ lazy val kubernetes = (project in file("kubernetes"))
   )
 
 lazy val dsl = (project in file("dsl"))
-  .settings(addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full))
   .settings(
     name := "dsl",
-    version := "0.1",
+    version := projectVersion,
     organization := "com.virtuslab",
-    scalaVersion := "2.13.1",
+    scalaVersion := projectScalaVersion,
     libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client" %% "core" % "2.0.7",
-      "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.0.7",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
       "io.skuber" %% "skuber" % "2.4.0",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
-      "com.chuusai" %% "shapeless" % "2.3.3",
       "com.propensive" %% "magnolia" % "0.14.5",
       "com.softwaremill.quicklens" %% "quicklens" % "1.5.0",
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
@@ -34,6 +32,21 @@ lazy val dsl = (project in file("dsl"))
     scalafmtOnCompile := true
   ).dependsOn(kubernetes)
 
+lazy val examples = (project in file("examples"))
+  .settings(
+    name := "examples",
+    version := projectVersion,
+    organization := "com.virtuslab",
+    scalaVersion := projectScalaVersion,
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.client" %% "core" % "2.0.7",
+      "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.0.7",
+      "ch.qos.logback" % "logback-classic" % "1.2.3",
+    ),
+    scalacOptions ++= Seq("-deprecation"),
+    scalafmtOnCompile := true
+  ).dependsOn(dsl)
+
 lazy val root = (project in file("."))
   .settings(name := "infrastructure-as-types")
-  .aggregate(dsl, kubernetes)
+  .aggregate(dsl, kubernetes, examples)

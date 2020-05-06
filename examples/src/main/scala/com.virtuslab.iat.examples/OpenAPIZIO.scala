@@ -1,4 +1,4 @@
-package com.virtuslab
+package com.virtuslab.iat.examples
 
 import java.net.Socket
 import java.security.cert.X509Certificate

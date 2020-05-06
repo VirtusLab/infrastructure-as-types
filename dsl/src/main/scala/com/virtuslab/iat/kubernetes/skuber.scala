@@ -19,6 +19,8 @@ object skuber {
     object InterpreterDerivation extends core.InterpreterDerivation[Namespace, Base, JsValue]
   }
 
+  object interpreter extends DefaultInterpreters
   object subinterpreter extends DefaultSubinterpreters
   object details extends DefaultDetails
+  object deinterpreter extends DefaultDeinterpreters
 }
