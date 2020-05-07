@@ -1,13 +1,17 @@
-import sbt.Keys.{scalacOptions, version}
+import sbt.Keys.{ scalacOptions, version }
 
 val projectVersion = "0.3.5"
 val projectScalaVersion = "2.13.1"
 
 lazy val kubernetes = (project in file("kubernetes"))
   .settings(
+    resolvers += Resolver.bintrayRepo("virtuslab", "graphbuddy"),
+    libraryDependencies in ThisBuild += compilerPlugin(
+      "com.virtuslab.semanticgraphs" % "scalac-plugin" % "0.0.11" cross CrossVersion.full
+    ),
     libraryDependencies ++= Seq(
       "org.specs2" %% "specs2-core" % "4.8.3" % "test",
-      "org.specs2" %% "specs2-matcher-extra" % "4.8.3" % "test",
+      "org.specs2" %% "specs2-matcher-extra" % "4.8.3" % "test"
     ),
     scalacOptions ++= Seq("-language:higherKinds", "-deprecation"),
     scalacOptions in Test ++= Seq("-Yrangepos"),
@@ -16,6 +20,10 @@ lazy val kubernetes = (project in file("kubernetes"))
 
 lazy val dsl = (project in file("dsl"))
   .settings(
+    resolvers += Resolver.bintrayRepo("virtuslab", "graphbuddy"),
+    libraryDependencies in ThisBuild += compilerPlugin(
+      "com.virtuslab.semanticgraphs" % "scalac-plugin" % "0.0.11" cross CrossVersion.full
+    ),
     name := "dsl",
     version := projectVersion,
     organization := "com.virtuslab",
@@ -28,12 +36,17 @@ lazy val dsl = (project in file("dsl"))
       "org.scalatest" %% "scalatest" % "3.1.0" % Test,
       "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
     ),
-    scalacOptions ++= Seq("-deprecation" /*"-Ymacro-debug-verbose"*/ /*"-Ymacro-debug-lite"*/),
+    scalacOptions ++= Seq("-deprecation" /*"-Ymacro-debug-verbose"*/ /*"-Ymacro-debug-lite"*/ ),
     scalafmtOnCompile := true
-  ).dependsOn(kubernetes)
+  )
+  .dependsOn(kubernetes)
 
 lazy val examples = (project in file("examples"))
   .settings(
+    resolvers += Resolver.bintrayRepo("virtuslab", "graphbuddy"),
+    libraryDependencies in ThisBuild += compilerPlugin(
+      "com.virtuslab.semanticgraphs" % "scalac-plugin" % "0.0.11" cross CrossVersion.full
+    ),
     name := "examples",
     version := projectVersion,
     organization := "com.virtuslab",
@@ -41,12 +54,13 @@ lazy val examples = (project in file("examples"))
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.client" %% "core" % "2.0.7",
       "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.0.7",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
+      "ch.qos.logback" % "logback-classic" % "1.2.3"
     ),
     scalacOptions ++= Seq("-deprecation"),
     scalafmtOnCompile := true
-  ).dependsOn(dsl)
+  )
+  .dependsOn(dsl)
 
 lazy val root = (project in file("."))
-  .settings(name := "infrastructure-as-types")
+  .settings(name := "infrastructure-as-types", scalaVersion := projectScalaVersion, resolvers += Resolver.bintrayRepo("virtuslab", "graphbuddy"))
   .aggregate(dsl, kubernetes, examples)
