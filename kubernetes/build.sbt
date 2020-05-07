@@ -2,7 +2,7 @@ version := "1.0.0"
 name := "kubernetes-client-scala"
 organization := "com.virtuslab"
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.1"
 
 crossScalaVersions := Seq(scalaVersion.value, "2.12.10",  "2.11.12")
 
