@@ -2,15 +2,15 @@ package com.virtuslab.iat.examples
 
 import java.nio.file.Path
 
+import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Port
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Configuration, Container, Namespace }
-import com.virtuslab.iat.kubernetes
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Container, Namespace }
 import skuber.Resource
 
 object CloudFileServer extends SkuberApp with App {
-
-  import com.virtuslab.iat.dsl.kubernetes.Mountable._
+  import iat.kubernetes.dsl.ops._
+  import iat.skuber.dsl._
 
   val ns = Namespace(Name("test") :: Nil)
   val conf = Configuration(
@@ -43,7 +43,7 @@ object CloudFileServer extends SkuberApp with App {
     mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
   )
 
-  import kubernetes.skuber.details._
+  import iat.skuber.details._
   val appDetails = resourceRequirements(
     _.name == "app",
     Resource.Requirements(
@@ -58,7 +58,7 @@ object CloudFileServer extends SkuberApp with App {
     )
   )
 
-  import kubernetes.skuber.deployment._
+  import iat.skuber.deployment._
   import skuber.json.format._
 
   val results =

@@ -1,0 +1,49 @@
+package com.virtuslab.iat.skubertest
+
+import com.stephenn.scalatest.playjson.JsonMatchers
+import com.virtuslab.iat
+import com.virtuslab.iat.dsl.HTTP.Host
+import com.virtuslab.iat.dsl.Label.Name
+import com.virtuslab.iat.dsl._
+import com.virtuslab.iat.kubernetes.dsl.{ Gateway, Namespace }
+import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
+class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
+
+  it should "allow to define a simple Ingress definition" in {
+    val ns = Namespace(Name("foo") :: Nil)
+    val gateway = Gateway(
+      Name("external") :: Nil,
+      Protocols(
+        Protocol.Layers(l7 = HTTP(host = Host("test.dsl.virtuslab.com")), l4 = TCP(Port(80)))
+      )
+    )
+
+    import iat.skuber.playjson._
+    import skuber.json.ext.format._
+
+    val ingress = gateway.interpret(ns).asJsValues.head
+
+    ingress.should(matchJsonString(yamlToJson(s"""
+        |apiVersion: networking.k8s.io/v1beta1
+        |kind: Ingress
+        |metadata:
+        |  name: external
+        |  namespace: ${ns.name}
+        |  labels:
+        |    name: external
+        |spec:
+        |  rules:
+        |  - host: test.dsl.virtuslab.com
+        |    http:
+        |      paths:
+        |      - path: /
+        |        backend:
+        |          serviceName: ???
+        |          servicePort: 80
+        |""".stripMargin)))
+  }
+}

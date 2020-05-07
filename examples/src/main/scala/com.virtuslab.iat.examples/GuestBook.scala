@@ -1,11 +1,11 @@
 package com.virtuslab.iat.examples
 
+import _root_.skuber.Resource.Quantity
+import _root_.skuber.{ Resource, Service }
+import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Connection, Container, Namespace, SelectedIPs }
 import com.virtuslab.iat.dsl.{ IP, Port }
-import com.virtuslab.iat.{ dsl, kubernetes }
-import skuber.Resource.Quantity
-import skuber.{ Resource, Service }
+import com.virtuslab.iat.kubernetes.dsl._
 
 object GuestBook extends SkuberApp with scala.App {
 
@@ -40,7 +40,7 @@ object GuestBook extends SkuberApp with scala.App {
     ) :: Nil
   )
 
-  import dsl.kubernetes.Connection.ops._
+  import iat.kubernetes.dsl.Connection.ops._
 
   // external traffic - from external sources
   val connExtFront = frontend
@@ -72,7 +72,7 @@ object GuestBook extends SkuberApp with scala.App {
     .egressOnly
     .named("redis-slave-k8s-dns")
 
-  import kubernetes.skuber.details._
+  import iat.skuber.details._
 
   val redisMasterDetails = resourceRequirements(
     Resource.Requirements(
@@ -108,7 +108,7 @@ object GuestBook extends SkuberApp with scala.App {
     serviceType(Service.Type.NodePort)
   )
 
-  import kubernetes.skuber.deployment._
+  import iat.skuber.deployment._
   import skuber.json.format._
 
   val ns: Seq[Summary] =

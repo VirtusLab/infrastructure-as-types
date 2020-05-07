@@ -42,7 +42,7 @@ abstract class SkuberApp {
 
   import scala.reflect.runtime.{ universe => ru }
   object Summary {
-    import com.virtuslab.iat.kubernetes.skuber.playjson.asYamlString
+    import com.virtuslab.iat.skuber.playjson.asYamlString
     import play.api.libs.functional.syntax._
     import skuber.api.client._
     import skuber.json.format._
