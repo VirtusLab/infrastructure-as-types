@@ -432,36 +432,11 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val ns = Namespace(Name("foo") :: Nil)
     val g1 = List(
-      Connection(
-        name = "allow-all-ingress",
-        resourceSelector = NoSelector,
-        ingress = AllowSelector,
-        egress = NoSelector
-      ),
-      Connection(
-        name = "default-deny-ingress",
-        resourceSelector = NoSelector,
-        ingress = DenySelector,
-        egress = NoSelector
-      ),
-      Connection(
-        name = "allow-all-egress",
-        resourceSelector = NoSelector,
-        ingress = NoSelector,
-        egress = AllowSelector
-      ),
-      Connection(
-        name = "default-deny-egress",
-        resourceSelector = NoSelector,
-        ingress = NoSelector,
-        egress = DenySelector
-      ),
-      Connection(
-        name = "default-deny-all",
-        resourceSelector = NoSelector,
-        ingress = DenySelector,
-        egress = DenySelector
-      ),
+      Connection.default.allowAllIngress,
+      Connection.default.denyAllIngress,
+      Connection.default.allowAllEgress,
+      Connection.default.denyAllEgress,
+      Connection.default.denyAll,
       Connection(
         name = "allow-ingress-to-nginx",
         resourceSelector = SelectedApplications(
@@ -524,16 +499,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             )
         ).ports(TCP(443))
       ),
-      Connection(
-        name = "default-deny-external-egress",
-        resourceSelector = NoSelector,
-        ingress = NoSelector,
-        egress = SelectedIPs(
-          IP.Range("10.0.0.0/8"),
-          IP.Range("172.16.0.0/12"),
-          IP.Range("192.168.0.0/16")
-        )
-      )
+      Connection.default.denyExternalEgress
     )
 
     import kubernetes.skuber.playjson._
@@ -546,16 +512,16 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
       .contain(
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-ingress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-allow-all-ingress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
-            |  name: allow-all-ingress
+            |  name: default-allow-all-ingress
             |  namespace: ${ns.name}
             |  labels:
-            |    name: allow-all-ingress
+            |    name: default-allow-all-ingress
             |spec:
             |  podSelector: {}
             |  ingress:
@@ -563,31 +529,31 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  policyTypes:
             |  - Ingress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-ingress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all-ingress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
-            |  name: default-deny-ingress
+            |  name: default-deny-all-ingress
             |  namespace: ${ns.name}
             |  labels:
-            |    name: default-deny-ingress
+            |    name: default-deny-all-ingress
             |spec:
             |  podSelector: {}
             |  policyTypes:
             |  - Ingress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-all-egress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-allow-all-egress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
-            |  name: allow-all-egress
+            |  name: default-allow-all-egress
             |  namespace: ${ns.name}
             |  labels:
-            |    name: allow-all-egress
+            |    name: default-allow-all-egress
             |spec:
             |  podSelector: {}
             |  egress:
@@ -595,16 +561,16 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-egress") ->
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all-egress") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
-            |  name: default-deny-egress
+            |  name: default-deny-all-egress
             |  namespace: ${ns.name}
             |  labels:
-            |    name: default-deny-egress
+            |    name: default-deny-all-egress
             |spec:
             |  podSelector: {}
             |  policyTypes:

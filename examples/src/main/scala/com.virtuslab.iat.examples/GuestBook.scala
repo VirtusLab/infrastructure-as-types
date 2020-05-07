@@ -1,7 +1,7 @@
 package com.virtuslab.iat.examples
 
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace, SelectedIPs }
+import com.virtuslab.iat.dsl.kubernetes.{ Application, Connection, Container, Namespace, SelectedIPs }
 import com.virtuslab.iat.dsl.{ IP, Port }
 import com.virtuslab.iat.{ dsl, kubernetes }
 import skuber.Resource.Quantity
@@ -51,7 +51,10 @@ object GuestBook extends SkuberApp with scala.App {
     .named("external-frontend")
 
   // internal traffic - between components
-  val connFrontRedis = frontend.communicatesWith(redisMaster).egressOnly.labeled(Name("front-redis") :: App("guestbook") :: Nil)
+  val connFrontRedis = frontend
+    .communicatesWith(redisMaster)
+    .egressOnly
+    .labeled(Name("front-redis") :: App("guestbook") :: Nil)
   val connRedisMS = redisMaster
     .communicatesWith(redisSlave)
     .labeled(Name("redis-master-slave") :: App("guestbook") :: Nil)
@@ -60,8 +63,14 @@ object GuestBook extends SkuberApp with scala.App {
     .labeled(Name("redis-slave-master") :: App("guestbook") :: Nil)
 
   // cluster traffic - to in-cluster services
-  val connFrontDns = frontend.communicatesWith(kubernetesDns).egressOnly.named("front-k8s-dns")
-  val connRedisSlaveDns = redisSlave.communicatesWith(kubernetesDns).egressOnly.named("redis-slave-k8s-dns")
+  val connFrontDns = frontend
+    .communicatesWith(kubernetesDns)
+    .egressOnly
+    .named("front-k8s-dns")
+  val connRedisSlaveDns = redisSlave
+    .communicatesWith(kubernetesDns)
+    .egressOnly
+    .named("redis-slave-k8s-dns")
 
   import kubernetes.skuber.details._
 
@@ -102,25 +111,27 @@ object GuestBook extends SkuberApp with scala.App {
   import kubernetes.skuber.deployment._
   import skuber.json.format._
 
-  val ns: Summary = guestbook.interpret.upsert.summary
+  val ns: Seq[Summary] =
+    guestbook.interpret.upsert.summary :: Nil
   val apps: Seq[Summary] = List(
-      redisMaster
-        .interpret(guestbook)
-        .map(redisMasterDetails),
-      redisSlave
-        .interpret(guestbook)
-        .map(redisSlaveDetails),
-      frontend
-        .interpret(guestbook)
-        .map(frontendDetails)
+    redisMaster
+      .interpret(guestbook)
+      .map(redisMasterDetails),
+    redisSlave
+      .interpret(guestbook)
+      .map(redisSlaveDetails),
+    frontend
+      .interpret(guestbook)
+      .map(frontendDetails)
     ).flatMap(_.upsert.summary)
 
   val conns: Seq[Summary] = List(
+    Connection.default.denyAll,
     connExtFront, connFrontRedis, connRedisMS,
     connRedisSM, connFrontDns, connRedisSlaveDns
   ).map(_.interpret(guestbook).upsert.summary)
 
-  (ns :: Nil ++ apps ++ conns).foreach(s => println(s.asString))
+  (ns ++ apps ++ conns).foreach(s => println(s.asString))
 
   // Cleanup
   close()

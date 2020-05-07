@@ -1,19 +1,20 @@
 package com.virtuslab.iat.kubernetes.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
-import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.kubernetes.{ Application, Container, Namespace, SelectedIPs }
-import com.virtuslab.iat.dsl.{ IP, Port }
+import com.virtuslab.iat.dsl.Label.{App, Name, Role, Tier}
+import com.virtuslab.iat.dsl.kubernetes.{Application, Connection, Container, Namespace, SelectedIPs}
+import com.virtuslab.iat.dsl.{IP, Port}
 import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes.Metadata
 import com.virtuslab.iat.test.EnsureMatchers
-import com.virtuslab.iat.{ dsl, kubernetes }
+import com.virtuslab.iat.{dsl, kubernetes}
 import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import play.api.libs.json.JsValue
 import skuber.Resource.Quantity
-import skuber.{ Resource, Service }
+import skuber.{Resource, Service}
 
 class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
 
@@ -61,7 +62,9 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       .named("external-frontend")
 
     // internal traffic - between components
-    val connFrontRedis = frontend.communicatesWith(redisMaster).egressOnly.labeled(Name("front-redis") :: App("guestbook") :: Nil)
+    val connFrontRedis = frontend
+      .communicatesWith(redisMaster)
+      .egressOnly.labeled(Name("front-redis") :: App("guestbook") :: Nil)
     val connRedisMS = redisMaster
       .communicatesWith(redisSlave)
       .labeled(Name("redis-master-slave") :: App("guestbook") :: Nil)
@@ -70,8 +73,14 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       .labeled(Name("redis-slave-master") :: App("guestbook") :: Nil)
 
     // cluster traffic - to in-cluster services
-    val connFrontDns = frontend.communicatesWith(kubernetesDns).egressOnly.named("front-k8s-dns")
-    val connRedisSlaveDns = redisSlave.communicatesWith(kubernetesDns).egressOnly.named("redis-slave-k8s-dns")
+    val connFrontDns = frontend
+      .communicatesWith(kubernetesDns)
+      .egressOnly
+      .named("front-k8s-dns")
+    val connRedisSlaveDns = redisSlave
+      .communicatesWith(kubernetesDns)
+      .egressOnly
+      .named("redis-slave-k8s-dns")
 
     import kubernetes.skuber.details._
 
@@ -112,14 +121,27 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
     import kubernetes.skuber.playjson._
     import skuber.json.format._
 
-    val resources =
-      guestbook.interpret.asMetaJsValues ++
-        redisMaster.interpret(guestbook).map(redisMasterDetails).reduce(_.asMetaJsValues) ++
-        redisSlave.interpret(guestbook).map(redisSlaveDetails).reduce(_.asMetaJsValues) ++
-        frontend.interpret(guestbook).map(frontendDetails).reduce(_.asMetaJsValues) ++
-        List(
-          connExtFront, connFrontRedis, connRedisMS, connRedisSM, connFrontDns, connRedisSlaveDns
-        ).flatMap(_.interpret(guestbook).asMetaJsValues)
+    val ns: Seq[(Metadata, JsValue)] =
+      guestbook.interpret.asMetaJsValues
+    val apps: Seq[(Metadata, JsValue)] = List(
+      redisMaster
+        .interpret(guestbook)
+        .map(redisMasterDetails),
+      redisSlave
+        .interpret(guestbook)
+        .map(redisSlaveDetails),
+      frontend
+        .interpret(guestbook)
+        .map(frontendDetails)
+    ).flatMap(_.reduce(_.asMetaJsValues))
+
+    val conns: Seq[(Metadata, JsValue)] = List(
+      Connection.default.denyAll,
+      connExtFront, connFrontRedis, connRedisMS,
+      connRedisSM, connFrontDns, connRedisSlaveDns
+    ).flatMap(_.interpret(guestbook).asMetaJsValues)
+
+    val resources = ns ++ apps ++ conns
 
     implicit val formats: Formats = JsonMethods.defaultFormats
 
@@ -340,6 +362,22 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    name: frontend
             |    app: guestbook
             |    tier: frontend
+            |""".stripMargin)),
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, "default-deny-all") ->
+          matchJsonString(yamlToJson(s"""
+            |---
+            |apiVersion: networking.k8s.io/v1
+            |kind: NetworkPolicy
+            |metadata:
+            |  name: default-deny-all
+            |  namespace: ${guestbook.name}
+            |  labels:
+            |    name: default-deny-all
+            |spec:
+            |  podSelector: {}
+            |  policyTypes:
+            |  - Ingress
+            |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connExtFront.name) -> matchJsonString(yamlToJson(s"""
             |---

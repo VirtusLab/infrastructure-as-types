@@ -60,10 +60,64 @@ object Connection {
     egress
   )
 
+  object default {
+    val allowAllIngress: Connection =
+      Connection(
+        name = "default-allow-all-ingress",
+        resourceSelector = NoSelector,
+        ingress = AllowSelector,
+        egress = NoSelector
+      )
+
+    val denyAllIngress: Connection =
+      Connection(
+        name = "default-deny-all-ingress",
+        resourceSelector = NoSelector,
+        ingress = DenySelector,
+        egress = NoSelector
+      )
+
+    val allowAllEgress: Connection =
+      Connection(
+        name = "default-allow-all-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = AllowSelector
+      )
+
+    val denyAllEgress: Connection =
+      Connection(
+        name = "default-deny-all-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = DenySelector
+      )
+
+    val denyAll: Connection =
+      Connection(
+        name = "default-deny-all",
+        resourceSelector = NoSelector,
+        ingress = DenySelector,
+        egress = DenySelector
+      )
+
+    val denyExternalEgress: Connection =
+      Connection(
+        name = "default-deny-external-egress",
+        resourceSelector = NoSelector,
+        ingress = NoSelector,
+        egress = SelectedIPs(
+          IP.Range("10.0.0.0/8"),
+          IP.Range("172.16.0.0/12"),
+          IP.Range("192.168.0.0/16")
+        )
+      )
+  }
+
   object ops {
     import Label.ops._
 
-    def kubernetesDns: NamespaceSelector =
+    val kubernetesDns: NamespaceSelector =
       SelectedNamespaces(
         expressions = Expressions((Name("kube-system") :: Nil).asExpressions: _*),
         protocols = Protocols(
@@ -72,11 +126,22 @@ object Connection {
         )
       )
 
-    def kubernetesApi: NamespaceSelector =
+    val kubernetesApi: NamespaceSelector =
       SelectedNamespaces(
         expressions = Expressions((Name("default") :: Nil).asExpressions: _*),
         protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
       )
+
+    val external443: SelectedIPsAndPorts =
+      SelectedIPs(
+        IP.Range("0.0.0.0/0")
+          .except(
+            IP.Range("0.0.0.0/8"),
+            IP.Range("10.0.0.0/8"),
+            IP.Range("172.16.0.0/12"),
+            IP.Range("192.168.0.0/16")
+          )
+      ).ports(TCP(443))
 
     def applicationLabeled(expressions: Expression*): ApplicationSelector =
       SelectedApplications(

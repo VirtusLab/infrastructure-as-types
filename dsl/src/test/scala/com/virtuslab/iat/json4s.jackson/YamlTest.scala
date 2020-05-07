@@ -17,7 +17,7 @@ class YamlTest extends AnyFlatSpec with Matchers with JsonMatchers {
       """apiVersion: networking.k8s.io/v1
         |kind: NetworkPolicy
         |metadata:
-        |  name: default-deny-ingress
+        |  name: default-deny-all-ingress
         |  namespace: advanced-policy-demo
         |spec:
         |  podSelector:
