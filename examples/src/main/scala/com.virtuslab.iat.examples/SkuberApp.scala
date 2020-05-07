@@ -19,7 +19,11 @@ abstract class SkuberApp {
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 
   private val kubeconfig: Configuration = api.Configuration.parseKubeconfigFile().get
-  private val ourContext: Context = kubeconfig.contexts("gke_infrastructure-as-types_us-central1-a_standard-cluster-1")
+  private val ourContext: Context = {
+    val contextName = Option(System.getenv("IAT_CLUSTER"))
+      .getOrElse("gke_infrastructure-as-types_us-central1-a_standard-cluster-1")
+    kubeconfig.contexts(contextName)
+  }
   private val configWithContext = kubeconfig.useContext(ourContext)
 
   implicit protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
