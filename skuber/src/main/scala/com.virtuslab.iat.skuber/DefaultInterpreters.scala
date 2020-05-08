@@ -3,13 +3,15 @@ package com.virtuslab.iat.skuber
 import _root_.skuber.apps.v1.Deployment
 import _root_.skuber.ext.Ingress
 import _root_.skuber.networking.NetworkPolicy
-import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Spec }
+import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer => SPeer, Spec }
 import _root_.skuber.{ ConfigMap, LabelSelector, ObjectMeta, Service, Namespace => SNamespace, Secret => SSecret }
-import com.virtuslab.iat.dsl.{ Label, _ }
-import com.virtuslab.iat.kubernetes.dsl._
+import com.virtuslab.iat
 
 trait DefaultInterpreters {
-  import Label.ops._
+  import iat.scala.ops._
+  import iat.dsl._
+  import iat.dsl.Label.ops._
+  import iat.kubernetes.dsl._
 
   implicit val namespaceInterpreter: Namespace => SNamespace =
     (ns: Namespace) =>
@@ -21,11 +23,8 @@ trait DefaultInterpreters {
       )
 
   implicit val applicationInterpreter: (Application, Namespace) => (Service, Deployment) =
-    (obj: Application, ns: Namespace) => {
-      val service = subinterpreter.serviceInterpreter(obj, ns)
-      val deployment = subinterpreter.deploymentInterpreter(obj, ns)
-      (service, deployment)
-    }
+    (subinterpreter.serviceInterpreter _)
+      .merge(subinterpreter.deploymentInterpreter)
 
   implicit val configurationInterpreter: (Configuration, Namespace) => ConfigMap =
     (obj: Configuration, ns: Namespace) => {
@@ -97,7 +96,7 @@ trait DefaultInterpreters {
               List(
                 IngressRule(
                   from = List(
-                    Peer(
+                    SPeer(
                       podSelector = Some(
                         LabelSelector(
                           subinterpreter.expressions(s.expressions): _*
@@ -116,7 +115,7 @@ trait DefaultInterpreters {
               List(
                 IngressRule(
                   from = List(
-                    Peer(
+                    SPeer(
                       podSelector = None,
                       namespaceSelector = Some(
                         LabelSelector(
@@ -155,7 +154,7 @@ trait DefaultInterpreters {
               List(
                 EgressRule(
                   to = List(
-                    Peer(
+                    SPeer(
                       podSelector = Some(
                         LabelSelector(
                           subinterpreter.expressions(s.expressions): _*
@@ -174,7 +173,7 @@ trait DefaultInterpreters {
               List(
                 EgressRule(
                   to = List(
-                    Peer(
+                    SPeer(
                       podSelector = None,
                       namespaceSelector = Some(
                         LabelSelector(

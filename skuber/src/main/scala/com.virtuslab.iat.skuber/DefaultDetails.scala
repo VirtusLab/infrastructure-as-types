@@ -1,10 +1,11 @@
 package com.virtuslab.iat.skuber
 
-import com.softwaremill.quicklens._
 import skuber.apps.v1.Deployment
 import skuber.{ Container, Resource, Service }
 
 trait DefaultDetails {
+  import com.softwaremill.quicklens._
+
   def resourceRequirements(r: Resource.Requirements): ((Service, Deployment)) => (Service, Deployment) =
     resourceRequirements(_ => true, r)
 
