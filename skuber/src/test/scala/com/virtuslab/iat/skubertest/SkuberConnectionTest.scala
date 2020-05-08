@@ -15,7 +15,7 @@ import org.scalatest.matchers.should.Matchers
 class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
 
   it should "allow to express connections between two namespaces" in {
-    import iat.kubernetes.dsl.Connection.ops._
+    import iat.kubernetes.dsl.ops._
 
     val frontendRole = Role("frontend")
     val frontend = Namespace(Name("frontend") :: frontendRole :: Nil)
@@ -346,7 +346,8 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
   }
 
   it should "allow to express complex customized connections" in {
-    import iat.kubernetes.dsl.Connection.ops._
+    import iat.kubernetes.dsl.ops._
+    import iat.kubernetes.dsl.Connection._
     import dsl.Expressions._
 
     val ns = Namespace(Name("foo") :: Nil)

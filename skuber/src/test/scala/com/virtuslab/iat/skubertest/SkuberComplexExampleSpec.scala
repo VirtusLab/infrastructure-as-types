@@ -68,7 +68,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       ) :: Nil
     )
 
-    import iat.kubernetes.dsl.Connection.ops._
+    import iat.kubernetes.dsl.ops._
 
     val connExtApi = api
       .communicatesWith(
@@ -88,7 +88,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     val resource = namespace.interpret.asMetaJsValues ++
       (api :: processor :: view :: cassandra :: postgres :: kafka :: Nil)
-        .flatMap(_.interpret(namespace).reduce(_.asMetaJsValues)) ++
+        .flatMap(_.interpret(namespace).asMetaJsValues) ++
       (connExtApi :: conApiKafka :: conApiView :: conViewPostgres :: conKafkaProcessor :: conProcessorCassandra :: Nil)
         .flatMap(_.interpret(namespace).asMetaJsValues)
 

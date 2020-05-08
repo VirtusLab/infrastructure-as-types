@@ -1,15 +1,10 @@
 package com.virtuslab.iat.openapi
 
-import com.virtuslab.iat.core.Transformer
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import org.json4s.JValue
 import org.json4s.JsonAST.JString
 
 trait JValueMetadataExtractor {
-
-  implicit def jvalueMetadataTransformer: Transformer[JValue, Either[String, Metadata]] =
-    (json: JValue) => extract(json)
-
   protected def extract(json: JValue): Either[String, Metadata] = {
     val apiVersion = json \ "apiVersion" match {
       case JString(apiVersion) => Right(apiVersion)

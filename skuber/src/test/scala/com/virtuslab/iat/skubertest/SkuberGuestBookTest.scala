@@ -49,7 +49,8 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       ) :: Nil
     )
 
-    import iat.kubernetes.dsl.Connection.ops._
+    import iat.kubernetes.dsl.ops._
+    import iat.kubernetes.dsl.Connection._
 
     // external traffic - from external sources
     val connExtFront = frontend
@@ -132,7 +133,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       frontend
         .interpret(guestbook)
         .map(frontendDetails)
-    ).flatMap(_.reduce(_.asMetaJsValues))
+    ).flatMap(_.asMetaJsValues)
 
     val conns: Seq[(Metadata, JsValue)] = List(
       Connection.default.denyAll,

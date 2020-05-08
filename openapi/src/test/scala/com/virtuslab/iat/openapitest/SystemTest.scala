@@ -3,37 +3,32 @@ package com.virtuslab.iat.openapitest
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Protocols
-import com.virtuslab.iat.json.json4s.jackson.JsonMethods
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
 import com.virtuslab.iat.kubernetes.dsl.{Application, Configuration, Gateway, Namespace}
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.json4s.jackson.JsonMatchers
-import org.json4s.Formats
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
-  implicit val formats: Formats = JsonMethods.defaultFormats
 
   it should "serialize Namespace to JSON" in {
-    import iat.openapi.interpreter._
-    import iat.openapi.json4s.InterpreterDerivation._
-    import iat.openapi.json4s._
+    val app1: Application = Application(Name("anApp") :: Nil)
+    val conf1: Configuration = Configuration(Name("aConf") :: Nil, Map())
+    val gw1: Gateway = Gateway(Name("aGate") :: Nil, Protocols.Any)
 
-    case class Group1(
-        app1: Application = Application(Name("anApp") :: Nil),
-        conf1: Configuration = Configuration(Name("aConf") :: Nil, Map()),
-        gw1: Gateway = Gateway(Name("aGate") :: Nil, Protocols.Any))
-
-    val g1 = Group1()
     val ns = Namespace(Name("theNamespace") :: Nil)
 
-    val js = interpret(ns) ++ interpret(g1, ns)
+    import iat.openapi.json4s._
+    val rs = ns.interpret.asMetaJValues ++
+      app1.interpret(ns).asMetaJValues ++
+      conf1.interpret(ns).asMetaJValues ++
+      gw1.interpret(ns).asMetaJValues
 
-    Ensure(asMetaJsonString(js.map(_.result)))
+    Ensure(rs)
       .contain(
-        Metadata("v1", "Namespace", "", ns.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "", ns.name) -> matchJson(yamlToJson(s"""
             |---
             |kind: Namespace
             |apiVersion: v1
@@ -42,51 +37,51 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
             |  labels:
             |    name: ${ns.name}
         """.stripMargin)),
-        Metadata("apps/v1", "Deployment", ns.name, g1.app1.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", ns.name, app1.name) -> matchJson(yamlToJson(s"""
             |---
             |kind: Deployment
             |apiVersion: apps/v1
             |metadata:
-            |  name: ${g1.app1.name}
+            |  name: ${app1.name}
             |  namespace: ${ns.name}
             |  labels:
-            |    name: ${g1.app1.name}
+            |    name: ${app1.name}
             |spec:
             |  template:
             |    spec:
             |      containers:
             |        - name: anApp
             |""".stripMargin)),
-        Metadata("v1", "Service", ns.name, g1.app1.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", ns.name, app1.name) -> matchJson(yamlToJson(s"""
              |kind: Service
              |apiVersion: v1
              |metadata:
-             |  name: ${g1.app1.name}
+             |  name: ${app1.name}
              |  namespace: ${ns.name}
              |  labels:
-             |    name: ${g1.app1.name}
+             |    name: ${app1.name}
              |spec: {}
              |""".stripMargin)),
-        Metadata("v1", "ConfigMap", ns.name, g1.conf1.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "ConfigMap", ns.name, conf1.name) -> matchJson(yamlToJson(s"""
              |---
              |kind: ConfigMap
              |apiVersion: v1
              |metadata:
-             |  name: ${g1.conf1.name}
+             |  name: ${conf1.name}
              |  namespace: ${ns.name}
              |  labels:
-             |    name: ${g1.conf1.name}
+             |    name: ${conf1.name}
              |data: {}
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1beta1", "Ingress", ns.name, g1.gw1.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1beta1", "Ingress", ns.name, gw1.name) -> matchJson(yamlToJson(s"""
              |---
              |kind: Ingress
              |apiVersion: networking.k8s.io/v1beta1
              |metadata:
-             |  name: ${g1.gw1.name}
+             |  name: ${gw1.name}
              |  namespace: ${ns.name}
              |  labels:
-             |    name: ${g1.gw1.name}
+             |    name: ${gw1.name}
              |""".stripMargin))
       )
   }

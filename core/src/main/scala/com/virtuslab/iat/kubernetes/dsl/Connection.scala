@@ -114,79 +114,43 @@ object Connection {
       )
   }
 
-  object ops {
-    import Label.ops._
+  import Label.ops._
 
-    val kubernetesDns: NamespaceSelector =
-      SelectedNamespaces(
-        expressions = Expressions((Name("kube-system") :: Nil).asExpressions: _*),
-        protocols = Protocols(
-          Protocol.Layers(l4 = UDP(53)),
-          Protocol.Layers(l4 = TCP(53))
-        )
+  val kubernetesDns: NamespaceSelector =
+    SelectedNamespaces(
+      expressions = Expressions((Name("kube-system") :: Nil).asExpressions: _*),
+      protocols = Protocols(
+        Protocol.Layers(l4 = UDP(53)),
+        Protocol.Layers(l4 = TCP(53))
       )
+    )
 
-    val kubernetesApi: NamespaceSelector =
-      SelectedNamespaces(
-        expressions = Expressions((Name("default") :: Nil).asExpressions: _*),
-        protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
-      )
+  val kubernetesApi: NamespaceSelector =
+    SelectedNamespaces(
+      expressions = Expressions((Name("default") :: Nil).asExpressions: _*),
+      protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
+    )
 
-    val external443: SelectedIPsAndPorts =
-      SelectedIPs(
-        IP.Range("0.0.0.0/0")
-          .except(
-            IP.Range("0.0.0.0/8"),
-            IP.Range("10.0.0.0/8"),
-            IP.Range("172.16.0.0/12"),
-            IP.Range("192.168.0.0/16")
-          )
-      ).ports(TCP(443))
-
-    def applicationLabeled(expressions: Expression*): ApplicationSelector =
-      SelectedApplications(
-        expressions = Expressions(expressions: _*),
-        protocols = Protocols.Any
-      )
-
-    def namespaceLabeled(expressions: Expression*): NamespaceSelector =
-      SelectedNamespaces(
-        expressions = Expressions(expressions: _*),
-        protocols = Protocols.Any
-      )
-
-    implicit class ApplicationConnectionOps(app: Application) {
-      def communicatesWith(other: Application): ConnectionBuilder = {
-        communicatesWith(
-          SelectedApplications(
-            Expressions(other.labels.asExpressions: _*),
-            Protocols.port(other.containers.flatMap(_.ports).map(TCP(_)): _*)
-          )
+  val external443: SelectedIPsAndPorts =
+    SelectedIPs(
+      IP.Range("0.0.0.0/0")
+        .except(
+          IP.Range("0.0.0.0/8"),
+          IP.Range("10.0.0.0/8"),
+          IP.Range("172.16.0.0/12"),
+          IP.Range("192.168.0.0/16")
         )
-      }
+    ).ports(TCP(443))
 
-      def communicatesWith(other: Namespace): ConnectionBuilder = {
-        communicatesWith(
-          SelectedNamespaces(
-            Expressions(other.labels.asExpressions: _*),
-            Protocols.Any
-          )
-        )
-      }
+  def applicationLabeled(expressions: Expression*): ApplicationSelector =
+    SelectedApplications(
+      expressions = Expressions(expressions: _*),
+      protocols = Protocols.Any
+    )
 
-      def communicatesWith(other: Selector): ConnectionBuilder = {
-        // FIXME: un-HACK-me, hardcoded TCP
-        val appPorts: Seq[Protocol.HasPort] = app.containers.flatMap(_.ports).map(TCP(_))
-        val appProtocols = Protocols.port(appPorts: _*)
-        ConnectionBuilder(
-          resourceSelector = SelectedApplications(
-            Expressions(app.labels.asExpressions: _*),
-            appProtocols
-          ),
-          ingress = other,
-          egress = other
-        )
-      }
-    }
-  }
+  def namespaceLabeled(expressions: Expression*): NamespaceSelector =
+    SelectedNamespaces(
+      expressions = Expressions(expressions: _*),
+      protocols = Protocols.Any
+    )
 }

@@ -11,7 +11,6 @@
   */
 package com.virtuslab.kubernetes.client.openapi.api
 
-import com.virtuslab.kubernetes.client.openapi.model._
 import org.json4s._
 import scala.reflect.ClassTag
 

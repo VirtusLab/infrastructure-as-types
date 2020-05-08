@@ -66,8 +66,9 @@ object CloudFileServer extends SkuberApp with App {
       app
         .interpret(ns)
         .map(appDetails)
-        .map(_.upsert)
-        .reduce(_.deinterpret.summary) :: Nil
+        .upsert
+        .deinterpret
+        .summary :: Nil
 
   results.foreach(s => println(s.asString))
 

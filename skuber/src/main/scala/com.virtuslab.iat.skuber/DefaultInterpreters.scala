@@ -3,9 +3,9 @@ package com.virtuslab.iat.skuber
 import _root_.skuber.apps.v1.Deployment
 import _root_.skuber.ext.Ingress
 import _root_.skuber.networking.NetworkPolicy
-import _root_.skuber.networking.NetworkPolicy.{EgressRule, IngressRule, Peer, Spec}
-import _root_.skuber.{ConfigMap, LabelSelector, ObjectMeta, Service, Namespace => SNamespace, Secret => SSecret}
-import com.virtuslab.iat.dsl.{Label, _}
+import _root_.skuber.networking.NetworkPolicy.{ EgressRule, IngressRule, Peer, Spec }
+import _root_.skuber.{ ConfigMap, LabelSelector, ObjectMeta, Service, Namespace => SNamespace, Secret => SSecret }
+import com.virtuslab.iat.dsl.{ Label, _ }
 import com.virtuslab.iat.kubernetes.dsl._
 
 trait DefaultInterpreters {

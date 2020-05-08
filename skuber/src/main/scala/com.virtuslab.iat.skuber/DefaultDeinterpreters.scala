@@ -1,9 +1,9 @@
 package com.virtuslab.iat.skuber
 
 import _root_.skuber.apps.v1.Deployment
-import _root_.skuber.{Service, Namespace => SNamespace}
+import _root_.skuber.{ Service, Namespace => SNamespace }
 import com.virtuslab.iat.dsl.Label
-import com.virtuslab.iat.kubernetes.dsl.{Application, Namespace}
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Namespace }
 
 trait DefaultDeinterpreters {
   import Label.ops._

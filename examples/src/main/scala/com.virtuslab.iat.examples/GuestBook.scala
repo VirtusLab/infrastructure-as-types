@@ -40,7 +40,8 @@ object GuestBook extends SkuberApp with scala.App {
     ) :: Nil
   )
 
-  import iat.kubernetes.dsl.Connection.ops._
+  import iat.kubernetes.dsl.ops._
+  import iat.kubernetes.dsl.Connection._
 
   // external traffic - from external sources
   val connExtFront = frontend

@@ -15,7 +15,7 @@ trait PlayJsonProcessors {
   def asMetadata[T <: ObjectResource](o: T): Metadata = Metadata(o.apiVersion, o.kind, o.ns, o.name)
   def asMetaJsValue[T <: ObjectResource: Writes](o: T): (Metadata, JsValue) = asMetadata(o) -> asJsValue(o)
 
-  implicit class ObjectResourceOps[A <: ObjectResource: Writes](a: A) {
+  implicit class ObjectResourceOps1[A <: ObjectResource: Writes](a: A) {
     def asJsValues: List[JsValue] = asJsValue(a) :: Nil
     def asMetaJsValues: List[(Metadata, JsValue)] = asMetaJsValue(a) :: Nil
   }
