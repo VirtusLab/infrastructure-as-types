@@ -20,7 +20,7 @@ case class Application(
   def allPorts: List[HasPort] = containers.flatMap(_.ports)
   override def expressions: Expressions = Expressions(labels.asExpressions.toSet)
   override def protocols: Protocols = Protocols.port(allPorts: _*)
-  override def identities: Identities = Identities.Any
+  override def identities: Identities = Identities(ClusterDNS(this))
 }
 
 case class Container(

@@ -8,11 +8,6 @@ trait Peer[A] { self: A =>
 }
 
 object Peer {
-  trait Type[A <: Peer[A]]
-  object Type {
-    case object Any extends Type[Peer.Any]
-    case class AType[A <: Peer[A]](r: A) extends Type[A]
-  }
   sealed trait Any extends Peer[Peer.Any]
   case object Any extends Any {
     override def expressions: Expressions = Expressions.Any
@@ -32,5 +27,5 @@ trait Traffic[A <: Peer[A], B <: Peer[B]] {
 }
 object Traffic {
   case class Ingress[A <: Peer[A], B <: Peer[B]](from: A, to: B) extends Traffic[A, B]
-  case class Egress[A <: Peer[A], B <: Peer[B]](to: B, from: A) extends Traffic[A, B]
+  case class Egress[A <: Peer[A], B <: Peer[B]](from: A, to: B) extends Traffic[A, B]
 }

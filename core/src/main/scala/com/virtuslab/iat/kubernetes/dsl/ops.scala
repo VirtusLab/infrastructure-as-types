@@ -1,15 +1,15 @@
 package com.virtuslab.iat.kubernetes.dsl
 
-import com.virtuslab.iat.dsl.{ Expressions, KeyValue, Label, Protocols }
+import com.virtuslab.iat.dsl.{ Expressions, KeyValue, Label, Peer, Protocols }
 import com.virtuslab.iat.kubernetes.dsl.Mountable.KeyValueMountableOps
 
 object ops {
   implicit class AKeyValueMountableOps[A <: KeyValue](val obj: A) extends KeyValueMountableOps[A]
 
-  implicit class ApplicationConnectionOps(app: Application) {
+  implicit class PeerConnectionOps[A](peer: Peer[A]) {
     import Label.ops._
 
-    def communicatesWith(other: Application): ConnectionBuilder = {
+    def communicatesWith[B](other: Peer[B]): ConnectionBuilder = {
       communicatesWith(
         SelectedApplications(
           other.expressions,
@@ -30,8 +30,8 @@ object ops {
     def communicatesWith(other: Selector): ConnectionBuilder = {
       ConnectionBuilder(
         resourceSelector = SelectedApplications(
-          app.expressions,
-          app.protocols
+          peer.expressions,
+          peer.protocols
         ),
         ingress = other,
         egress = other
