@@ -4,7 +4,7 @@ import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name }
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace, SelectedIPs }
-import com.virtuslab.iat.dsl.{ IP, Port }
+import com.virtuslab.iat.dsl.{ IP, Port, TCP }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
@@ -20,7 +20,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       Container(
         Name("api") :: Nil,
         image = "some.ecr.io/api:1.0",
-        ports = Port(80) :: Nil
+        ports = TCP(80) :: Nil
       ) :: Nil
     )
 
@@ -37,7 +37,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       Container(
         Name("api") :: Nil,
         image = "some.ecr.io/api:1.0",
-        ports = Port(8080) :: Nil
+        ports = TCP(8080) :: Nil
       ) :: Nil
     )
 
@@ -46,7 +46,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       Container(
         Name("cassandra") :: Nil,
         image = "some.ecr.io/cassandra:3.0",
-        ports = Port(6379) :: Nil //FIXME
+        ports = TCP(6379) :: Nil
       ) :: Nil
     )
 
@@ -55,7 +55,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       Container(
         Name("postgres") :: Nil,
         image = "some.ecr.io/postgres:10.12",
-        ports = Port(5432) :: Nil
+        ports = TCP(5432) :: Nil
       ) :: Nil
     )
 
@@ -64,7 +64,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       Container(
         Name("master") :: Nil,
         image = "some.ecr.io/kafka:2.5.0",
-        ports = Port(9092) :: Nil
+        ports = TCP(9092) :: Nil
       ) :: Nil
     )
 

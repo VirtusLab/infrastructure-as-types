@@ -4,7 +4,7 @@ import _root_.skuber.Resource.Quantity
 import _root_.skuber.{ Resource, Service }
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.{ IP, Port }
+import com.virtuslab.iat.dsl.{ IP, TCP }
 import com.virtuslab.iat.kubernetes.dsl._
 
 object GuestBook extends SkuberApp with scala.App {
@@ -16,7 +16,7 @@ object GuestBook extends SkuberApp with scala.App {
     Container(
       Name("master") :: Nil,
       image = "k8s.gcr.io/redis:e2e",
-      ports = Port(6379) :: Nil
+      ports = TCP(6379) :: Nil
     ) :: Nil
   )
 
@@ -25,7 +25,7 @@ object GuestBook extends SkuberApp with scala.App {
     Container(
       Name("slave") :: Nil,
       image = "gcr.io/google_samples/gb-redisslave:v3",
-      ports = Port(6379) :: Nil,
+      ports = TCP(6379) :: Nil,
       envs = "GET_HOSTS_FROM" -> "dns" :: Nil
     ) :: Nil
   )
@@ -35,13 +35,13 @@ object GuestBook extends SkuberApp with scala.App {
     Container(
       Name("php-redis") :: Nil,
       image = "gcr.io/google-samples/gb-frontend:v4",
-      ports = Port(80) :: Nil,
+      ports = TCP(80) :: Nil,
       envs = "GET_HOSTS_FROM" -> "dns" :: Nil
     ) :: Nil
   )
 
-  import iat.kubernetes.dsl.ops._
   import iat.kubernetes.dsl.Connection._
+  import iat.kubernetes.dsl.ops._
 
   // external traffic - from external sources
   val connExtFront = frontend

@@ -1,6 +1,6 @@
 package com.virtuslab.iat.kubernetes.dsl
 
-import com.virtuslab.iat.dsl.{ Expressions, KeyValue, Label, Protocol, Protocols, TCP }
+import com.virtuslab.iat.dsl.{ Expressions, KeyValue, Label, Protocols }
 import com.virtuslab.iat.kubernetes.dsl.Mountable.KeyValueMountableOps
 
 object ops {
@@ -12,8 +12,8 @@ object ops {
     def communicatesWith(other: Application): ConnectionBuilder = {
       communicatesWith(
         SelectedApplications(
-          Expressions(other.labels.asExpressions: _*),
-          Protocols.port(other.containers.flatMap(_.ports).map(TCP(_)): _*)
+          other.expressions,
+          other.protocols
         )
       )
     }
@@ -28,13 +28,10 @@ object ops {
     }
 
     def communicatesWith(other: Selector): ConnectionBuilder = {
-      // FIXME: un-HACK-me, hardcoded TCP
-      val appPorts: Seq[Protocol.HasPort] = app.containers.flatMap(_.ports).map(TCP(_))
-      val appProtocols = Protocols.port(appPorts: _*)
       ConnectionBuilder(
         resourceSelector = SelectedApplications(
-          Expressions(app.labels.asExpressions: _*),
-          appProtocols
+          app.expressions,
+          app.protocols
         ),
         ingress = other,
         egress = other

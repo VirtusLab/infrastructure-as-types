@@ -1,12 +1,12 @@
 package com.virtuslab.iat.dsl
 
 trait Peer[A] { self: A =>
-  def `type`: Class[A] = self.getClass.asInstanceOf[Class[A]]
   def expressions: Expressions
   def protocols: Protocols
   def identities: Identities
-  def transform[B <: Peer[A]](f: Peer[A] => B): B = f(this)
+  def transform[B <: Peer[B]](f: Peer[A] => Peer[B]): Peer[B] = f(this)
 }
+
 object Peer {
   trait Type[A <: Peer[A]]
   object Type {
@@ -15,7 +15,6 @@ object Peer {
   }
   sealed trait Any extends Peer[Peer.Any]
   case object Any extends Any {
-    override def `type`: Class[Peer.Any] = Peer.Any.getClass.asInstanceOf[Class[Peer.Any]]
     override def expressions: Expressions = Expressions.Any
     override def protocols: Protocols = Protocols.Any
     override def identities: Identities = Identities.Any

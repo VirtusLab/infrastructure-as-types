@@ -3,8 +3,7 @@ package com.virtuslab.iat.skubertest
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.Port
-import com.virtuslab.iat.dsl.Port.NamedPort
+import com.virtuslab.iat.dsl.TCP
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
@@ -21,7 +20,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
       Container(
         Name("app") :: Nil,
         image = "image-app-one",
-        ports = Port(9090) :: Nil
+        ports = TCP(9090) :: Nil
       ) :: Nil
     )
 
@@ -30,7 +29,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
       Container(
         Name("app") :: Nil,
         image = "image-app-two",
-        ports = NamedPort("http-port", 9090) :: Nil
+        ports = TCP("http-port", 9090) :: Nil
       ) :: Nil
     )
 

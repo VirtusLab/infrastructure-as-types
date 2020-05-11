@@ -3,8 +3,8 @@ package com.virtuslab.iat.skuber
 import _root_.skuber.apps.v1.Deployment
 import _root_.skuber.networking.NetworkPolicy.{ IPBlock, Peer, Port => SPort }
 import _root_.skuber.{ EnvVar, LabelSelector, ObjectMeta, Pod, Service, Volume, Container => SContainer, Protocol => SProtocol }
-import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.Port._
+import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.kubernetes.dsl._
 
 trait DefaultSubinterpreters {
@@ -26,8 +26,8 @@ trait DefaultSubinterpreters {
         )
       )
     )
-    obj.containers
-      .flatMap(_.ports)
+    obj.allPorts
+      .map(_.port)
       .foldLeft(svc) {
         case (svc, NamedPort(name, number)) =>
           svc.exposeOnPort(
@@ -84,7 +84,7 @@ trait DefaultSubinterpreters {
       env = c.envs.map { env =>
         EnvVar(env._1, EnvVar.StringValue(env._2))
       },
-      ports = c.ports.flatMap {
+      ports = c.ports.map(_.port).flatMap {
         case NamedPort(name, number) => SContainer.Port(containerPort = number, name = name) :: Nil
         case APort(number)           => SContainer.Port(containerPort = number) :: Nil
         case _                       => Nil

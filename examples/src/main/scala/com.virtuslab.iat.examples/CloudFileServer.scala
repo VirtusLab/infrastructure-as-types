@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.Port
+import com.virtuslab.iat.dsl.{ Port, TCP }
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Container, Namespace }
 import skuber.Resource
 
@@ -37,7 +37,7 @@ object CloudFileServer extends SkuberApp with App {
       image = "quay.io/virtuslab/cloud-file-server:v0.0.6",
       command = List("cloud-file-server"),
       args = List("--config", "/opt/config.yaml"),
-      ports = Port(8080) :: Nil
+      ports = TCP(8080) :: Nil
     ) :: Nil,
     configurations = conf :: Nil,
     mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
@@ -45,7 +45,7 @@ object CloudFileServer extends SkuberApp with App {
 
   import iat.skuber.details._
   val appDetails = resourceRequirements(
-    _.name == "app",
+    filter = _.name == "app",
     Resource.Requirements(
       requests = Map(
         "cpu" -> "100m",

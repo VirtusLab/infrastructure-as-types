@@ -5,7 +5,7 @@ import _root_.skuber.{ Resource, Service }
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.{ IP, Port }
+import com.virtuslab.iat.dsl.{ IP, Port, TCP }
 import com.virtuslab.iat.kubernetes.dsl._
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
@@ -25,7 +25,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       Container(
         Name("master") :: Nil,
         image = "k8s.gcr.io/redis:e2e",
-        ports = Port(6379) :: Nil
+        ports = TCP(6379) :: Nil
       ) :: Nil
     )
 
@@ -34,7 +34,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       Container(
         Name("slave") :: Nil,
         image = "gcr.io/google_samples/gb-redisslave:v3",
-        ports = Port(6379) :: Nil,
+        ports = TCP(6379) :: Nil,
         envs = "GET_HOSTS_FROM" -> "dns" :: Nil
       ) :: Nil
     )
@@ -44,7 +44,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       Container(
         Name("php-redis") :: Nil,
         image = "gcr.io/google-samples/gb-frontend:v4",
-        ports = Port(80) :: Nil,
+        ports = TCP(80) :: Nil,
         envs = "GET_HOSTS_FROM" -> "dns" :: Nil
       ) :: Nil
     )

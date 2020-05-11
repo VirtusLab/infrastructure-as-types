@@ -1,5 +1,7 @@
 package com.virtuslab.iat.dsl
 
+import com.virtuslab.iat.dsl.Port.NamedPort
+
 trait Protocol
 
 object Protocol {
@@ -92,11 +94,13 @@ object IP {
 case class UDP(port: Port) extends Protocol.UDP
 object UDP {
   def apply(number: Int): UDP = UDP(Port(number))
+  def apply(name: String, number: Int): UDP = UDP(NamedPort(name, number))
 }
 
 case class TCP(port: Port) extends Protocol.TCP
 object TCP {
   def apply(number: Int): TCP = TCP(Port(number))
+  def apply(name: String, number: Int): TCP = TCP(NamedPort(name, number))
 }
 
 // TODO TLS

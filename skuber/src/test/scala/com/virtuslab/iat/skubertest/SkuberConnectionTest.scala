@@ -34,7 +34,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       Container(
         Name("app") :: Nil,
         image = "image-app-one",
-        ports = Port(9090) :: Nil
+        ports = TCP(9090) :: Nil
       ) :: Nil
     )
     val app2 = Application(
@@ -42,7 +42,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       Container(
         Name("app") :: Nil,
         image = "image-app-two",
-        ports = Port(9090) :: Nil
+        ports = TCP(9090) :: Nil
       ) :: Nil
     )
     val connApp1 = app1.communicatesWith(backend).named("app1-backend-app1")
