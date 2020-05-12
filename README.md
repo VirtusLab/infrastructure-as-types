@@ -2,6 +2,9 @@
 Infrastructure as Types project provides tools for micro-system infrastructure development.
 
 ## The Problem
+With trends of moving complexity of non-functional requirements out of the application code,
+and creating smaller and smaller micro or even nano-services,
+we need tools to tackle the old and new complexity.
 
 Main problems we want to solve:
 - help manage inherent complexity and avoid accidental complexity
