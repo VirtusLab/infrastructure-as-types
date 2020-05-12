@@ -1,6 +1,14 @@
 # Infrastructure as Types
 Infrastructure as Types project provides tools for micro-system infrastructure development.
 
+## The Problem
+
+Main problems we want to solve:
+- address the definition scalability issues of hundreds of interdependent YAMLs
+- allow for refactoring safer than untyped, text heavy YAML
+- effortless security rules, based on strongly typed code
+- allow to tackle the complexity that comes with service mesh's and ingress controllers
+
 ## Vision
 
 Use your language to express it all.
