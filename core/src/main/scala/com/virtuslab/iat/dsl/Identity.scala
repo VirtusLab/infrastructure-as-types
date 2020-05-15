@@ -16,6 +16,10 @@ object Identities {
   case object Any extends Any {
     def identities: Set[Identity] = Set(Identity.Any)
   }
+  sealed trait None extends Identities
+  case object None extends None {
+    override def identities: Set[Identity] = Set()
+  }
   case class Some(identities: Set[Identity]) extends Identities
 
   def apply(identities: Set[Identity]): Identities = Some(identities)

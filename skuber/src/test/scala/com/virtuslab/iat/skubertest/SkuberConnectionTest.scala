@@ -2,10 +2,11 @@ package com.virtuslab.iat.skubertest
 
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
-import com.virtuslab.iat.dsl
 import com.virtuslab.iat.dsl.Label.{ Name, Role, UntypedLabel }
+import com.virtuslab.iat.dsl.Peer.Selected
+import com.virtuslab.iat.dsl.Traffic.Ingress
 import com.virtuslab.iat.dsl._
-import com.virtuslab.iat.kubernetes.dsl._
+import com.virtuslab.iat.kubernetes.dsl.{ NetworkPolicy, _ }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
@@ -15,7 +16,7 @@ import org.scalatest.matchers.should.Matchers
 class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
 
   it should "allow to express connections between two namespaces" in {
-    import iat.kubernetes.dsl.ops._
+    import iat.kubernetes.dsl.NetworkPolicy._
 
     val frontendRole = Role("frontend")
     val frontend = Namespace(Name("frontend") :: frontendRole :: Nil)
@@ -256,7 +257,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |      name: app-one
           |      role: frontend
           |  ingress:
-          |  - from:
+          |  - ports:
+          |    - port: 9090
+          |      protocol: TCP
+          |    from:
           |    - namespaceSelector:
           |        matchLabels:
           |          name: backend
@@ -346,9 +350,8 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
   }
 
   it should "allow to express complex customized connections" in {
-    import iat.kubernetes.dsl.ops._
-    import iat.kubernetes.dsl.Connection._
-    import dsl.Expressions._
+    import iat.dsl.Expressions.ops._
+    import iat.kubernetes.dsl.NetworkPolicy._
 
     val ns = Namespace(Name("foo") :: Nil)
     val app1 = Application(
@@ -359,36 +362,20 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     val conn1 = app1
       .communicatesWith(namespaceLabeled("role".is("backend")))
       .named("app1-backend")
-      .patch { c =>
-        c.copy(
-          resourceSelector = SelectedApplications(
-            c.resourceSelector.expressions,
-            c.resourceSelector.protocols
-          ),
-          ingress = SelectedApplications(
-            c.ingress.expressions,
-            c.ingress.protocols
-          ),
-          egress = SelectedApplications(
-            c.egress.expressions,
-            c.egress.protocols
-          )
-        )
+      .transform { c =>
+        c.peer.reference.communicatesWith(applicationLabeled(c.other.expressions)).labeled(c.labels)
       }
-      .patch { c =>
-        Connection(
-          labels = (Name("custom-name") :: UntypedLabel("tier", "top") :: Nil) ++ app1.labels.tail,
-          c.resourceSelector,
-          c.ingress,
-          c.egress
+      .patch(
+        _.copy(
+          labels = (Name("custom-name") :: UntypedLabel("tier", "top") :: Nil) ++ app1.labels.tail
         )
-      }
+      )
 
     import iat.skuber.playjson._
     import skuber.json.format._
 
     val resources =
-      app1.interpret(ns).reduce(_.asMetaJsValues) ++
+      app1.interpret(ns).asMetaJsValues ++
         conn1.interpret(ns).asMetaJsValues
 
     Ensure(resources)
@@ -427,86 +414,96 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
   }
 
   it should "allow for external connections" in {
-    import dsl.Expressions._
+    import iat.dsl.Expressions.ops._
 
     val ns = Namespace(Name("foo") :: Nil)
-    val g1 = List(
-      Connection.default.allowAllIngress,
-      Connection.default.denyAllIngress,
-      Connection.default.allowAllEgress,
-      Connection.default.denyAllEgress,
-      Connection.default.denyAll,
-      Connection(
-        name = "allow-ingress-to-nginx",
-        resourceSelector = SelectedApplications(
-          expressions = Expressions("run" is "nginx"),
-          protocols = Protocols.Any
-        ),
-        ingress = AllApplications,
-        egress = NoSelector
-      ),
-      Connection(
-        name = "allow-egress-to-nginx",
-        resourceSelector = NoSelector,
-        ingress = NoSelector,
-        egress = SelectedApplications(
-          expressions = Expressions("run" is "nginx"),
-          protocols = Protocols.Any
-        )
-      ),
-      Connection(
-        name = "allow-dns-access",
-        resourceSelector = NoSelector,
-        ingress = NoSelector,
-        egress = SelectedNamespaces(
-          expressions = Expressions((Name("kube-system") :: Nil).map(n => Expressions.IsEqualExpression(n.key, n.value)): _*),
-          protocols = Protocols(Protocol.Layers(l4 = UDP(53)))
-        )
-      ),
-      Connection(
-        name = "allow-kubernetes-access",
-        resourceSelector = AllApplications,
-        ingress = NoSelector,
-        egress = SelectedNamespaces(
-          expressions = Expressions((Name("default") :: Nil).map(n => Expressions.IsEqualExpression(n.key, n.value)): _*),
-          protocols = Protocols(Protocol.Layers(l4 = TCP(443)))
-        )
-      ),
-      Connection(
-        name = "complex-ip-exclude",
-        resourceSelector = SelectedApplications(
-          expressions = Expressions("app" is "akka-cluster-demo"),
-          protocols = Protocols.Any
-        ),
-        ingress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))),
-        egress = SelectedIPs(IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11")))
-      ),
-      Connection(
-        name = "egress-external-tcp-443",
-        resourceSelector = SelectedApplications(
-          expressions = Expressions("external-egress.monzo.com/443" is "true"),
-          protocols = Protocols.Any
-        ),
-        ingress = NoSelector,
-        egress = SelectedIPs(
-          IP.Range("0.0.0.0/0")
-            .except(
-              IP.Range("0.0.0.0/8"),
-              IP.Range("10.0.0.0/8"),
-              IP.Range("172.16.0.0/12"),
-              IP.Range("192.168.0.0/16")
-            )
-        ).ports(TCP(443))
-      ),
-      Connection.default.denyExternalEgress
+    /*
+    val connNginxFromApps = NetworkPolicy(
+      Peer.Any,
+      Selected[Application](
+        expressions = Expressions("run" is "nginx"),
+        protocols = Protocols.Any,
+        identities = Identities.Any
+      )
+    ).ingressOnly.named("allow-ingress-to-nginx")
+     */ /*
+    val peer = Peer.Any
+    val other = Selected[Application](
+      expressions = Expressions("run" is "nginx"),
+      protocols = Protocols.Any,
+      identities = Identities.Any
     )
+    val connNginxFromApps = NetworkPolicy(
+      Name("allow-ingress-to-nginx") :: Nil,
+      peer,
+      other,
+      Some(Ingress(other, peer)),
+      None
+    )*/
+
+    val connAppsToNginx = NetworkPolicy(
+      Peer.Any,
+      Selected[Application](
+        expressions = Expressions("run" is "nginx"),
+        protocols = Protocols.Any,
+        identities = Identities.Any
+      )
+    ).egressOnly.named("allow-egress-to-nginx")
+
+    val connToCoreDns = NetworkPolicy(
+      Peer.Any,
+      NetworkPolicy.kubernetesDns
+    ).egressOnly.named("allow-dns-access")
+
+    val connToK8s = NetworkPolicy(
+      Peer.Any,
+      NetworkPolicy.kubernetesApi
+    ).egressOnly.named("allow-kubernetes-access")
+
+    val connBiWithExclude = NetworkPolicy(
+      SelectedIPs(
+        IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))
+      ).withExpressions(Expressions("app" is "akka-cluster-demo")),
+      SelectedIPs(
+        IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))
+      ).withExpressions(Expressions("app" is "akka-cluster-demo"))
+    ).named("complex-ip-exclude")
+
+    val connExternal443 = NetworkPolicy(
+      Selected[Application](
+        expressions = Expressions("external-egress.monzo.com/443" is "true"),
+        protocols = Protocols.Any,
+        identities = Identities.Any
+      ),
+      SelectedIPs(
+        IP.Range("0.0.0.0/0")
+          .except(
+            IP.Range("0.0.0.0/8"),
+            IP.Range("10.0.0.0/8"),
+            IP.Range("172.16.0.0/12"),
+            IP.Range("192.168.0.0/16")
+          )
+      ).withPorts(TCP(443))
+    ).egressOnly.named("egress-external-tcp-443")
 
     import iat.skuber.playjson._
     import skuber.json.format._
 
     val resources =
-      ns.interpret.asMetaJsValues ++
-        g1.flatMap(_.interpret(ns).asMetaJsValues)
+      ns.interpret.asMetaJsValues ++ List(
+        NetworkPolicy.default.allowAllIngress.interpret(ns),
+        NetworkPolicy.default.denyAllIngress.interpret(ns),
+        NetworkPolicy.default.allowAllEgress.interpret(ns),
+        NetworkPolicy.default.denyAllEgress.interpret(ns),
+        NetworkPolicy.default.denyAll.interpret(ns),
+        NetworkPolicy.default.denyExternalEgress.interpret(ns),
+//        connNginxFromApps.interpret(ns),
+        connAppsToNginx.interpret(ns),
+        connToCoreDns.interpret(ns),
+        connToK8s.interpret(ns),
+        connBiWithExclude.interpret(ns),
+        connExternal443.interpret(ns)
+      ).flatMap(_.asMetaJsValues)
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
@@ -591,7 +588,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Ingress
             |  - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
+        /*        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
           matchJsonString(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
@@ -610,7 +607,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |    - podSelector: {}
             |  policyTypes:
             |  - Ingress
-            |""".stripMargin)),
+            |""".stripMargin)),*/
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
           matchJsonString(yamlToJson(s"""
             |apiVersion: networking.k8s.io/v1

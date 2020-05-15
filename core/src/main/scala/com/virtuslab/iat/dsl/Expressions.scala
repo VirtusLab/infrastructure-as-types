@@ -1,9 +1,10 @@
 package com.virtuslab.iat.dsl
 
-import com.virtuslab.iat.dsl.Expressions.Expression
+import com.virtuslab.iat.dsl.Expressions.{ ExistsExpression, Expression, InExpression, IsEqualExpression, IsNotEqualExpression, NotExistsExpression, NotInExpression }
 
 trait Expressions {
   def expressions: Set[Expression]
+  def merge(other: Expressions): Expressions = Expressions(expressions ++ other.expressions)
 }
 
 object Expressions {
@@ -12,6 +13,10 @@ object Expressions {
 
   sealed trait Any extends Expressions
   case object Any extends Any {
+    override def expressions: Set[Expression] = Set()
+  }
+  sealed trait None extends Expressions
+  case object None extends None {
     override def expressions: Set[Expression] = Set()
   }
   case class Some(expressions: Set[Expression]) extends Expressions {
@@ -55,6 +60,10 @@ object Expressions {
     override def toString: String = key + " notin " + valuesAsString
   }
 
+  object ops extends ExpressionsOps
+}
+
+trait ExpressionsOps {
   import scala.language.implicitConversions
 
   //noinspection TypeAnnotation

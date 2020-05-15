@@ -16,6 +16,13 @@ trait Patchable[A] { self: A =>
   def patch(f: A => A): A = f(self)
 }
 
-trait Interpretable[A] { self: A =>
+trait Transformable[A] { self: A =>
+  def transform[B](f: A => B): B = f(self)
+}
+
+trait Interpretable[A] extends Reference[A] { self: A =>
+}
+
+trait Reference[A] { self: A =>
   def reference: A = self
 }

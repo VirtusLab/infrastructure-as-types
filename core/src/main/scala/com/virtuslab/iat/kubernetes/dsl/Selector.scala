@@ -2,54 +2,47 @@ package com.virtuslab.iat.kubernetes.dsl
 
 import com.virtuslab.iat.dsl._
 
-trait Selector {
-  def expressions: Expressions
-  def protocols: Protocols
-}
-
-sealed trait NamespaceSelector extends Selector
-case class SelectedNamespaces(expressions: Expressions, protocols: Protocols) extends NamespaceSelector
-case object AllNamespaces extends NamespaceSelector {
-  override def expressions: Expressions = Expressions()
-  override def protocols: Protocols = Protocols()
-}
-
-sealed trait ApplicationSelector extends Selector
-case class SelectedApplications(expressions: Expressions, protocols: Protocols) extends ApplicationSelector
-case object AllApplications extends ApplicationSelector {
-  override def expressions: Expressions = Expressions()
-  override def protocols: Protocols = Protocols()
-}
-
-case object DenySelector extends Selector {
-  override def expressions: Expressions = Expressions.Any
-  override def protocols: Protocols = Protocols()
-}
-
-case object AllowSelector extends Selector {
-  override def expressions: Expressions = Expressions.Any
-  override def protocols: Protocols = Protocols()
-}
-
-case object NoSelector extends Selector {
-  override def expressions: Expressions = Expressions.Any
-  override def protocols: Protocols = Protocols()
-}
-
-case class SelectedIPs(ips: Protocol.HasCidr*) extends Selector with CIDRs {
-  override def expressions: Expressions = Expressions.Any
+case class SelectedIPs(
+    ips: Seq[Protocol.HasCidr],
+    expressions: Expressions,
+    identities: Identities)
+  extends Peer[SelectedIPs]
+  with CIDRs {
   override def protocols: Protocols = Protocols.cidr(ips: _*)
 
-  def ports(ports: Protocol.HasPort*): SelectedIPsAndPorts = SelectedIPsAndPorts(ips, ports)
+  def withExpressions(expressions: Expressions): SelectedIPs = this.copy(expressions = expressions.merge(this.expressions))
+  def withIdentities(identities: Identities): SelectedIPs = this.copy(identities = identities.merge(this.identities))
+  def withPorts(ports: Protocol.HasPort*): SelectedIPsAndPorts = SelectedIPsAndPorts(ips, ports, expressions, identities)
 }
 
-case class SelectedPorts(ports: Seq[Protocol.HasPort]) extends Selector with Ports {
-  override def expressions: Expressions = Expressions.Any
+object SelectedIPs {
+  def apply(ips: Protocol.HasCidr*): SelectedIPs = SelectedIPs(ips, Expressions.Any, Identities.Any)
+}
+
+case class SelectedPorts(
+    ports: Seq[Protocol.HasPort],
+    expressions: Expressions,
+    identities: Identities)
+  extends Peer[SelectedPorts]
+  with Ports {
   override def protocols: Protocols = Protocols.port(ports: _*)
-  def apply(ports: Protocol.HasPort*): SelectedPorts = SelectedPorts(ports)
+
+  def withExpressions(expressions: Expressions): SelectedPorts = this.copy(expressions = expressions.merge(this.expressions))
+  def withIdentities(identities: Identities): SelectedPorts = this.copy(identities = identities.merge(this.identities))
+  def withIPs(ips: Protocol.HasCidr*): SelectedIPsAndPorts = SelectedIPsAndPorts(ips, ports, expressions, identities)
 }
 
-case class SelectedIPsAndPorts(ips: Seq[Protocol.HasCidr], ports: Seq[Protocol.HasPort]) extends Selector with CIDRs with Ports {
-  override def expressions: Expressions = Expressions.Any
+object SelectedPorts {
+  def apply(ports: Protocol.HasPort*): SelectedPorts = SelectedPorts(ports, Expressions.Any, Identities.Any)
+}
+
+case class SelectedIPsAndPorts(
+    ips: Seq[Protocol.HasCidr],
+    ports: Seq[Protocol.HasPort],
+    expressions: Expressions,
+    identities: Identities)
+  extends Peer[SelectedIPsAndPorts]
+  with CIDRs
+  with Ports {
   override def protocols: Protocols = Protocols.cidr(ips: _*).merge(Protocols.port(ports: _*))
 }

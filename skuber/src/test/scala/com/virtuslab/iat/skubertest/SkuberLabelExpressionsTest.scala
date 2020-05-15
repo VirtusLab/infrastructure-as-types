@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers
 import skuber.LabelSelector._
 
 class SkuberLabelExpressionsTest extends AnyFlatSpec with Matchers {
-  import com.virtuslab.iat.dsl.Expressions._
+  import com.virtuslab.iat.dsl.Expressions.ops._
 
   import scala.language.postfixOps
 

@@ -49,13 +49,12 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       ) :: Nil
     )
 
-    import iat.kubernetes.dsl.ops._
-    import iat.kubernetes.dsl.Connection._
+    import iat.kubernetes.dsl.NetworkPolicy._
 
     // external traffic - from external sources
     val connExtFront = frontend
       .communicatesWith(
-        SelectedIPs(IP.Range("0.0.0.0/0")).ports(frontend.allPorts: _*)
+        SelectedIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
       )
       .ingressOnly
       .named("external-frontend")
@@ -136,10 +135,14 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
     ).flatMap(_.asMetaJsValues)
 
     val conns: Seq[(Metadata, JsValue)] = List(
-      Connection.default.denyAll,
-      connExtFront, connFrontRedis, connRedisMS,
-      connRedisSM, connFrontDns, connRedisSlaveDns
-    ).flatMap(_.interpret(guestbook).asMetaJsValues)
+      NetworkPolicy.default.denyAll.interpret(guestbook),
+      connExtFront.interpret(guestbook),
+      connFrontRedis.interpret(guestbook),
+      connRedisMS.interpret(guestbook),
+      connRedisSM.interpret(guestbook),
+      connFrontDns.interpret(guestbook),
+      connRedisSlaveDns.interpret(guestbook)
+    ).flatMap(_.asMetaJsValues)
 
     val resources = ns ++ apps ++ conns
 

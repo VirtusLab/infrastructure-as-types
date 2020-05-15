@@ -40,13 +40,13 @@ object GuestBook extends SkuberApp with scala.App {
     ) :: Nil
   )
 
-  import iat.kubernetes.dsl.Connection._
+  import iat.kubernetes.dsl.NetworkPolicy._
   import iat.kubernetes.dsl.ops._
 
   // external traffic - from external sources
   val connExtFront = frontend
     .communicatesWith(
-      SelectedIPs(IP.Range("0.0.0.0/0")).ports(frontend.allPorts: _*)
+      SelectedIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
     )
     .ingressOnly
     .named("external-frontend")
@@ -127,10 +127,14 @@ object GuestBook extends SkuberApp with scala.App {
     ).flatMap(_.upsert.summary)
 
   val conns: Seq[Summary] = List(
-    Connection.default.denyAll,
-    connExtFront, connFrontRedis, connRedisMS,
-    connRedisSM, connFrontDns, connRedisSlaveDns
-  ).map(_.interpret(guestbook).upsert.summary)
+    NetworkPolicy.default.denyAll.interpret(guestbook),
+    connExtFront.interpret(guestbook),
+    connFrontRedis.interpret(guestbook),
+    connRedisMS.interpret(guestbook),
+    connRedisSM.interpret(guestbook),
+    connFrontDns.interpret(guestbook),
+    connRedisSlaveDns.interpret(guestbook)
+  ).map(_.upsert.summary)
 
   (ns ++ apps ++ conns).foreach(s => println(s.asString))
 

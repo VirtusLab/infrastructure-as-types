@@ -3,8 +3,8 @@ package com.virtuslab.iat.skubertest
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name }
+import com.virtuslab.iat.dsl.{ IP, TCP }
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace, SelectedIPs }
-import com.virtuslab.iat.dsl.{ IP, Port, TCP }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
@@ -68,11 +68,11 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
       ) :: Nil
     )
 
-    import iat.kubernetes.dsl.ops._
+    import iat.kubernetes.dsl.NetworkPolicy._
 
     val connExtApi = api
       .communicatesWith(
-        SelectedIPs(IP.Range("0.0.0.0/0")).ports(api.allPorts: _*)
+        SelectedIPs(IP.Range("0.0.0.0/0")).withPorts(api.allPorts: _*)
       )
       .ingressOnly
       .named("external-api")
@@ -87,10 +87,16 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
     import skuber.json.format._
 
     val resource = namespace.interpret.asMetaJsValues ++
-      (api :: processor :: view :: cassandra :: postgres :: kafka :: Nil)
+      List(api, processor, view, cassandra, postgres, kafka)
         .flatMap(_.interpret(namespace).asMetaJsValues) ++
-      (connExtApi :: conApiKafka :: conApiView :: conViewPostgres :: conKafkaProcessor :: conProcessorCassandra :: Nil)
-        .flatMap(_.interpret(namespace).asMetaJsValues)
+      List(
+        connExtApi.interpret(namespace),
+        conApiKafka.interpret(namespace),
+        conApiView.interpret(namespace),
+        conViewPostgres.interpret(namespace),
+        conKafkaProcessor.interpret(namespace),
+        conProcessorCassandra.interpret(namespace)
+      ).flatMap(_.asMetaJsValues)
 
     Ensure(resource)
       .contain(
@@ -522,7 +528,10 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      name: kafka-node
              |      app: kafka
              |  ingress:
-             |  - from:
+             |  - ports:
+             |    - port: 9092
+             |      protocol: TCP
+             |    from:
              |    - podSelector:
              |        matchLabels:
              |          name: processor

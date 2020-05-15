@@ -166,6 +166,10 @@ object Protocols {
   case object Any extends Any {
     override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
   }
+  sealed trait None extends Protocols
+  case object None extends None {
+    override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
+  }
 
   case class Selected(protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]) extends Protocols
 
