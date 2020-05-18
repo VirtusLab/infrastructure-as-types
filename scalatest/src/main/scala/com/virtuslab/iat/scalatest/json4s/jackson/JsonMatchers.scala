@@ -3,9 +3,7 @@ package com.virtuslab.iat.scalatest.json4s.jackson
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization.write
 import org.json4s.{ Diff, Formats, JValue }
-import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers._
-import org.scalatest.matchers.should.Matchers
 
 import scala.util.Try
 
@@ -21,10 +19,10 @@ trait JsonMatchers {
     }
 
   def matchJson(right: String)(implicit formats: Formats): Matcher[JValue] =
-    Matcher[JValue] { leftJson =>
+    Matcher[JValue] { left =>
       Try(parse(right)).toOption match {
-        case Some(rightJson) => matchJson(rightJson)(formats)(leftJson)
-        case _               => cantParseResult(write(leftJson), right)
+        case Some(rightJson) => matchJson(rightJson)(formats)(left)
+        case _               => cantParseResult(write(left), right)
       }
     }
 
@@ -61,6 +59,11 @@ trait JsonMatchers {
     args = IndexedSeq(left.trim, right.trim)
   )
 }
+
+object JsonMatchers extends JsonMatchers
+
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 class JsonSpec extends AnyFreeSpec with Matchers with JsonMatchers {
 

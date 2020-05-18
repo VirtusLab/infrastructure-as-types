@@ -1,12 +1,12 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name }
 import com.virtuslab.iat.dsl.{ IP, TCP }
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace, Select }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -100,7 +100,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     Ensure(resource)
       .contain(
-        Metadata("v1", "Namespace", "default", "reactive-system") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", "reactive-system") -> matchJson(yamlToJson(s"""
              |---
              |kind: Namespace
              |apiVersion: v1
@@ -109,7 +109,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  labels:
              |    name: reactive-system
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "api") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "api") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -128,7 +128,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  type: ClusterIP
              |  sessionAffinity: None
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "api") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "api") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -157,7 +157,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "processor") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "processor") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -173,7 +173,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  sessionAffinity: None
              |
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "processor") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "processor") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -199,7 +199,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "view") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "view") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -218,7 +218,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  type: ClusterIP
              |  sessionAffinity: None
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "view") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "view") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -247,7 +247,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "cassandra-node") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "cassandra-node") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -268,7 +268,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  type: ClusterIP
              |  sessionAffinity: None
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "cassandra-node") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "cassandra-node") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -300,7 +300,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "postgres") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "postgres") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -321,7 +321,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  type: ClusterIP
              |  sessionAffinity: None
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "postgres") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "postgres") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -353,7 +353,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("v1", "Service", "reactive-system", "kafka-node") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", "reactive-system", "kafka-node") -> matchJson(yamlToJson(s"""
              |---
              |kind: Service
              |apiVersion: v1
@@ -374,7 +374,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  type: ClusterIP
              |  sessionAffinity: None
              |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", "reactive-system", "kafka-node") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", "reactive-system", "kafka-node") -> matchJson(yamlToJson(s"""
              |---
              |kind: Deployment
              |apiVersion: apps/v1
@@ -406,7 +406,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |      restartPolicy: Always
              |      dnsPolicy: ClusterFirst
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "external-api") -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "external-api") -> matchJson(yamlToJson(s"""
              |---
              |kind: NetworkPolicy
              |apiVersion: networking.k8s.io/v1
@@ -429,7 +429,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  policyTypes:
              |  - Ingress
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "api-kafka") -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "api-kafka") -> matchJson(yamlToJson(s"""
              |---
              |kind: NetworkPolicy
              |apiVersion: networking.k8s.io/v1
@@ -464,7 +464,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  - Ingress
              |  - Egress
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "api-kafka") -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "api-kafka") -> matchJson(yamlToJson(s"""
              |---
              |kind: NetworkPolicy
              |apiVersion: networking.k8s.io/v1
@@ -488,7 +488,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  policyTypes:
              |  - Egress
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "view-postgres") -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "view-postgres") -> matchJson(yamlToJson(s"""
              |---
              |kind: NetworkPolicy
              |apiVersion: networking.k8s.io/v1
@@ -513,7 +513,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  policyTypes:
              |  - Egress
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "kafka-processor") -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "kafka-processor") -> matchJson(yamlToJson(s"""
              |---
              |kind: NetworkPolicy
              |apiVersion: networking.k8s.io/v1
@@ -538,7 +538,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
              |  policyTypes:
              |  - Ingress
              |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "processor-cassandra") -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "reactive-system", "processor-cassandra") -> matchJson(
           yamlToJson(s"""
              |---
              |kind: NetworkPolicy

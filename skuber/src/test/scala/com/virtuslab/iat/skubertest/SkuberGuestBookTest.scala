@@ -2,13 +2,13 @@ package com.virtuslab.iat.skubertest
 
 import _root_.skuber.Resource.Quantity
 import _root_.skuber.{ Resource, Service }
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
 import com.virtuslab.iat.dsl.{ IP, TCP }
 import com.virtuslab.iat.kubernetes.dsl._
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -148,7 +148,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
 
     Ensure(resources)
       .contain(
-        Metadata("v1", "Namespace", "default", guestbook.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", guestbook.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: v1
             |kind: Namespace
@@ -157,7 +157,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |  labels:
             |    name: ${guestbook.name}
             |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", guestbook.name, redisMaster.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", guestbook.name, redisMaster.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: apps/v1
             |kind: Deployment
@@ -199,7 +199,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |      restartPolicy: Always
             |      dnsPolicy: ClusterFirst
             |""".stripMargin)),
-        Metadata("v1", "Service", guestbook.name, redisMaster.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", guestbook.name, redisMaster.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: v1
             |kind: Service
@@ -224,7 +224,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    role: master
             |    tier: backend
             |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", guestbook.name, redisSlave.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", guestbook.name, redisSlave.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: apps/v1
             |kind: Deployment
@@ -270,7 +270,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |      restartPolicy: Always
             |      dnsPolicy: ClusterFirst
             |""".stripMargin)),
-        Metadata("v1", "Service", guestbook.name, redisSlave.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", guestbook.name, redisSlave.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: v1
             |kind: Service
@@ -295,7 +295,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    role: slave
             |    tier: backend
             |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", guestbook.name, frontend.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", guestbook.name, frontend.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: apps/v1
             |kind: Deployment
@@ -337,7 +337,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |      restartPolicy: Always
             |      dnsPolicy: ClusterFirst
             |""".stripMargin)),
-        Metadata("v1", "Service", guestbook.name, frontend.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", guestbook.name, frontend.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: v1
             |kind: Service
@@ -365,7 +365,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    tier: frontend
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, "default-deny-all") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -380,7 +380,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |  - Ingress
             |  - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connExtFront.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connExtFront.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -405,7 +405,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |  policyTypes:
             |    - Ingress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontRedis.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontRedis.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -435,7 +435,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |  policyTypes:
             |    - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisMS.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisMS.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -478,7 +478,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    - Ingress
             |    - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSM.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSM.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -521,7 +521,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    - Ingress
             |    - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontDns.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connFrontDns.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -549,7 +549,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |  policyTypes:
             |  - Egress
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSlaveDns.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", guestbook.name, connRedisSlaveDns.name) -> matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy

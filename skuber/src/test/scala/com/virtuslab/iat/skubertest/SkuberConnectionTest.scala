@@ -1,6 +1,5 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ Name, Role, UntypedLabel }
 import com.virtuslab.iat.dsl._
@@ -8,6 +7,7 @@ import com.virtuslab.iat.kubernetes.dsl.Select.Selected
 import com.virtuslab.iat.kubernetes.dsl.{ NetworkPolicy, _ }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -62,7 +62,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     Ensure(resources)
       .contain(
-        Metadata("v1", "Namespace", "default", frontend.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", frontend.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -72,7 +72,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |    name: ${frontend.name}
           |    role: frontend
           |""".stripMargin)),
-        Metadata("v1", "Namespace", "default", backend.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", backend.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Namespace
           |apiVersion: v1
@@ -82,7 +82,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |    name: ${backend.name}
           |    role: backend
           |""".stripMargin)),
-        Metadata("v1", "Service", frontend.name, app1.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", frontend.name, app1.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Service
           |apiVersion: v1
@@ -103,7 +103,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        Metadata("v1", "Service", frontend.name, app2.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", frontend.name, app2.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Service
           |apiVersion: v1
@@ -124,7 +124,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        Metadata("v1", "Service", backend.name, app3.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", backend.name, app3.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Service
           |apiVersion: v1
@@ -141,7 +141,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |  type: ClusterIP
           |  sessionAffinity: None
           |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", backend.name, app3.name) -> matchJsonString(
+        Metadata("apps/v1", "Deployment", backend.name, app3.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: Deployment
@@ -172,7 +172,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        Metadata("apps/v1", "Deployment", frontend.name, app2.name) -> matchJsonString(
+        Metadata("apps/v1", "Deployment", frontend.name, app2.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: Deployment
@@ -206,7 +206,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        Metadata("apps/v1", "Deployment", frontend.name, app1.name) -> matchJsonString(
+        Metadata("apps/v1", "Deployment", frontend.name, app1.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: Deployment
@@ -240,7 +240,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)
         ),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", frontend.name, connApp1.name) -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", frontend.name, connApp1.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: NetworkPolicy
@@ -275,7 +275,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |  - Egress
           |""".stripMargin)
         ),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "backend", connApp3.name) -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "backend", connApp3.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: NetworkPolicy
@@ -307,7 +307,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
           |  - Egress
           |""".stripMargin)
         ),
-        Metadata("networking.k8s.io/v1", "NetworkPolicy", "frontend", connApp1app2.name) -> matchJsonString(
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", "frontend", connApp1app2.name) -> matchJson(
           yamlToJson(s"""
           |---
           |kind: NetworkPolicy
@@ -384,7 +384,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "custom-name") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |kind: NetworkPolicy
             |apiVersion: networking.k8s.io/v1
@@ -509,7 +509,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       .ignore(_.kind != "NetworkPolicy")
       .contain(
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-allow-all-ingress") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -526,7 +526,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Ingress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all-ingress") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -541,7 +541,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Ingress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-allow-all-egress") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -558,7 +558,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all-egress") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -573,7 +573,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-all") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -609,7 +609,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Ingress
             |""".stripMargin)),*/
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
             |metadata:
@@ -630,7 +630,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-dns-access") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -653,7 +653,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-kubernetes-access") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -676,7 +676,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "complex-ip-exclude") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -706,7 +706,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Egress
             |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "egress-external-tcp-443") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy
              |metadata:
@@ -734,7 +734,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
              |  - Egress
              |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "default-deny-external-egress") ->
-          matchJsonString(yamlToJson(s"""
+          matchJson(yamlToJson(s"""
              |apiVersion: networking.k8s.io/v1
              |kind: NetworkPolicy
              |metadata:

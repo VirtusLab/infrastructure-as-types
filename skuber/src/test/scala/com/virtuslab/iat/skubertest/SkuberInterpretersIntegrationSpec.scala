@@ -1,12 +1,12 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.TCP
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -47,7 +47,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
 
     Ensure(resources)
       .contain(
-        Metadata("v1", "Service", ns.name, "app-one") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", ns.name, "app-one") -> matchJson(yamlToJson(s"""
           |---
           |apiVersion: v1
           |kind: Service
@@ -66,7 +66,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |    targetPort: 9090
           |  sessionAffinity: None
           |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", ns.name, "app-one") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", ns.name, "app-one") -> matchJson(yamlToJson(s"""
           |---
           |apiVersion: apps/v1
           |kind: Deployment
@@ -95,7 +95,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)),
-        Metadata("v1", "Service", ns.name, "app-two") -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Service", ns.name, "app-two") -> matchJson(yamlToJson(s"""
           |---
           |apiVersion: v1
           |kind: Service
@@ -115,7 +115,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |  selector:
           |    name: app-two
           |""".stripMargin)),
-        Metadata("apps/v1", "Deployment", ns.name, "app-two") -> matchJsonString(yamlToJson(s"""
+        Metadata("apps/v1", "Deployment", ns.name, "app-two") -> matchJson(yamlToJson(s"""
           |---
           |kind: Deployment
           |apiVersion: apps/v1
@@ -145,7 +145,7 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
           |      restartPolicy: Always
           |      dnsPolicy: ClusterFirst
           |""".stripMargin)),
-        Metadata("v1", "Namespace", "default", ns.name) -> matchJsonString(yamlToJson(s"""
+        Metadata("v1", "Namespace", "default", ns.name) -> matchJson(yamlToJson(s"""
           |---
           |kind: Namespace
           |apiVersion: v1

@@ -1,10 +1,10 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ Name, UntypedLabel }
 import com.virtuslab.iat.kubernetes.dsl.{ Configuration, Namespace }
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -23,7 +23,7 @@ class SkuberConfigurationInterpreterSpec extends AnyFlatSpec with Matchers with 
 
     val config = conf.interpret(ns).asJsValues.head
 
-    config.should(matchJsonString(yamlToJson(s"""
+    config.should(matchJson(yamlToJson(s"""
       |---
       |kind: ConfigMap
       |apiVersion: v1

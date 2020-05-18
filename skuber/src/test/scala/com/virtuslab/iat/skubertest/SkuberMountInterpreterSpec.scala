@@ -2,11 +2,11 @@ package com.virtuslab.iat.skubertest
 
 import java.nio.file.Path
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.kubernetes.dsl.Secret
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -30,7 +30,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
 
     import skuber.json.format._
-    asJsonString(volume).should(matchJson("""
+    asJsValue(volume).should(matchJson("""
         |{
         |  "name" : "test-mount",
         |  "configMap" : {
@@ -39,7 +39,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
         |}
         |""".stripMargin))
 
-    asJsonString(volumeMount).should(matchJson("""
+    asJsValue(volumeMount).should(matchJson("""
         |{
         |  "name" : "test-mount",
         |  "mountPath" : "/opt/foo.txt",
@@ -70,7 +70,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
 
     import skuber.json.format._
-    asJsonString(volume).should(matchJson("""
+    asJsValue(volume).should(matchJson("""
         |{
         |  "name" : "test-secret-mount",
         |  "secret" : {
@@ -78,7 +78,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
         |  }
         |}
         |""".stripMargin))
-    asJsonString(volumeMount).should(matchJson("""
+    asJsValue(volumeMount).should(matchJson("""
         |{
         |  "name" : "test-secret-mount",
         |  "mountPath" : "/opt/test-secret.txt",

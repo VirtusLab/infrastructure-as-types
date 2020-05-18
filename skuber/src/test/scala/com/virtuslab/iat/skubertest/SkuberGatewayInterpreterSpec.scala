@@ -1,12 +1,12 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.HTTP.Host
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.kubernetes.dsl.{ Gateway, Namespace }
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,7 +27,7 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
 
     val ingress = gateway.interpret(ns).asJsValues.head
 
-    ingress.should(matchJsonString(yamlToJson(s"""
+    ingress.should(matchJson(yamlToJson(s"""
         |apiVersion: networking.k8s.io/v1beta1
         |kind: Ingress
         |metadata:

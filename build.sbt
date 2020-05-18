@@ -42,8 +42,7 @@ lazy val skuber = (project in file("skuber"))
     libraryDependencies ++= Seq(
       "io.skuber" %% "skuber" % "2.4.0",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
-      "com.softwaremill.quicklens" %% "quicklens" % "1.5.0",
-      "com.stephenn" %% "scalatest-play-json" % "0.0.3" % Test
+      "com.softwaremill.quicklens" %% "quicklens" % "1.5.0"
     ),
     scalacOptions ++= Seq("-deprecation"),
     scalafmtOnCompile := true
@@ -74,6 +73,8 @@ lazy val scalatest = (project in file("scalatest"))
       "org.scalatest" %% "scalatest" % "3.1.0",
       "org.json4s" %% "json4s-jackson" % "3.6.7",
       "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
+      "com.typesafe.play" %% "play-json" % "2.8.1",
+      "org.gnieh" %% "diffson-play-json" % "4.0.2"
     ),
     scalacOptions ++= Seq("-deprecation"),
     scalafmtOnCompile := true

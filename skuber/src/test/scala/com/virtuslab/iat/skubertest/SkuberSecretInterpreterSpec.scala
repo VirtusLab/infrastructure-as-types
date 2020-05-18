@@ -1,10 +1,10 @@
 package com.virtuslab.iat.skubertest
 
-import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.kubernetes.dsl.{ Namespace, Secret }
 import com.virtuslab.iat.scalatest.EnsureMatchers
+import com.virtuslab.iat.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -20,7 +20,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
 
     val secret = sec.interpret(ns).asJsValues.head
 
-    secret.should(matchJsonString(yamlToJson(s"""
+    secret.should(matchJson(yamlToJson(s"""
         |---
         |kind: Secret
         |apiVersion: v1
@@ -41,7 +41,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
 
     val secret = sec.interpret(ns).asJsValues.head
 
-    secret.should(matchJsonString(yamlToJson(s"""
+    secret.should(matchJson(yamlToJson(s"""
        |---
        |kind: Secret
        |apiVersion: v1
