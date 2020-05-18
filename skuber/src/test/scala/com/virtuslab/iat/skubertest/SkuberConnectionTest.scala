@@ -3,7 +3,6 @@ package com.virtuslab.iat.skubertest
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ Name, Role, UntypedLabel }
 import com.virtuslab.iat.dsl._
-import com.virtuslab.iat.kubernetes.dsl.Select.Selected
 import com.virtuslab.iat.kubernetes.dsl.{ NetworkPolicy, _ }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
@@ -363,10 +362,6 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
         Select.withType[Namespace].withExpressions("role".is("backend"))
       )
       .named("app1-backend")
-      .transform { c: NetworkPolicy =>
-        c.copy()
-      //communicatesWith(applicationLabeled(c.other.expressions)).labeled(c.labels)
-      }
       .patch(
         _.copy(
           labels = (Name("custom-name") :: UntypedLabel("tier", "top") :: Nil) ++ app1.labels.tail
@@ -400,12 +395,12 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |      name: app-one
             |  ingress:
             |  - from:
-            |    - podSelector:
+            |    - namespaceSelector:
             |        matchLabels:
             |          role: backend
             |  egress:
             |  - to:
-            |    - podSelector:
+            |    - namespaceSelector:
             |        matchLabels:
             |          role: backend
             |  policyTypes:
@@ -421,20 +416,16 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val ns = Namespace(Name("foo") :: Nil)
 
-    val connNginxFromApps = Select.any
-      .communicatesWith(
-        Select.withType[Application].withExpressions("run" is "nginx")
-      )
+    val connNginxFromApps = Select
+      .withType[Application]
+      .withExpressions("run" is "nginx")
+      .communicatesWith(Select.any)
       .ingressOnly
       .named("allow-ingress-to-nginx")
 
     val connAppsToNginx = Select.any
       .communicatesWith(
-        Selected[Application](
-          expressions = Expressions("run" is "nginx"),
-          protocols = Protocols.Any,
-          identities = Identities.Any
-        )
+        Select.withType[Application].withExpressions("run" is "nginx")
       )
       .egressOnly
       .named("allow-egress-to-nginx")
@@ -588,8 +579,8 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |  - Ingress
             |  - Egress
             |""".stripMargin)),
-        /*        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
-          matchJsonString(yamlToJson(s"""
+        Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-ingress-to-nginx") ->
+          matchJson(yamlToJson(s"""
             |---
             |apiVersion: networking.k8s.io/v1
             |kind: NetworkPolicy
@@ -603,11 +594,10 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |    matchLabels:
             |      run: nginx
             |  ingress:
-            |  - from:
-            |    - podSelector: {}
+            |  - {}
             |  policyTypes:
             |  - Ingress
-            |""".stripMargin)),*/
+            |""".stripMargin)),
         Metadata("networking.k8s.io/v1", "NetworkPolicy", ns.name, "allow-egress-to-nginx") ->
           matchJson(yamlToJson(s"""
             |apiVersion: networking.k8s.io/v1
@@ -648,6 +638,8 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |          name: kube-system
             |    ports:
             |    - protocol: UDP
+            |      port: 53
+            |    - protocol: TCP
             |      port: 53
             |  policyTypes:
             |  - Egress

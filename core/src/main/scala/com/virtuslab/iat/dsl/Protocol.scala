@@ -158,8 +158,8 @@ object HTTP {
 
 trait Protocols {
   def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
-  def ports: Set[Protocol.HasPort] = protocols.collect { case p: Protocol.HasPort => p }
-  def cidrs: Set[Protocol.HasCidr] = protocols.collect { case p: Protocol.HasCidr => p }
+  def ports: Set[Protocol.HasPort] = protocols.map(_.l4).collect { case p: Protocol.HasPort => p }
+  def cidrs: Set[Protocol.HasCidr] = protocols.map(_.l3).collect { case p: Protocol.HasCidr => p }
   def merge(other: Protocols): Protocols = Protocols.Selected(protocols ++ other.protocols)
 }
 

@@ -18,10 +18,8 @@ object Traffic {
   case class Ingress[A <: Selection[A], B <: Peer[B]](from: Selection[A], to: Peer[B])
     extends Traffic[A, B]
     with Patchable[Ingress[A, B]]
-    with Transformable[Ingress[A, B]]
 
   case class Egress[A <: Peer[A], B <: Selection[B]](from: Peer[A], to: Selection[B])
     extends Traffic[A, B]
     with Patchable[Egress[A, B]]
-    with Transformable[Egress[A, B]]
 }

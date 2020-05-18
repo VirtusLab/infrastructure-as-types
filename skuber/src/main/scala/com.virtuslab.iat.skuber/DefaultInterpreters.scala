@@ -84,8 +84,9 @@ trait DefaultInterpreters {
           SNetworkPolicy.Spec(
             podSelector = LabelSelector(subinterpreter.expressions(obj.podSelector): _*),
             ingress = obj.ingress.flatMap {
-              case DenyIngressRule  => Nil
-              case AllowIngressRule => SNetworkPolicy.IngressRule() :: Nil
+              case DenyIngressRule => Nil
+              case AllowIngressRule(protocols) =>
+                SNetworkPolicy.IngressRule(ports = subinterpreter.ports(protocols)) :: Nil
               case IngressRule(from, protocols) =>
                 SNetworkPolicy.IngressRule(
                   from = from.map {
@@ -112,8 +113,11 @@ trait DefaultInterpreters {
                 ) :: Nil
             },
             egress = obj.egress.flatMap {
-              case DenyEgressRule  => Nil
-              case AllowEgressRule => SNetworkPolicy.EgressRule() :: Nil
+              case DenyEgressRule => Nil
+              case AllowEgressRule(protocols) =>
+                SNetworkPolicy.EgressRule(
+                  ports = subinterpreter.ports(protocols)
+                ) :: Nil
               case EgressRule(to, protocols) =>
                 SNetworkPolicy.EgressRule(
                   to = to.map {

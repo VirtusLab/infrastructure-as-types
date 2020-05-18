@@ -16,13 +16,12 @@ case class NetworkPolicy(
   extends Labeled
   with Named
   with Patchable[NetworkPolicy]
-  with Transformable[NetworkPolicy]
   with Interpretable[NetworkPolicy]
 
 object NetworkPolicy {
   sealed trait RuleIngress
   final object DenyIngressRule extends RuleIngress
-  final object AllowIngressRule extends RuleIngress
+  final case class AllowIngressRule(protocols: Protocols) extends RuleIngress
   final case class IngressRule(from: List[RulePeer], protocols: Protocols) extends RuleIngress
   object IngressRule {
     def apply[A, B](
@@ -34,7 +33,7 @@ object NetworkPolicy {
 
   sealed trait RuleEgress
   final object DenyEgressRule extends RuleEgress
-  final object AllowEgressRule extends RuleEgress
+  final case class AllowEgressRule(protocols: Protocols) extends RuleEgress
   final case class EgressRule(to: List[RulePeer], protocols: Protocols) extends RuleEgress
   object EgressRule {
     def apply[A, B](
@@ -96,22 +95,22 @@ object NetworkPolicy {
       def communicatesWith(other: IsApplication): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other.selection, other.selection.rules),
-        EgressRule(peer, other.selection, peer.rules)
+        EgressRule(peer, other.selection, other.selection.rules)
       )
       def communicatesWith(other: IsNamespace): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other.selection, other.selection.rules),
-        EgressRule(peer, other.selection, peer.rules)
+        EgressRule(peer, other.selection, other.selection.rules)
       )
       def communicatesWith(other: Selected.Any): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other, other.rules),
-        EgressRule(peer, other, peer.rules)
+        EgressRule(peer, other, other.rules)
       )
       def communicatesWith(other: Selected.None): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other, other.rules),
-        EgressRule(peer, other, peer.rules)
+        EgressRule(peer, other, other.rules)
       )
     }
 
@@ -119,22 +118,22 @@ object NetworkPolicy {
       def communicatesWith(other: IsApplication): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other.selection, other.selection.rules),
-        EgressRule(peer, other.selection, peer.rules)
+        EgressRule(peer, other.selection, other.selection.rules)
       )
       def communicatesWith(other: IsNamespace): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other.selection, other.selection.rules),
-        EgressRule(peer, other.selection, peer.rules)
+        EgressRule(peer, other.selection, other.selection.rules)
       )
       def communicatesWith(other: Selected.Any): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other, other.rules),
-        EgressRule(peer, other, peer.rules)
+        EgressRule(peer, other, other.rules)
       )
       def communicatesWith(other: Selected.None): Builder = Builder(
         peer.expressions,
         IngressRule(peer, other, other.rules),
-        EgressRule(peer, other, peer.rules)
+        EgressRule(peer, other, other.rules)
       )
     }
   }
@@ -147,7 +146,7 @@ object NetworkPolicy {
       NetworkPolicy
         .ingressOnly(
           Expressions.Any,
-          AllowIngressRule :: Nil
+          AllowIngressRule(Protocols.Any) :: Nil
         )
         .named("default-allow-all-ingress")
 
@@ -163,7 +162,7 @@ object NetworkPolicy {
       NetworkPolicy
         .egressOnly(
           Expressions.Any,
-          AllowEgressRule :: Nil
+          AllowEgressRule(Protocols.Any) :: Nil
         )
         .named("default-allow-all-egress")
 
@@ -190,6 +189,7 @@ object NetworkPolicy {
           IP.Range("192.168.0.0/16")
         )
       )
+      .egressOnly
       .named("default-deny-external-egress")
   }
 

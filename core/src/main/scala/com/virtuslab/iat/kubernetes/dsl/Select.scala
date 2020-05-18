@@ -9,8 +9,7 @@ object Select {
       protocols: Protocols = Protocols.Any,
       identities: Identities = Identities.Any)
     extends Selection[A]
-    with Patchable[Selected[A]]
-    with Transformable[Selected[A]] {
+    with Patchable[Selected[A]] {
     def withExpressions(expressions: Expressions): Selected[A] = this.copy(expressions = this.expressions.merge(expressions))
     def withExpressions(expressions: Expression*): Selected[A] =
       this.copy(expressions = this.expressions.merge(Expressions(expressions: _*)))
