@@ -1,9 +1,11 @@
 package com.virtuslab.iat.skuber
 
 import _root_.skuber.apps.v1.Deployment
-import _root_.skuber.networking.NetworkPolicy.{ IPBlock, Peer, Port => SPort }
+import _root_.skuber.networking.NetworkPolicy.{ IPBlock, Port => SPort }
 import _root_.skuber.{ EnvVar, LabelSelector, ObjectMeta, Pod, Service, Volume, Container => SContainer, Protocol => SProtocol }
+import com.virtuslab.iat.dsl.IP.CIDR
 import com.virtuslab.iat.dsl.Port._
+import com.virtuslab.iat.dsl.Protocol.HasPort
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.kubernetes.dsl._
 
@@ -101,21 +103,12 @@ trait DefaultSubinterpreters {
     case _ => ??? // FIXME
   }
 
-  def ipBlocks(s: CIDRs): List[Peer] = {
-    s.ips.map {
+  def ipBlocks(cidr: CIDR): IPBlock = {
+    cidr match {
       case IP.RangeWithExceptions(ip, mask, exceptions) =>
-        Peer(
-          podSelector = None,
-          namespaceSelector = None,
-          ipBlock = Some(IPBlock(s"$ip/$mask", exceptions.map(e => s"${e.ip}/${e.mask}").toList))
-        )
-      case cidr: IP.CIDR =>
-        Peer(
-          podSelector = None,
-          namespaceSelector = None,
-          ipBlock = Some(IPBlock(s"${cidr.ip}/${cidr.mask}"))
-        )
-    }.toList
+        IPBlock(s"$ip/$mask", exceptions.map(e => s"${e.ip}/${e.mask}").toList)
+      case cidr: IP.CIDR => IPBlock(s"${cidr.ip}/${cidr.mask}")
+    }
   }
 
   object expressions {
@@ -138,9 +131,9 @@ trait DefaultSubinterpreters {
   }
 
   object ports {
-    def apply(ps: Protocols): List[SPort] = ps.protocols.flatMap(layer => apply(layer.l4)).toList
+    def apply(ps: Protocols): List[SPort] = ps.ports.flatMap(p => apply(p)).toList
 
-    def apply(p: Protocol.L4): Option[SPort] = p match {
+    def apply(p: HasPort): Option[SPort] = p match {
       case UDP(port: APort)     => Some(SPort(Left(port.number), SProtocol.UDP))
       case UDP(port: NamedPort) => Some(SPort(Left(port.number), SProtocol.UDP))
       case TCP(port: APort)     => Some(SPort(Left(port.number), SProtocol.TCP))

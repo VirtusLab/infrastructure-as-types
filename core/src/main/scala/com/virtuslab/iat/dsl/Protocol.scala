@@ -158,6 +158,8 @@ object HTTP {
 
 trait Protocols {
   def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
+  def ports: Set[Protocol.HasPort] = protocols.collect { case p: Protocol.HasPort => p }
+  def cidrs: Set[Protocol.HasCidr] = protocols.collect { case p: Protocol.HasCidr => p }
   def merge(other: Protocols): Protocols = Protocols.Selected(protocols ++ other.protocols)
 }
 
@@ -170,17 +172,15 @@ object Protocols {
   case object None extends None {
     override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
   }
-
   case class Selected(protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]) extends Protocols
 
   def apply(protocols: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]*): Protocols =
     apply(protocols)
   def apply(protocols: Seq[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected =
     Selected(protocols.toSet)
-  //  def apply(protocols: Set[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected = Selected(protocols)
-  def port(ports: Protocol.HasPort*): Protocols = apply(ports.map(port => Protocol.Layers(l4 = port)))
-  def cidr(cidrs: Protocol.HasCidr*): Protocols = apply(cidrs.map(cidr => Protocol.Layers(l3 = cidr)))
-  def apply(): Protocols = Any
+
+  def ports(ports: Protocol.HasPort*): Protocols = apply(ports.map(port => Protocol.Layers(l4 = port)))
+  def cidrs(cidrs: Protocol.HasCidr*): Protocols = apply(cidrs.map(cidr => Protocol.Layers(l3 = cidr)))
 }
 
 sealed trait Port {
@@ -200,11 +200,4 @@ object Port {
 
   def apply(number: Int): Port = APort(number)
   def apply(name: String, number: Int): Port = NamedPort(name, number)
-}
-
-trait CIDRs {
-  def ips: Seq[Protocol.HasCidr]
-}
-trait Ports {
-  def ports: Seq[Protocol.HasPort]
 }

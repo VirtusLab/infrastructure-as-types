@@ -19,8 +19,14 @@ case class Application(
   with Peer[Application] {
   def allPorts: List[HasPort] = containers.flatMap(_.ports)
   override def expressions: Expressions = Expressions(labels.asExpressions.toSet)
-  override def protocols: Protocols = Protocols.port(allPorts: _*)
+  override def protocols: Protocols = Protocols.ports(allPorts: _*)
   override def identities: Identities = Identities(ClusterDNS(this))
+}
+
+object Application {
+  case class IsApplication(selection: Selection[Application])
+  import scala.language.implicitConversions
+  implicit def proofIsApplication(s: Selection[Application]): IsApplication = IsApplication(s)
 }
 
 case class Container(

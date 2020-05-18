@@ -1,15 +1,13 @@
 package com.virtuslab.iat.dsl
 
-trait Named { self: Labeled =>
-  def name: String = labels.find(l => l.key == "name").map(_.value).getOrElse("") // TODO, make it compile time
+import com.virtuslab.iat.dsl.Label.Name
 
-  require(labels.exists(_.key == "name"))
+trait Named { self: Labeled =>
+  def name: String = labels.collectFirst { case Name(v) => v }.getOrElse("") // TODO, make it compile time
 }
 
 trait Labeled {
   def labels: List[Label]
-
-  require(labels.nonEmpty)
 }
 
 trait Patchable[A] { self: A =>

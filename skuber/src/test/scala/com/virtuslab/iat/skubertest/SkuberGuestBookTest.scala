@@ -5,7 +5,7 @@ import _root_.skuber.{ Resource, Service }
 import com.stephenn.scalatest.playjson.JsonMatchers
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.{ IP, Port, TCP }
+import com.virtuslab.iat.dsl.{ IP, TCP }
 import com.virtuslab.iat.kubernetes.dsl._
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
@@ -49,12 +49,12 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       ) :: Nil
     )
 
-    import iat.kubernetes.dsl.NetworkPolicy._
+    import iat.kubernetes.dsl.NetworkPolicy.ops._
 
     // external traffic - from external sources
     val connExtFront = frontend
       .communicatesWith(
-        SelectedIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
+        Select.any.withIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
       )
       .ingressOnly
       .named("external-frontend")
@@ -73,11 +73,11 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
 
     // cluster traffic - to in-cluster services
     val connFrontDns = frontend
-      .communicatesWith(kubernetesDns)
+      .communicatesWith(NetworkPolicy.peer.kubernetesDns)
       .egressOnly
       .named("front-k8s-dns")
     val connRedisSlaveDns = redisSlave
-      .communicatesWith(kubernetesDns)
+      .communicatesWith(NetworkPolicy.peer.kubernetesDns)
       .egressOnly
       .named("redis-slave-k8s-dns")
 

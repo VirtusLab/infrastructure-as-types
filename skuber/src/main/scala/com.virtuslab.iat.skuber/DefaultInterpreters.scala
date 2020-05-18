@@ -5,7 +5,7 @@ import _root_.skuber.ext.{ Ingress => SIngress }
 import _root_.skuber.networking.{ NetworkPolicy => SNetworkPolicy }
 import _root_.skuber.{ ConfigMap, LabelSelector, ObjectMeta, Service, Namespace => SNamespace, Secret => SSecret }
 import com.virtuslab.iat
-import com.virtuslab.iat.dsl.Peer.Selected
+import com.virtuslab.iat.kubernetes.dsl.NetworkPolicy._
 
 trait DefaultInterpreters {
   import iat.dsl.Label.ops._
@@ -76,155 +76,97 @@ trait DefaultInterpreters {
     )
   }
 
-  implicit def networkPolicyInterpreter[A <: Peer[A], B <: Peer[B]]: (NetworkPolicy[A, B], Namespace) => SNetworkPolicy =
-    (obj: NetworkPolicy[A, B], ns: Namespace) =>
+  implicit val networkPolicyInterpreter: (NetworkPolicy, Namespace) => SNetworkPolicy =
+    (obj: NetworkPolicy, ns: Namespace) =>
       SNetworkPolicy(
         metadata = subinterpreter.objectMetaInterpreter(obj, ns),
         spec = Some(
           SNetworkPolicy.Spec(
-            podSelector = LabelSelector(subinterpreter.expressions(obj.peer.expressions): _*),
-            ingress = obj.ingress match {
-              case Some(ingress) => ingressRules(ingress.from, ingress.to)
-              case None          => List.empty // NoSelector
+            podSelector = LabelSelector(subinterpreter.expressions(obj.podSelector): _*),
+            ingress = obj.ingress.flatMap {
+              case DenyIngressRule  => Nil
+              case AllowIngressRule => SNetworkPolicy.IngressRule() :: Nil
+              case IngressRule(from, protocols) =>
+                SNetworkPolicy.IngressRule(
+                  from = from.map {
+                    case PodSelector(podSelector) =>
+                      SNetworkPolicy.Peer(
+                        podSelector = Some(
+                          LabelSelector(subinterpreter.expressions(podSelector): _*)
+                        )
+                      )
+                    case NamespaceSelector(namespaceSelector) =>
+                      SNetworkPolicy.Peer(
+                        namespaceSelector = Some(
+                          LabelSelector(subinterpreter.expressions(namespaceSelector): _*)
+                        )
+                      )
+                    case IPBlock(cidr) =>
+                      SNetworkPolicy.Peer(
+                        ipBlock = Some(
+                          subinterpreter.ipBlocks(cidr)
+                        )
+                      )
+                  },
+                  ports = subinterpreter.ports(protocols)
+                ) :: Nil
             },
-            egress = obj.egress match {
-              case Some(egress) => egressRules(egress.from, egress.to)
-              case None         => List.empty // NoSelector
+            egress = obj.egress.flatMap {
+              case DenyEgressRule  => Nil
+              case AllowEgressRule => SNetworkPolicy.EgressRule() :: Nil
+              case EgressRule(to, protocols) =>
+                SNetworkPolicy.EgressRule(
+                  to = to.map {
+                    case PodSelector(podSelector) =>
+                      SNetworkPolicy.Peer(
+                        podSelector = Some(
+                          LabelSelector(subinterpreter.expressions(podSelector): _*)
+                        )
+                      )
+                    case NamespaceSelector(namespaceSelector) =>
+                      SNetworkPolicy.Peer(
+                        namespaceSelector = Some(
+                          LabelSelector(subinterpreter.expressions(namespaceSelector): _*)
+                        )
+                      )
+                    case IPBlock(cidr) =>
+                      SNetworkPolicy.Peer(
+                        ipBlock = Some(
+                          subinterpreter.ipBlocks(cidr)
+                        )
+                      )
+                  },
+                  ports = subinterpreter.ports(protocols)
+                ) :: Nil
             },
-            policyTypes = (obj.ingress, obj.egress) match {
-              case (Some(_), None)    => List("Ingress")
-              case (None, Some(_))    => List("Egress")
-              case (Some(_), Some(_)) => List("Ingress", "Egress")
-              case (None, None)       => List()
+            policyTypes = (obj.ingress.nonEmpty, obj.egress.nonEmpty) match {
+              case (true, false)  => List("Ingress")
+              case (false, true)  => List("Egress")
+              case (true, true)   => List("Ingress", "Egress")
+              case (false, false) => List()
             }
           )
         )
       )
 
-  protected def ingressRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.IngressRule] = {
-    (from.reference, to.reference) match {
-      case (Peer.None, _) => List.empty // DenySelector, the difference is in 'policyTypes'
-      case (Peer.Any, _)  => List(SNetworkPolicy.IngressRule()) // AllowSelector
-      case (p: Peer[_], _) =>
-        p.reference match {
-          case _: Application                                     => ingressPodRules(from, to)
-          case _: Namespace                                       => ingressNamespaceRules(from, to)
-          case s: Selected[_] if s.hasType[Selected[Application]] => ingressPodRules(from, to)
-          case s: Selected[_] if s.hasType[Selected[Namespace]]   => ingressNamespaceRules(from, to)
-          case s: SelectedIPs                                     => ingressIPBocksRules(s)
-          case s: SelectedIPsAndPorts                             => ingressIPBocksRules(s)
-        }
-    }
-  }
-
-  protected def egressRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.EgressRule] = {
-    (from.reference, to.reference) match {
-      case (_, Peer.None)       => List.empty // DenySelector, the difference is in 'policyTypes'
-      case (Peer.Any, Peer.Any) => List(SNetworkPolicy.EgressRule()) // AllowSelector
-      case (_, p: Peer[_]) =>
-        p.reference match {
-          case _: Application                                     => egressPodRules(from, to)
-          case _: Namespace                                       => egressNamespaceRules(from, to)
-          case s: Selected[_] if s.hasType[Selected[Application]] => egressPodRules(from, to)
-          case s: Selected[_] if s.hasType[Selected[Namespace]]   => egressNamespaceRules(from, to)
-          case s: SelectedIPs                                     => egressIPBlocksRules(s)
-          case s: SelectedIPsAndPorts                             => egressIPBlocksRules(s)
-        }
-    }
-  }
-
-  protected def ingressPodRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.IngressRule] = List(
-    SNetworkPolicy.IngressRule(
-      from = List(
-        SNetworkPolicy.Peer(
-          podSelector = Some(
-            LabelSelector(
-              subinterpreter.expressions(from.expressions): _* // ingress from a labeled source
-            )
-          ),
-          namespaceSelector = None,
-          ipBlock = None
+  protected val rulePeerInterpreter: RulePeer => SNetworkPolicy.Peer = {
+    case PodSelector(podSelector) =>
+      SNetworkPolicy.Peer(
+        podSelector = Some(
+          LabelSelector(subinterpreter.expressions(podSelector): _*)
         )
-        // TODO multiple "Peers", combined with logical OR
-      ),
-      ports = subinterpreter.ports(to.protocols) // to the ports of our selected pod/namespace
-    )
-    // TODO multiple "Rules", combined with logical OR
-  )
-
-  protected def ingressNamespaceRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.IngressRule] =
-    List(
-      SNetworkPolicy.IngressRule(
-        from = List(
-          SNetworkPolicy.Peer(
-            podSelector = None,
-            namespaceSelector = Some(
-              LabelSelector(
-                subinterpreter.expressions(from.expressions): _* // ingress from a labeled source
-              )
-            ),
-            ipBlock = None
-          )
-          // TODO multiple "Peers", combined with logical OR
-        ),
-        ports = subinterpreter.ports(to.protocols) // to the ports of our selected pod/namespace
       )
-      // TODO multiple "Rules", combined with logical OR
-    )
-
-  protected def ingressIPBocksRules[A <: Peer[A]](s: Peer[A] with CIDRs): List[SNetworkPolicy.IngressRule] = List(
-    SNetworkPolicy.IngressRule(
-      from = subinterpreter.ipBlocks(s),
-      ports = subinterpreter.ports(s.protocols)
-    )
-    // TODO multiple "Rules", combined with logical OR
-  )
-
-  protected def egressPodRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.EgressRule] =
-    List(
-      SNetworkPolicy.EgressRule(
-        to = List(
-          SNetworkPolicy.Peer(
-            podSelector = Some(
-              LabelSelector(
-                subinterpreter.expressions(to.expressions): _* // egress to a labeled target
-              )
-            ),
-            namespaceSelector = None,
-            ipBlock = None
-          )
-          // TODO multiple "Peers", combined with logical OR
-        ),
-        ports = subinterpreter.ports(to.protocols) // to the ports of the target
+    case NamespaceSelector(namespaceSelector) =>
+      SNetworkPolicy.Peer(
+        namespaceSelector = Some(
+          LabelSelector(subinterpreter.expressions(namespaceSelector): _*)
+        )
       )
-      // TODO multiple "Rules", combined with logical OR
-    )
-
-  protected def egressNamespaceRules[A <: Peer[A], B <: Peer[B]](from: Peer[A], to: Peer[B]): List[SNetworkPolicy.EgressRule] =
-    List(
-      SNetworkPolicy.EgressRule(
-        to = List(
-          SNetworkPolicy.Peer(
-            podSelector = None,
-            namespaceSelector = Some(
-              LabelSelector(
-                subinterpreter.expressions(to.expressions): _* // egress to a labeled target
-              )
-            ),
-            ipBlock = None
-          )
-          // TODO multiple "Peers", combined with logical OR
-        ),
-        ports = subinterpreter.ports(to.protocols) // to the ports of the target
+    case IPBlock(cidr) =>
+      SNetworkPolicy.Peer(
+        ipBlock = Some(
+          subinterpreter.ipBlocks(cidr)
+        )
       )
-      // TODO multiple "Rules", combined with logical OR
-    )
-
-  protected def egressIPBlocksRules[A <: Peer[A]](s: Peer[A] with CIDRs): List[SNetworkPolicy.EgressRule] = List(
-    SNetworkPolicy.EgressRule(
-      to = subinterpreter.ipBlocks(s),
-      ports = subinterpreter.ports(s.protocols)
-    )
-    // TODO multiple "Rules", combined with logical OR
-  )
+  }
 }

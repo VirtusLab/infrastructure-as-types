@@ -2,7 +2,6 @@ package com.virtuslab.iat.skuber
 
 import _root_.skuber.{ ConfigMap, ObjectResource, Service, Namespace => SNamespace, Secret => SSecret }
 import com.virtuslab.iat.core
-import com.virtuslab.iat.dsl.{ Interpretable, Peer }
 import com.virtuslab.iat.kubernetes.dsl._
 import skuber.apps.v1.Deployment
 import skuber.ext.{ Ingress => SIngress }
@@ -16,6 +15,6 @@ trait InterpreterOps extends core.InterpreterOps[ObjectResource] {
   implicit class ConfigurationInterpretationOps(val obj: Configuration)
     extends InterpreterOps1[Configuration, Namespace, ConfigMap]
   implicit class SecretInterpretationOps(val obj: Secret) extends InterpreterOps1[Secret, Namespace, SSecret]
-  implicit class NetworkPolicyInterpretationOps[A <: Peer[A], B <: Peer[B]](val obj: NetworkPolicy[A, B])
-    extends InterpreterOps1[NetworkPolicy[A, B], Namespace, SNetworkPolicy]
+  implicit class NetworkPolicyInterpretationOps(val obj: NetworkPolicy)
+    extends InterpreterOps1[NetworkPolicy, Namespace, SNetworkPolicy]
 }

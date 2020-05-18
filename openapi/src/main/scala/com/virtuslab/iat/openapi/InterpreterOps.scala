@@ -15,6 +15,6 @@ trait InterpreterOps extends core.InterpreterOps[ApiModel] {
   implicit class ConfigurationInterpretationOps(val obj: Configuration)
     extends InterpreterOps1[Configuration, Namespace, model.ConfigMap]
   implicit class SecretInterpretationOps(val obj: Secret) extends InterpreterOps1[Secret, Namespace, model.Secret]
-  implicit class NetworkPolicyInterpretationOps[A <: Peer[A], B <: Peer[B]](val obj: NetworkPolicy[A, B])
-    extends InterpreterOps1[NetworkPolicy[A, B], Namespace, model.NetworkPolicy]
+  implicit class NetworkPolicyInterpretationOps[A <: Peer[A], B <: Peer[B]](val obj: NetworkPolicy)
+    extends InterpreterOps1[NetworkPolicy, Namespace, model.NetworkPolicy]
 }
