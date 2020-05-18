@@ -4,7 +4,7 @@ import _root_.skuber.Resource.Quantity
 import _root_.skuber.{ Resource, Service }
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name, Role, Tier }
-import com.virtuslab.iat.dsl.{ IP, TCP }
+import com.virtuslab.iat.dsl.{ IP, Peer, TCP }
 import com.virtuslab.iat.kubernetes.dsl._
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
@@ -54,7 +54,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
     // external traffic - from external sources
     val connExtFront = frontend
       .communicatesWith(
-        Select.any.withIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
+        Peer.any.withIPs(IP.Range("0.0.0.0/0")).withPorts(frontend.allPorts: _*)
       )
       .ingressOnly
       .named("external-frontend")

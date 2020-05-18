@@ -359,7 +359,7 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val conn1 = app1
       .communicatesWith(
-        Select.withType[Namespace].withExpressions("role".is("backend"))
+        Peer.withType[Namespace].withExpressions("role".is("backend"))
       )
       .named("app1-backend")
       .patch(
@@ -416,41 +416,41 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val ns = Namespace(Name("foo") :: Nil)
 
-    val connNginxFromApps = Select
+    val connNginxFromApps = Peer
       .withType[Application]
       .withExpressions("run" is "nginx")
-      .communicatesWith(Select.any)
+      .communicatesWith(Peer.any)
       .ingressOnly
       .named("allow-ingress-to-nginx")
 
-    val connAppsToNginx = Select.any
+    val connAppsToNginx = Peer.any
       .communicatesWith(
-        Select.withType[Application].withExpressions("run" is "nginx")
+        Peer.withType[Application].withExpressions("run" is "nginx")
       )
       .egressOnly
       .named("allow-egress-to-nginx")
 
-    val connToCoreDns = Select.any
+    val connToCoreDns = Peer.any
       .communicatesWith(
         NetworkPolicy.peer.kubernetesDns
       )
       .egressOnly
       .named("allow-dns-access")
 
-    val connToK8s = Select.any
+    val connToK8s = Peer.any
       .communicatesWith(
         NetworkPolicy.peer.kubernetesApi
       )
       .egressOnly
       .named("allow-kubernetes-access")
 
-    val connBiWithExclude = Select.any
+    val connBiWithExclude = Peer.any
       .withExpressions("app" is "akka-cluster-demo")
       .withIPs(
         IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))
       )
       .communicatesWith(
-        Select.any
+        Peer.any
           .withExpressions("app" is "akka-cluster-demo")
           .withIPs(
             IP.Range("10.8.0.0/16").except(IP.Address("10.8.2.11"))
@@ -458,11 +458,11 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
       )
       .named("complex-ip-exclude")
 
-    val connExternal443 = Select
+    val connExternal443 = Peer
       .withType[Application]
       .withExpressions("external-egress.monzo.com/443" is "true")
       .communicatesWith(
-        Select.any
+        Peer.any
           .withIPs(
             IP.Range("0.0.0.0/0")
               .except(

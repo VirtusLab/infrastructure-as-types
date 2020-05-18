@@ -2,11 +2,11 @@ package com.virtuslab.iat.kubernetes.dsl
 
 import com.virtuslab.iat.dsl.IP.CIDR
 import com.virtuslab.iat.dsl.Label.Name
+import com.virtuslab.iat.dsl.Peer.Selected
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.kubernetes.dsl.Application.IsApplication
 import com.virtuslab.iat.kubernetes.dsl.Namespace.IsNamespace
 import com.virtuslab.iat.kubernetes.dsl.NetworkPolicy.{ RuleEgress, RuleIngress }
-import com.virtuslab.iat.kubernetes.dsl.Select.Selected
 
 case class NetworkPolicy(
     labels: List[Label],
@@ -181,9 +181,9 @@ object NetworkPolicy {
         DenyEgressRule :: Nil
       ).named("default-deny-all")
 
-    val denyExternalEgress = Select.any
+    val denyExternalEgress = Peer.any
       .communicatesWith(
-        Select.any.withIPs(
+        Peer.any.withIPs(
           IP.Range("10.0.0.0/8"),
           IP.Range("172.16.0.0/12"),
           IP.Range("192.168.0.0/16")
@@ -211,7 +211,7 @@ object NetworkPolicy {
       )
 
     val external443: Selection[Any] =
-      Select.any
+      Peer.any
         .withIPs(
           IP.Range("0.0.0.0/0")
             .except(

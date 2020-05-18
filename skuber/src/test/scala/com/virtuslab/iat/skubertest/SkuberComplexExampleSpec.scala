@@ -2,8 +2,8 @@ package com.virtuslab.iat.skubertest
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ App, Name }
-import com.virtuslab.iat.dsl.{ IP, TCP }
-import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace, Select }
+import com.virtuslab.iat.dsl.{ IP, Peer, TCP }
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.playjson.JsonMatchers
@@ -72,7 +72,7 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     val connExtApi = api
       .communicatesWith(
-        Select.any.withIPs(IP.Range("0.0.0.0/0")).withPorts(api.allPorts: _*)
+        Peer.any.withIPs(IP.Range("0.0.0.0/0")).withPorts(api.allPorts: _*)
       )
       .ingressOnly
       .named("external-api")
