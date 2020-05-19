@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ Port, TCP }
+import com.virtuslab.iat.dsl.TCP
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Container, Namespace }
 import skuber.Resource
 
