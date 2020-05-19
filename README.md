@@ -73,6 +73,66 @@ The project is **pre-alpha** and under heavy development, any and all APIs can c
 ## Kubernetes
 The first backend we provide is the Kubernetes API.
 
+Fragments of classic [GuestBook example](https://kubernetes.io/docs/tutorials/stateless-application/guestbook/):
+```scala
+val guestbook = Namespace(Name("guestbook") :: Nil)
+
+val frontend = Application(
+  Name("frontend") :: App("guestbook") :: Tier("frontend") :: Nil,
+  Container(
+    Name("php-redis") :: Nil,
+    image = "gcr.io/google-samples/gb-frontend:v4",
+    ports = TCP(80) :: Nil,
+    envs = "GET_HOSTS_FROM" -> "dns" :: Nil
+  ) :: Nil
+)
+
+val redisMaster = Application(
+  Name("redis-master") :: App("redis") :: Role("master") :: Tier("backend") :: Nil,
+  Container(
+    Name("master") :: Nil,
+    image = "k8s.gcr.io/redis:e2e",
+    ports = TCP(6379) :: Nil
+  ) :: Nil
+)
+
+import iat.kubernetes.dsl.NetworkPolicy.ops._
+
+val connFrontRedis = frontend
+  .communicatesWith(redisMaster)
+  .egressOnly
+  .labeled(Name("front-redis") :: App("guestbook") :: Nil)
+val connFrontDns = frontend
+  .communicatesWith(NetworkPolicy.peer.kubernetesDns)
+  .egressOnly
+  .named("front-k8s-dns")
+
+import iat.skuber.deployment._
+import skuber.json.format._
+
+val ns: Seq[Summary] =
+  guestbook.interpret.upsert.summary :: Nil
+val apps: Seq[Summary] = List(
+  redisMaster
+    .interpret(guestbook)
+    .map(redisMasterDetails),
+  frontend
+    .interpret(guestbook)
+    .map(frontendDetails)
+  ).flatMap(_.upsert.summary)
+
+val conns: Seq[Summary] = List(
+  NetworkPolicy.default.denyAll.interpret(guestbook),
+  connExtFront.interpret(guestbook),
+  connFrontRedis.interpret(guestbook),
+  connRedisMS.interpret(guestbook),
+  connFrontDns.interpret(guestbook),
+).map(_.upsert.summary)
+```
+
+See the [full GuestBook example here](https://github.com/VirtusLab/infrastructure-as-types/blob/master/examples/src/main/scala/com.virtuslab.iat.examples/GuestBook.scala).
+For a different flavour, see the [same applications but materialized into JSON](https://github.com/VirtusLab/infrastructure-as-types/blob/master/skuber/src/test/scala/com/virtuslab/iat/skubertest/SkuberGuestBookTest.scala).
+
 ## Core concepts
 The basic concepts in the Infrastructure as Types are `Label`, `Protocol` and `Identity`,
 and, of course, **types**.
@@ -158,13 +218,13 @@ In this case, `interpret` takes an implementation specific context `C`
 and implicit function from `A` and `C` to some `B1`.
 ```scala
 trait InterpreterOps1[A, C, B1 <: Base] {
-    def obj: Interpretable[A]
-    def interpret(
-        ctx: C
-      )(implicit
-        interpreter: (A, C) => B1
-      ): B1 = interpreter(obj.reference, ctx)
-  }
+  def obj: Interpretable[A]
+  def interpret(
+      ctx: C
+    )(implicit
+      interpreter: (A, C) => B1
+    ): B1 = interpreter(obj.reference, ctx)
+}
 ```
 
 The two above combined, essentially the ability to go from a 
