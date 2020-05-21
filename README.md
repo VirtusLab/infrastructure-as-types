@@ -24,7 +24,7 @@ We believe that a **developer friendly** infrastructure abstractions are increas
 Bootstrapping and maintaining a distributed system required by the business is often challenging and costly.
 Real-world use cases come with complexity that YAMLs ans JSONs can't reliably express.
 
-The plan is simple, provide a set of tools for **micro-system infrastructure development**:
+The plan for PoC is simple, provide a set of tools for **micro-system infrastructure development**:
 - High-level Scala DSL describing a **graph of your (micro)services and their connectivity**
 - Low-level Scala DSL for Kubernetes manifest resources (incl. CRDs)
 - Scala Kubernetes Controllers/Operators library
@@ -43,7 +43,9 @@ Additional opportunities and future development:
 - Serverless support (e.g. Knative)
 - Native container image support (e.g. GraalVM)
 - Self-deployment pattern support
+- REPL e.g. Ammonite
 - Take advantage of Scala 3 unique features
+- Kotlin support
 
 ## Status
 
