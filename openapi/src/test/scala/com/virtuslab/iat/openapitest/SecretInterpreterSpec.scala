@@ -16,7 +16,7 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
     val sec = Secret(Name("test") :: Nil, data = Map.empty)
 
     import iat.openapi.json4s._
-    val secret = sec.interpret(ns).asJValues.head
+    val secret = sec.interpretWith(ns).asJValues.head
 
     secret.should(matchJson(yamlToJson(s"""
         |---
@@ -36,7 +36,7 @@ class SecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatchers 
     val sec = Secret(Name("test") :: Nil, data = Map("foo" -> "admin"))
 
     import iat.openapi.json4s._
-    val secret = sec.interpret(ns).asJValues.head
+    val secret = sec.interpretWith(ns).asJValues.head
 
     secret.should(matchJson(yamlToJson(s"""
        |---

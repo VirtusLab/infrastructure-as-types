@@ -13,7 +13,7 @@ trait InterpreterOps[Base] {
 
   trait InterpreterOps1[A, C, B1 <: Base] {
     def obj: Interpretable[A]
-    def interpret(
+    def interpretWith(
         ctx: C
       )(implicit
         interpreter: (A, C) => B1
@@ -22,7 +22,7 @@ trait InterpreterOps[Base] {
 
   trait InterpreterOps2[A, C, B1 <: Base, B2 <: Base] {
     def obj: Interpretable[A]
-    def interpret(
+    def interpretWith(
         ctx: C
       )(implicit
         interpreter: (A, C) => (B1, B2)

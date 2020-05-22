@@ -52,12 +52,12 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val resources =
       List(backend, frontend).flatMap(_.interpret.asMetaJsValues) ++
-        app1.interpret(frontend).asMetaJsValues ++
-        app2.interpret(frontend).asMetaJsValues ++
-        app3.interpret(backend).asMetaJsValues ++
-        connApp1.interpret(frontend).asMetaJsValues ++
-        connApp3.interpret(backend).asMetaJsValues ++
-        connApp1app2.interpret(frontend).asMetaJsValues
+        app1.interpretWith(frontend).asMetaJsValues ++
+        app2.interpretWith(frontend).asMetaJsValues ++
+        app3.interpretWith(backend).asMetaJsValues ++
+        connApp1.interpretWith(frontend).asMetaJsValues ++
+        connApp3.interpretWith(backend).asMetaJsValues ++
+        connApp1app2.interpretWith(frontend).asMetaJsValues
 
     Ensure(resources)
       .contain(
@@ -372,8 +372,8 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
     import skuber.json.format._
 
     val resources =
-      app1.interpret(ns).asMetaJsValues ++
-        conn1.interpret(ns).asMetaJsValues
+      app1.interpretWith(ns).asMetaJsValues ++
+        conn1.interpretWith(ns).asMetaJsValues
 
     Ensure(resources)
       .ignore(_.kind != "NetworkPolicy")
@@ -482,18 +482,18 @@ class SkuberConnectionTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     val resources =
       ns.interpret.asMetaJsValues ++ List(
-        NetworkPolicy.default.allowAllIngress.interpret(ns),
-        NetworkPolicy.default.denyAllIngress.interpret(ns),
-        NetworkPolicy.default.allowAllEgress.interpret(ns),
-        NetworkPolicy.default.denyAllEgress.interpret(ns),
-        NetworkPolicy.default.denyAll.interpret(ns),
-        NetworkPolicy.default.denyExternalEgress.interpret(ns),
-        connNginxFromApps.interpret(ns),
-        connAppsToNginx.interpret(ns),
-        connToCoreDns.interpret(ns),
-        connToK8s.interpret(ns),
-        connBiWithExclude.interpret(ns),
-        connExternal443.interpret(ns)
+        NetworkPolicy.default.allowAllIngress.interpretWith(ns),
+        NetworkPolicy.default.denyAllIngress.interpretWith(ns),
+        NetworkPolicy.default.allowAllEgress.interpretWith(ns),
+        NetworkPolicy.default.denyAllEgress.interpretWith(ns),
+        NetworkPolicy.default.denyAll.interpretWith(ns),
+        NetworkPolicy.default.denyExternalEgress.interpretWith(ns),
+        connNginxFromApps.interpretWith(ns),
+        connAppsToNginx.interpretWith(ns),
+        connToCoreDns.interpretWith(ns),
+        connToK8s.interpretWith(ns),
+        connBiWithExclude.interpretWith(ns),
+        connExternal443.interpretWith(ns)
       ).flatMap(_.asMetaJsValues)
 
     Ensure(resources)

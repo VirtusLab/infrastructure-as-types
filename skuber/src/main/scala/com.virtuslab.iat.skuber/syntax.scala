@@ -2,7 +2,7 @@ package com.virtuslab.iat.skuber
 
 import com.virtuslab.iat.kubernetes.dsl.Mountable.MountSource
 import com.virtuslab.iat.kubernetes.dsl.{ Configuration, Secret }
-import com.virtuslab.iat.scala.TupleOps
+import com.virtuslab.iat.scala.{ FunctionOps, TupleOps }
 
 object dsl {
   import skuber.Volume.{ ConfigMapVolumeSource, Secret => SecretVolumeSource }
@@ -20,5 +20,5 @@ object playjson extends PlayJsonProcessors with DefaultInterpreters with Interpr
 
 object interpreter extends DefaultInterpreters
 object subinterpreter extends DefaultSubinterpreters
-object details extends DefaultDetails
+object details extends DefaultDetails with FunctionOps
 object deinterpreter extends DefaultDeinterpreters

@@ -24,9 +24,9 @@ class InterpreterTest extends AnyFlatSpec with Matchers with JsonMatchers with E
     import iat.openapi.json4s._
 
     val rs: Seq[(Metadata, JValue)] = ns.interpret.asMetaJValues ++
-      myApp.interpret(ns).asMetaJValues ++
-      myConfiguration.interpret(ns).asMetaJValues ++
-      mySecret.interpret(ns).asMetaJValues
+      myApp.interpretWith(ns).asMetaJValues ++
+      myConfiguration.interpretWith(ns).asMetaJValues ++
+      mySecret.interpretWith(ns).asMetaJValues
 
     Ensure(rs)
       .contain(

@@ -95,17 +95,18 @@ object GuestBook extends SkuberApp with scala.App {
   )
 
   // format: off
-  val frontendDetails = resourceRequirements(
-    Resource.Requirements(
-      requests = Map(
-        "cpu" -> Quantity("100m"),
-        "memory" -> Quantity("100Mi")
+  val frontendDetails = (
+    serviceType(Service.Type.NodePort),
+    resourceRequirements(
+      Resource.Requirements(
+        requests = Map(
+          "cpu" -> Quantity("100m"),
+          "memory" -> Quantity("100Mi")
+        )
       )
+    ).andThen(
+      replicas(3)
     )
-  ).andThen(
-    replicas(3)
-  ).andThen(
-    serviceType(Service.Type.NodePort)
   )
 
   import iat.skuber.deployment._
@@ -115,24 +116,24 @@ object GuestBook extends SkuberApp with scala.App {
     guestbook.interpret.upsert.summary :: Nil
   val apps: Seq[Summary] = List(
     redisMaster
-      .interpret(guestbook)
+      .interpretWith(guestbook)
       .map(redisMasterDetails),
     redisSlave
-      .interpret(guestbook)
+      .interpretWith(guestbook)
       .map(redisSlaveDetails),
     frontend
-      .interpret(guestbook)
+      .interpretWith(guestbook)
       .map(frontendDetails)
     ).flatMap(_.upsert.summary)
 
   val conns: Seq[Summary] = List(
-    NetworkPolicy.default.denyAll.interpret(guestbook),
-    connExtFront.interpret(guestbook),
-    connFrontRedis.interpret(guestbook),
-    connRedisMS.interpret(guestbook),
-    connRedisSM.interpret(guestbook),
-    connFrontDns.interpret(guestbook),
-    connRedisSlaveDns.interpret(guestbook)
+    NetworkPolicy.default.denyAll.interpretWith(guestbook),
+    connExtFront.interpretWith(guestbook),
+    connFrontRedis.interpretWith(guestbook),
+    connRedisMS.interpretWith(guestbook),
+    connRedisSM.interpretWith(guestbook),
+    connFrontDns.interpretWith(guestbook),
+    connRedisSlaveDns.interpretWith(guestbook)
   ).map(_.upsert.summary)
 
   (ns ++ apps ++ conns).foreach(s => println(s.asString))

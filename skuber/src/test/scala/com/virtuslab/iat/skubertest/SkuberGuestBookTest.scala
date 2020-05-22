@@ -92,6 +92,7 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       )
     )
 
+    // format: off
     val redisSlaveDetails = resourceRequirements(
       Resource.Requirements(
         requests = Map(
@@ -104,17 +105,18 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
     )
 
     // format: off
-    val frontendDetails = resourceRequirements(
-      Resource.Requirements(
-        requests = Map(
-          "cpu" -> Quantity("100m"),
-          "memory" -> Quantity("100Mi")
+    val frontendDetails = (
+      serviceType(Service.Type.NodePort),
+      resourceRequirements(
+        Resource.Requirements(
+          requests = Map(
+            "cpu" -> Quantity("100m"),
+           "memory" -> Quantity("100Mi")
+          )
         )
+      ).andThen(
+        replicas(3)
       )
-    ).andThen(
-      replicas(3)
-    ).andThen(
-      serviceType(Service.Type.NodePort)
     )
 
     import iat.skuber.playjson._
@@ -124,24 +126,24 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
       guestbook.interpret.asMetaJsValues
     val apps: Seq[(Metadata, JsValue)] = List(
       redisMaster
-        .interpret(guestbook)
+        .interpretWith(guestbook)
         .map(redisMasterDetails),
       redisSlave
-        .interpret(guestbook)
+        .interpretWith(guestbook)
         .map(redisSlaveDetails),
       frontend
-        .interpret(guestbook)
+        .interpretWith(guestbook)
         .map(frontendDetails)
     ).flatMap(_.asMetaJsValues)
 
     val conns: Seq[(Metadata, JsValue)] = List(
-      NetworkPolicy.default.denyAll.interpret(guestbook),
-      connExtFront.interpret(guestbook),
-      connFrontRedis.interpret(guestbook),
-      connRedisMS.interpret(guestbook),
-      connRedisSM.interpret(guestbook),
-      connFrontDns.interpret(guestbook),
-      connRedisSlaveDns.interpret(guestbook)
+      NetworkPolicy.default.denyAll.interpretWith(guestbook),
+      connExtFront.interpretWith(guestbook),
+      connFrontRedis.interpretWith(guestbook),
+      connRedisMS.interpretWith(guestbook),
+      connRedisSM.interpretWith(guestbook),
+      connFrontDns.interpretWith(guestbook),
+      connRedisSlaveDns.interpretWith(guestbook)
     ).flatMap(_.asMetaJsValues)
 
     val resources = ns ++ apps ++ conns

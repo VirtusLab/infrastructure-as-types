@@ -64,7 +64,7 @@ object CloudFileServer extends SkuberApp with App {
   val results =
     ns.interpret.upsert.deinterpret.summary ::
       app
-        .interpret(ns)
+        .interpretWith(ns)
         .map(appDetails)
         .upsert
         .deinterpret

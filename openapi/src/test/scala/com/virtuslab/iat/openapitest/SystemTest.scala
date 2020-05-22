@@ -22,9 +22,9 @@ class SystemTest extends AnyFlatSpec with Matchers with JsonMatchers with Ensure
 
     import iat.openapi.json4s._
     val rs = ns.interpret.asMetaJValues ++
-      app1.interpret(ns).asMetaJValues ++
-      conf1.interpret(ns).asMetaJValues ++
-      gw1.interpret(ns).asMetaJValues
+      app1.interpretWith(ns).asMetaJValues ++
+      conf1.interpretWith(ns).asMetaJValues ++
+      gw1.interpretWith(ns).asMetaJValues
 
     Ensure(rs)
       .contain(

@@ -88,14 +88,14 @@ class SkuberComplexExampleSpec extends AnyFlatSpec with Matchers with JsonMatche
 
     val resource = namespace.interpret.asMetaJsValues ++
       List(api, processor, view, cassandra, postgres, kafka)
-        .flatMap(_.interpret(namespace).asMetaJsValues) ++
+        .flatMap(_.interpretWith(namespace).asMetaJsValues) ++
       List(
-        connExtApi.interpret(namespace),
-        conApiKafka.interpret(namespace),
-        conApiView.interpret(namespace),
-        conViewPostgres.interpret(namespace),
-        conKafkaProcessor.interpret(namespace),
-        conProcessorCassandra.interpret(namespace)
+        connExtApi.interpretWith(namespace),
+        conApiKafka.interpretWith(namespace),
+        conApiView.interpretWith(namespace),
+        conViewPostgres.interpretWith(namespace),
+        conKafkaProcessor.interpretWith(namespace),
+        conProcessorCassandra.interpretWith(namespace)
       ).flatMap(_.asMetaJsValues)
 
     Ensure(resource)

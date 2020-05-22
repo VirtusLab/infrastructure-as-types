@@ -39,10 +39,10 @@ class SkuberInterpretersIntegrationSpec extends AnyFlatSpec with Matchers with J
     val resources =
       ns.interpret.asMetaJsValues ++
         app1
-          .interpret(ns)
+          .interpretWith(ns)
           .reduce(_.asMetaJsValues) ++
         app2
-          .interpret(ns)
+          .interpretWith(ns)
           .reduce(_.asMetaJsValues)
 
     Ensure(resources)

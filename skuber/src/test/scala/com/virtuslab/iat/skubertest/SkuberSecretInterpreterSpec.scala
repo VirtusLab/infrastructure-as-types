@@ -18,7 +18,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     import iat.skuber.playjson._
     import skuber.json.format._
 
-    val secret = sec.interpret(ns).asJsValues.head
+    val secret = sec.interpretWith(ns).asJsValues.head
 
     secret.should(matchJson(yamlToJson(s"""
         |---
@@ -39,7 +39,7 @@ class SkuberSecretInterpreterSpec extends AnyFlatSpec with Matchers with JsonMat
     import iat.skuber.playjson._
     import skuber.json.format._
 
-    val secret = sec.interpret(ns).asJsValues.head
+    val secret = sec.interpretWith(ns).asJsValues.head
 
     secret.should(matchJson(yamlToJson(s"""
        |---
