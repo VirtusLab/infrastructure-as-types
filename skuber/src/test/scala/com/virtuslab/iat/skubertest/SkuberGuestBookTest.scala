@@ -111,12 +111,17 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
         Resource.Requirements(
           requests = Map(
             "cpu" -> Quantity("100m"),
-           "memory" -> Quantity("100Mi")
+            "memory" -> Quantity("100Mi")
           )
         )
       ).andThen(
         replicas(3)
-      )
+      ).andThen{
+        import com.softwaremill.quicklens._
+        _.modify(_.metadata.annotations)(
+          _ + ("flavor" -> "vanilla")
+        )
+      }
     )
 
     import iat.skuber.playjson._
@@ -308,6 +313,8 @@ class SkuberGuestBookTest extends AnyFlatSpec with Matchers with JsonMatchers wi
             |    name: frontend
             |    app: guestbook
             |    tier: frontend
+            |  annotations:
+            |    flavor: vanilla
             |spec:
             |  selector:
             |    matchLabels:

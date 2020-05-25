@@ -1,7 +1,7 @@
 package com.virtuslab.iat.skuber
 
 import skuber.apps.v1.Deployment
-import skuber.{ Container, ObjectMeta, Resource, Service }
+import skuber.{ Container, Resource, Service }
 
 trait DefaultDetails {
   import com.softwaremill.quicklens._
@@ -26,7 +26,4 @@ trait DefaultDetails {
       svc
         .modify(_.spec.each._type)
         .setTo(t)
-
-  def annotations(a: Map[String, String]): ObjectMeta => ObjectMeta =
-    (meta: ObjectMeta) => meta.modify(_.annotations).using(_ ++ a)
 }
