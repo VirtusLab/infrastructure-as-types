@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalac-plugin</name>
+  <classname>com.virtuslab.semanticgraphs.scalac_plugin.AbstractSemanticGraphsPlugin</classname>
+</plugin>
