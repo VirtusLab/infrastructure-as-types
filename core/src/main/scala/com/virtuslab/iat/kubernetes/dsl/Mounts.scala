@@ -9,10 +9,12 @@ trait Mount {
   def mountPath: Path
 }
 
+// FIXME not sure this is the right approach, feels unnecessary any heavy
 final case class KeyValueMount[S](
     name: String,
-    key: String,
     mountPath: Path,
+    key: String,
+    readOnly: Boolean,
     source: S)
   extends Mount
 
@@ -29,15 +31,17 @@ object Mountable {
     def obj: A
     def mount[S](
         name: String,
-        key: String,
-        as: Path
+        path: Path,
+        key: String = "",
+        readOnly: Boolean = true
       )(implicit
         mountSource: MountSource[A, S]
       ): Mount = {
       KeyValueMount(
         name = name,
         key = key,
-        mountPath = as,
+        mountPath = path,
+        readOnly = readOnly,
         source = mountSource.source(obj)
       )
     }

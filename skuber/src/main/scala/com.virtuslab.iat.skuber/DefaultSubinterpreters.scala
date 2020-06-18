@@ -96,9 +96,14 @@ trait DefaultSubinterpreters {
   }
 
   def mountInterpreter(mount: Mount): (Volume, Volume.Mount) = mount match {
-    case KeyValueMount(name, key, mountPath, source: Volume.Source) =>
+    case KeyValueMount(name, mountPath, key, readOnly, source: Volume.Source) =>
       val volume = Volume(name, source)
-      val volumeMount = Volume.Mount(name = name, mountPath = mountPath.toString, subPath = key)
+      val volumeMount = Volume.Mount(
+        name = name,
+        mountPath = mountPath.toString,
+        subPath = key,
+        readOnly = readOnly
+      )
       volume -> volumeMount
     case _ => ??? // FIXME
   }

@@ -19,33 +19,77 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
 
     val config = Configuration(
       Name("test-configmap") :: Nil,
-      data = Map("test.txt" -> """|I'm testy tester, being tested ;-)
-                                  |""".stripMargin)
+      data = Map(
+        "test.txt" -> "I'm testy tester, being tested ;-)"
+      )
     )
-    val mount = config.mount("test-mount", "test.txt", Path.of("/opt/foo.txt"))
+    val mount = config.mount(
+      name = "test-mount",
+      key = "test.txt",
+      path = Path.of("/opt/foo.txt")
+    )
 
     import iat.skuber._
-    import iat.skuber.playjson._
-
     val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
 
+    import iat.skuber.playjson._
     import skuber.json.format._
     asJsValue(volume).should(matchJson("""
-        |{
-        |  "name" : "test-mount",
-        |  "configMap" : {
-        |    "name" : "test-configmap"
-        |  }
-        |}
-        |""".stripMargin))
+       |{
+       |  "name" : "test-mount",
+       |  "configMap" : {
+       |    "name" : "test-configmap"
+       |  }
+       |}
+       |""".stripMargin))
 
     asJsValue(volumeMount).should(matchJson("""
-        |{
-        |  "name" : "test-mount",
-        |  "mountPath" : "/opt/foo.txt",
-        |  "subPath" : "test.txt"
-        |}
-        |""".stripMargin))
+       |{
+       |  "name" : "test-mount",
+       |  "mountPath" : "/opt/foo.txt",
+       |  "subPath" : "test.txt",
+       |  "readOnly": true
+       |}
+       |""".stripMargin))
+  }
+
+  it should "mount multiple keys to a directory" in {
+    import iat.kubernetes.dsl._
+    import iat.kubernetes.dsl.ops._
+    import iat.skuber.dsl._
+
+    val config = Configuration(
+      Name("config-two") :: Nil,
+      data = Map(
+        "test.txt" -> "I'm testy tester, being tested ;-)"
+      )
+    )
+    val mount = config.mount(
+      name = "config",
+      path = Path.of("/opt/")
+    )
+
+    import iat.skuber._
+    val (volume, volumeMount) = subinterpreter.mountInterpreter(mount)
+
+    import iat.skuber.playjson._
+    import skuber.json.format._
+    asJsValue(volume).should(matchJson("""
+       |{
+       |  "name" : "config",
+       |  "configMap" : {
+       |    "name" : "config-two"
+       |  }
+       |}
+       |""".stripMargin))
+
+    asJsValue(volumeMount).should(matchJson("""
+      |{
+      |  "name": "config",
+      |  "mountPath": "/opt",
+      |  "readOnly": true
+      |}
+      |""".stripMargin))
   }
 
   it should "generate volume mount based on secret entry" in {
@@ -61,7 +105,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     val mount = secret.mount(
       name = "test-secret-mount",
       key = "test.txt",
-      as = Path.of("/opt/test-secret.txt")
+      path = Path.of("/opt/test-secret.txt")
     )
 
     import iat.skuber._
@@ -82,7 +126,8 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
         |{
         |  "name" : "test-secret-mount",
         |  "mountPath" : "/opt/test-secret.txt",
-        |  "subPath" : "test.txt"
+        |  "subPath" : "test.txt",
+        |  "readOnly": true
         |}
         |""".stripMargin))
   }

@@ -40,7 +40,7 @@ object CloudFileServer extends SkuberApp with App {
       ports = TCP(8080) :: Nil
     ) :: Nil,
     configurations = conf :: Nil,
-    mounts = conf.mount("config", "config.yaml", Path.of("/opt/")) :: Nil
+    mounts = conf.mount("config", Path.of("/opt/")) :: Nil
   )
 
   import iat.skuber.details._
