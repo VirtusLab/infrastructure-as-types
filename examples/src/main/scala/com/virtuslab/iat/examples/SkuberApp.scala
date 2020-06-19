@@ -20,10 +20,21 @@ abstract class SkuberApp {
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 
   private val kubeconfig: Configuration = api.Configuration.parseKubeconfigFile().get
-  private val ourContext: Context = {
-    val contextName = Option(System.getenv("IAT_CLUSTER"))
-      .getOrElse("gke_infrastructure-as-types_us-central1-a_standard-cluster-1")
-    kubeconfig.contexts(contextName)
+  private val defaultContextNameEnvVar = "IAT_KUBE_CONTEXT"
+  private val ourContext: Context = Option(System.getenv(defaultContextNameEnvVar)) match {
+    case Some(contextName) =>
+      kubeconfig.contexts.getOrElse(
+        contextName,
+        default = throw new IllegalStateException(s"No '$contextName' Kubernetes context present in ~/.kube/config")
+      )
+    case None =>
+      val defaultContextName = "gke_infrastructure-as-types_us-central1-a_standard-cluster-1"
+      kubeconfig.contexts.getOrElse(
+        defaultContextName,
+        default = throw new IllegalStateException(
+          s"'$defaultContextNameEnvVar' env var undefined and no '$defaultContextName' Kubernetes context present in ~/.kube/config"
+        )
+      )
   }
   private val configWithContext = kubeconfig.useContext(ourContext)
 
@@ -69,15 +80,15 @@ abstract class SkuberApp {
 
     def anyToJsValue(m: Any): JsValue = {
       m match {
-        case s: String           => JsString(s)
-        case n: Int              => JsNumber(n)
-        case n: Long             => JsNumber(n)
-        case n: Double           => JsNumber(n)
-        case n: BigDecimal       => JsNumber(n)
-        case b: Boolean          => JsBoolean(b)
-        case l: Seq[Any]         => JsArray(l.map(anyToJsValue))
-        case o: Map[String, Any] => JsObject(o.map { case (k, v) => k -> anyToJsValue(v) })
-        case o: JsObject         => o
+        case s: String     => JsString(s)
+        case n: Int        => JsNumber(n)
+        case n: Long       => JsNumber(n)
+        case n: Double     => JsNumber(n)
+        case n: BigDecimal => JsNumber(n)
+        case b: Boolean    => JsBoolean(b)
+        case l: Seq[_]     => JsArray(l.map(anyToJsValue))
+        case o: Map[_, _]  => JsObject(o.map { case (k, v) => k.toString -> anyToJsValue(v) })
+        case o: JsObject   => o
       }
     }
 

@@ -1,110 +1,58 @@
-import sbt.Keys.{scalacOptions, version}
+import Build._
+import sbt.Keys.scalacOptions
 
-val projectVersion = "0.3.5"
-val projectScalaVersion = "2.13.1"
-val projectOrganization = "com.virtuslab"
+val diffsonPlayJson = "org.gnieh" %% "diffson-play-json" % "4.0.2"
+val jacksonDataformat = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.11.0"
+val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.9"
+val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
+val magnolia = "com.propensive" %% "magnolia" % "0.16.0"
+val playJson = "com.typesafe.play" %% "play-json" % "2.8.1"
+val quicklens = "com.softwaremill.quicklens" %% "quicklens" % "1.6.0"
+val scalatest = "org.scalatest" %% "scalatest" % "3.2.0"
+val skuber = "io.skuber" %% "skuber" % "2.4.0"
+val specs2Version = "4.10.0"
+val specs2Core = "org.specs2" %% "specs2-core" % specs2Version
+val specs2MatcherExtra = "org.specs2" %% "specs2-matcher-extra" % specs2Version
+val sttpClientVersion = "2.0.9"
+val sttpClientBackendZio = "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % sttpClientVersion
+val sttpClientCore = "com.softwaremill.sttp.client" %% "core" % sttpClientVersion
+val sttpClientJson4s = "com.softwaremill.sttp.client" %% "json4s" % sttpClientVersion
 
-lazy val core = (project in file("core"))
-  .settings(
-    name := "iat-core",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
-      "com.propensive" %% "magnolia" % "0.14.5",
-      "com.softwaremill.quicklens" %% "quicklens" % "1.5.0",
-      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
-    ),
-    scalacOptions ++= Seq("-deprecation" /*"-Ymacro-debug-verbose"*/ /*"-Ymacro-debug-lite"*/),
-    scalafmtOnCompile := true
-  )
+lazy val iatCore =
+  module(id = "iat-core", directory = "core")
+    .libraries(jacksonDataformat, magnolia, quicklens)
+    .libraries(scalatest % Test)
 
-lazy val openapi = (project in file("openapi"))
-  .settings(
-    name := "iat-openapi",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.1.0" % Test,
-    ),
-    scalacOptions ++= Seq("-deprecation"),
-    scalafmtOnCompile := true
-  ).dependsOn(core, kubernetes, scalatest)
+lazy val kubernetesClient =
+  module(id = "kubernetes-client-scala", directory = "kubernetes")
+    .libraries(sttpClientCore, sttpClientJson4s, json4sJackson)
+    .libraries(scalatest % Test, specs2Core % Test, specs2MatcherExtra % Test)
+    .settings(
+      scalacOptions ++= Seq("-feature", "-language:higherKinds", "-unchecked"),
+      scalacOptions in Test += "-Yrangepos"
+    )
 
-lazy val skuber = (project in file("skuber"))
-  .settings(
-    name := "iat-skuber",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "io.skuber" %% "skuber" % "2.4.0",
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
-      "com.softwaremill.quicklens" %% "quicklens" % "1.5.0"
-    ),
-    scalacOptions ++= Seq("-deprecation"),
-    scalafmtOnCompile := true
-  ).dependsOn(core, scalatest)
+lazy val iatScalatest =
+  module(id = "iat-scalatest", directory = "scalatest")
+    .libraries(scalatest, json4sJackson, jacksonDataformat, playJson, diffsonPlayJson)
+    .disablePublish
 
-lazy val examples = (project in file("examples"))
-  .settings(
-    name := "iat-examples",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client" %% "core" % "2.0.7",
-      "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.0.7",
-      "ch.qos.logback" % "logback-classic" % "1.2.3",
-    ),
-    scalacOptions ++= Seq("-deprecation"),
-    scalafmtOnCompile := true
-  ).dependsOn(core, skuber, openapi)
+lazy val iatOpenapi =
+  module(id = "iat-openapi", directory = "openapi")
+    .dependsOn(iatCore, kubernetesClient, iatScalatest % "test->test")
 
-lazy val scalatest = (project in file("scalatest"))
-  .settings(
-    name := "iat-scalatest",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.1.0",
-      "org.json4s" %% "json4s-jackson" % "3.6.7",
-      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.10.1",
-      "com.typesafe.play" %% "play-json" % "2.8.1",
-      "org.gnieh" %% "diffson-play-json" % "4.0.2"
-    ),
-    scalacOptions ++= Seq("-deprecation"),
-    scalafmtOnCompile := true
-  )
+lazy val iatSkuber =
+  module(id = "iat-skuber", directory = "skuber")
+    .libraries(jacksonDataformat, quicklens, skuber)
+    .dependsOn(iatCore, iatScalatest % "test->test")
 
-lazy val kubernetes = (project in file("kubernetes"))
-  .settings(
-    name := "kubernetes-client-scala",
-    version := projectVersion,
-    organization := projectOrganization,
-    scalaVersion := projectScalaVersion,
-    libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.client" %% "core" % "2.0.0",
-      "com.softwaremill.sttp.client" %% "json4s" % "2.0.0",
-      "org.json4s" %% "json4s-jackson" % "3.6.7",
-      // test dependencies
-      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
-      "org.specs2" %% "specs2-core" % "4.8.3" % Test,
-      "org.specs2" %% "specs2-matcher-extra" % "4.8.3" % Test,
-    ),
-    scalacOptions := Seq(
-      "-language:higherKinds",
-      "-unchecked",
-      "-deprecation",
-      "-feature"
-    ),
-    scalacOptions in Test ++= Seq("-Yrangepos"),
-    scalafmtOnCompile := true
-  )
+lazy val iatExamples =
+  module(id = "iat-examples", directory = "examples")
+    .libraries(logbackClassic, sttpClientCore, sttpClientBackendZio)
+    .dependsOn(iatCore, iatSkuber, iatOpenapi)
+    .disablePublish
 
-lazy val root = (project in file("."))
-  .settings(name := "infrastructure-as-types")
-  .aggregate(core, kubernetes, skuber, examples)
+lazy val root =
+  module(id = "infrastructure-as-types", directory = ".")
+    .aggregate(iatCore, kubernetesClient, iatScalatest, iatOpenapi, iatSkuber, iatExamples)
+    .dependsOn(iatCore, iatOpenapi, iatSkuber)

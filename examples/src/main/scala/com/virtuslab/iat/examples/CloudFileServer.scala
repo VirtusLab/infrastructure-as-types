@@ -1,6 +1,6 @@
 package com.virtuslab.iat.examples
 
-import java.nio.file.Path
+import java.nio.file.Paths
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
@@ -40,7 +40,7 @@ object CloudFileServer extends SkuberApp with App {
       ports = TCP(8080) :: Nil
     ) :: Nil,
     configurations = conf :: Nil,
-    mounts = conf.mount("config", Path.of("/opt/")) :: Nil
+    mounts = conf.mount("config", Paths.get("/opt/")) :: Nil
   )
 
   import iat.skuber.details._

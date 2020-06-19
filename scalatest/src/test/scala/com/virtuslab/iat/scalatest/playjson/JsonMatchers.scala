@@ -43,18 +43,23 @@ trait JsonMatchers {
     implicit val lcs: Patience[JsValue] = new Patience[JsValue]
 
     import diffson.playJson.DiffsonProtocol._
-    implicit val format: OFormat[JsonPatch[JsValue]] = Json.format[JsonPatch[JsValue]]
 
     val p: JsonPatch[JsValue] = diff(right, left)
     val operations = p.ops.map {
-      case Add(path, value)  => s"+ ${Json.stringify(Json.toJson(path))}: ${Json.stringify(value)}\n"
-      case Remove(path, old) => s"- ${Json.stringify(Json.toJson(path))}: ${old.fold("")(Json.stringify)}\n"
+      case Add(path, value) =>
+        s"+ ${Json.stringify(Json.toJson(path))}: ${Json.stringify(value)}\n"
+      case Remove(path, old) =>
+        s"- ${Json.stringify(Json.toJson(path))}: ${old.fold("")(Json.stringify)}\n"
       case Replace(path, value, old) =>
         s"r ${Json.stringify(Json.toJson(path))}: ${Json.stringify(value)} -> ${old.fold("")(Json.stringify)}\n"
-      case Move(from, path)  => s"m ${Json.stringify(Json.toJson(from))} -> ${Json.stringify(Json.toJson(path))}"
-      case Copy(from, path)  => s"c ${Json.stringify(Json.toJson(from))} -> ${Json.stringify(Json.toJson(path))}"
-      case Test(path, value) => s"t ${Json.stringify(Json.toJson(path))}: ${Json.stringify(value)}\n"
-      case o                 => throw new UnsupportedOperationException(s"Unrecognized operation: $o")
+      case Move(from, path) =>
+        s"m ${Json.stringify(Json.toJson(from))} -> ${Json.stringify(Json.toJson(path))}"
+      case Copy(from, path) =>
+        s"c ${Json.stringify(Json.toJson(from))} -> ${Json.stringify(Json.toJson(path))}"
+      case Test(path, value) =>
+        s"t ${Json.stringify(Json.toJson(path))}: ${Json.stringify(value)}\n"
+      case o =>
+        throw new UnsupportedOperationException(s"Unrecognized operation: $o")
     }
 
     val result = new StringBuilder(s""", expected:

@@ -19,7 +19,7 @@ $ minikube start
 ```
 2. In the main directory type run command:
 ```shell script
-$ export IAT_CLUSTER='minikube'
+$ export IAT_KUBE_CONTEXT='minikube'
 $ sbt "examples/runMain com.virtuslab.iat.examples.GuestBook"
 ```
 3. Inspect if all pods are in `Running` state:

@@ -36,7 +36,6 @@ class QuantityTest extends Specification {
       val base = new java.math.BigInteger("2")
       val value = base.pow(60).multiply(multi)
       val decValue = scala.math.BigDecimal(new java.math.BigDecimal(value))
-      System.err.println("....10Ei = " + decValue)
       Quantity("10Ei").amount mustEqual decValue
     }
   }

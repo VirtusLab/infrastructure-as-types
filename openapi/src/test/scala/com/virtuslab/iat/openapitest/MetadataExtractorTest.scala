@@ -33,10 +33,10 @@ class MetadataExtractorTest extends AnyFlatSpec with Matchers {
 
     val nsJson = asJValue(ns)
     val nsMeta = asMeta(nsJson)
-    nsMeta should equal(Right(Metadata("v1", "Namespace", "", "ns1")))
+    nsMeta should equal(Metadata("v1", "Namespace", "", "ns1"))
 
     val dpJson = asJValue(dp)
     val dpMeta = asMeta(dpJson)
-    dpMeta should equal(Right(Metadata("apps/v1", "Deployment", "ns1", "app1")))
+    dpMeta should equal(Metadata("apps/v1", "Deployment", "ns1", "app1"))
   }
 }

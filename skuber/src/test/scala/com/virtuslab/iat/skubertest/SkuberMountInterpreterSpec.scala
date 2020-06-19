@@ -1,6 +1,6 @@
 package com.virtuslab.iat.skubertest
 
-import java.nio.file.Path
+import java.nio.file.Paths
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
@@ -26,7 +26,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     val mount = config.mount(
       name = "test-mount",
       key = "test.txt",
-      path = Path.of("/opt/foo.txt")
+      path = Paths.get("/opt/foo.txt")
     )
 
     import iat.skuber._
@@ -66,7 +66,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     )
     val mount = config.mount(
       name = "config",
-      path = Path.of("/opt/")
+      path = Paths.get("/opt/")
     )
 
     import iat.skuber._
@@ -105,7 +105,7 @@ class SkuberMountInterpreterSpec extends AnyFlatSpec with Matchers with JsonMatc
     val mount = secret.mount(
       name = "test-secret-mount",
       key = "test.txt",
-      path = Path.of("/opt/test-secret.txt")
+      path = Paths.get("/opt/test-secret.txt")
     )
 
     import iat.skuber._

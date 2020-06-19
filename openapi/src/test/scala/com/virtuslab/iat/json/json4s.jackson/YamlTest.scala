@@ -1,6 +1,6 @@
 package com.virtuslab.iat.json.json4s.jackson
 
-import org.json4s.{Formats, NoTypeHints}
+import org.json4s.{ Formats, NoTypeHints }
 import org.json4s.jackson.Serialization
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

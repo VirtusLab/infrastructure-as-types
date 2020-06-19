@@ -3,7 +3,7 @@ package com.virtuslab.iat.openapitest
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
-import com.virtuslab.iat.kubernetes.dsl.{Application, Configuration, Namespace, Secret}
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Namespace, Secret }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.json4s.jackson.JsonMatchers
@@ -15,9 +15,9 @@ class InterpreterTest extends AnyFlatSpec with Matchers with JsonMatchers with E
 
   it should "derive a one level nested interpreter" in {
 
-   val myApp = Application(Name("bar") :: Nil)
-   val myConfiguration = Configuration(Name("conf-bar") :: Nil, data = Map.empty)
-   val mySecret = Secret(Name("sec-bar") :: Nil, data = Map.empty)
+    val myApp = Application(Name("bar") :: Nil)
+    val myConfiguration = Configuration(Name("conf-bar") :: Nil, data = Map.empty)
+    val mySecret = Secret(Name("sec-bar") :: Nil, data = Map.empty)
 
     val ns: Namespace = Namespace(Name("foo") :: Nil)
 

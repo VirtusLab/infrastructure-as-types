@@ -4,7 +4,7 @@ import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.Protocols
 import com.virtuslab.iat.json.json4s.jackson.YamlMethods.yamlToJson
-import com.virtuslab.iat.kubernetes.dsl.{Application, Configuration, Gateway, Namespace}
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Gateway, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.json4s.jackson.JsonMatchers
