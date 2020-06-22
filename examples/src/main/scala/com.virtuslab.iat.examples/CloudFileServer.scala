@@ -13,6 +13,7 @@ object CloudFileServer extends SkuberApp with App {
   import iat.skuber.dsl._
 
   val ns = Namespace(Name("test") :: Nil)
+
   val conf = Configuration(
     Name("app") :: Nil,
     data = Map(

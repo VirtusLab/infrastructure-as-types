@@ -4,6 +4,20 @@ trait Function1I1[-A1, I1, +R] {
   def apply(a1: A1)(implicit i1: I1): R
 }
 
+trait Function1I2[-A1, I1, I2, +R] {
+  def apply(a1: A1)(implicit i1: I1, i2: I2): R
+}
+
+trait Function1I3[-A1, I1, I2, I3, +R] {
+  def apply(
+      a1: A1
+    )(implicit
+      i1: I1,
+      i2: I2,
+      i3: I3
+    ): R
+}
+
 trait Function2I1[-A1, -A2, I1, +R] {
   def apply(a1: A1, a2: A2)(implicit i1: I1): R
 }

@@ -26,4 +26,6 @@ trait DefaultDetails {
       svc
         .modify(_.spec.each._type)
         .setTo(t)
+
+  def serviceUnchanged: Service => Service = (s: Service) => s
 }

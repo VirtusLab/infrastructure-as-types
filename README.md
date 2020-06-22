@@ -1,6 +1,12 @@
 # Infrastructure as Types
 Infrastructure as Types project provides tools for micro-system infrastructure development.
 
+## The Audience
+We start our journey with: 
+- JVM developer teams
+- At least medium Scala knowledge level
+- Basic Cloud/Kubernetes skills
+
 ## The Problem
 With trends of moving complexity of non-functional requirements out of the application code,
 and creating smaller and smaller micro or even nano-services,

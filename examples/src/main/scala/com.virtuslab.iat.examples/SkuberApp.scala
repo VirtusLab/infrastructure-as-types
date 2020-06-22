@@ -1,6 +1,7 @@
 package com.virtuslab.iat.examples
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.virtuslab.iat.dsl.Labeled
 import play.api.libs.json._
@@ -15,7 +16,7 @@ abstract class SkuberApp {
   import skuber._
 
   implicit private val system: ActorSystem = ActorSystem("a-system")
-  implicit private val actorMaterializer: ActorMaterializer = ActorMaterializer()
+  implicit protected val actorMaterializer: ActorMaterializer = ActorMaterializer()
   implicit protected val dispatcher: ExecutionContextExecutor = system.dispatcher
 
   private val kubeconfig: Configuration = api.Configuration.parseKubeconfigFile().get
@@ -26,14 +27,18 @@ abstract class SkuberApp {
   }
   private val configWithContext = kubeconfig.useContext(ourContext)
 
-  implicit protected val client: K8SRequestContext = k8sInit(config = configWithContext, appConfig = system.settings.config)
+  implicit protected val client: K8SRequestContext = k8sInit(
+    config = configWithContext,
+    appConfig = system.settings.config
+  )
   implicit protected val lc: LoggingContext = LoggingContext.lc
 
   def close(): Unit = {
     println("All done.")
-    client.close
-    actorMaterializer.shutdown()
+    client.close // AFAIU it does nothing
+    Http().shutdownAllConnectionPools() // This actually closes the Akka HTTP client (Skuber) connection pool
     Await.result(system.terminate(), 1.minute)
+    actorMaterializer.shutdown()
   }
 
   case class Summary(msg: String) {
