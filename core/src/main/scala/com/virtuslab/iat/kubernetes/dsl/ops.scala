@@ -1,5 +1,6 @@
 package com.virtuslab.iat.kubernetes.dsl
 
+import com.virtuslab.iat.core.experimental.Evolution.Pair
 import com.virtuslab.iat.dsl.KeyValue
 import com.virtuslab.iat.kubernetes.dsl.Mountable.KeyValueMountableOps
 
@@ -26,4 +27,13 @@ object experimental {
   implicit class EvolutionOps[A <: Interpretable[A], AT <: Interpretable[A], B](
       val current: ((A, Namespace), ((A, Namespace)) => B, B => B))
     extends Evolution[(A, Namespace), B]
+
+  implicit class PairOps[A, B, AT, BT](pair: Pair[A, B, AT, BT]) {
+    def withStrategy(strategy: Evolution.Strategy[A, B, AT, BT]): (Pair[A, B, AT, BT], Evolution.Strategy[A, B, AT, BT]) =
+      (pair, strategy)
+    def withStrategyImplicitly(
+        implicit
+        strategy: Evolution.Strategy[A, B, AT, BT]
+      ): (Pair[A, B, AT, BT], Evolution.Strategy[A, B, AT, BT]) = withStrategy(strategy)
+  }
 }

@@ -5,7 +5,6 @@ import com.virtuslab.iat.scala.{ FunctionOps, TupleOps }
 object dsl {
   import com.virtuslab.iat.kubernetes.dsl.Mountable.MountSource
   import com.virtuslab.iat.kubernetes.dsl.{ Configuration, Secret }
-
   import skuber.Volume.{ ConfigMapVolumeSource, Secret => SecretVolumeSource }
 
   implicit val secretMountSource: MountSource[Secret, SecretVolumeSource] =
@@ -28,7 +27,9 @@ object experimental {
   import akka.stream.Materializer
   import com.virtuslab.iat.core.experimental.Evolution
   import com.virtuslab.iat.core.experimental.Evolution.Pair
-  import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Namespace, Secret }
+  import com.virtuslab.iat.core.experimental.ImplicitInterpretation
+  import com.virtuslab.iat.dsl.Interpretable
+  import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Namespace }
   import skuber.Service
   import skuber.apps.v1.Deployment
   import play.api.libs.json.Format
@@ -37,6 +38,10 @@ object experimental {
   import scala.concurrent.duration._
   import scala.concurrent.{ Await, ExecutionContext }
   import scala.util.Try
+
+  // Adds interpretedImplicitly method for Skuber interpretations
+  implicit class SkuberInterpretationOps[A <: Interpretable[A]](val arguments: A)
+    extends ImplicitInterpretation[A, ObjectResource]
 
   // ensure D1
   // ensure S1
@@ -117,15 +122,6 @@ object experimental {
       }.toEither
   }
 
-  implicit class PairOps[A, B, AT, BT](pair: Pair[A, B, AT, BT]) {
-    def withStrategy(strategy: Evolution.Strategy[A, B, AT, BT]): (Pair[A, B, AT, BT], Evolution.Strategy[A, B, AT, BT]) =
-      (pair, strategy)
-    def withStrategyImplicitly(
-        implicit
-        strategy: Evolution.Strategy[A, B, AT, BT]
-      ): (Pair[A, B, AT, BT], Evolution.Strategy[A, B, AT, BT]) = withStrategy(strategy)
-  }
-
   implicit val upsertNamespace: UpsertStrategy[Namespace, skuber.Namespace] =
     new UpsertStrategy[Namespace, skuber.Namespace]
   implicit val upsertConfiguration: UpsertStrategy[(Configuration, Namespace), skuber.ConfigMap] =
@@ -137,7 +133,6 @@ object experimental {
     def execute(
         o: (A, A => B, B => B)
       )(implicit
-        ev: B <:< ObjectResource,
         format: Format[B],
         resDef: ResourceDefinition[B],
         executor: ExecutionContext,
@@ -165,7 +160,7 @@ object experimental {
         client: K8SRequestContext,
         lc: LoggingContext
       ): Either[Throwable, (B1, B2)] =
-      Try {
+      Try { // TODO can this be implemented by composing UpsertStrategy twice?
         val (arguments, interpreter, details) = o
         val (b1, b2) = interpreter.andThen(details.tupled)(arguments)
 
@@ -176,7 +171,7 @@ object experimental {
     def execute[A1, A2](
         o: ((A1, A2), ((A1, A2)) => (B1, B2), ((B1, B2)) => (B1, B2))
       )(implicit
-        evA: A =:= (A1, A2),
+        evA: A =:= (A1, A2), // TODO could this be done by extending UpsertStrategy with various type params?
         format1: Format[B1],
         format2: Format[B2],
         resDef1: ResourceDefinition[B1],

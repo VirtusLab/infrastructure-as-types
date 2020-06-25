@@ -1,12 +1,21 @@
 package com.virtuslab.iat.core.experimental
 
-trait Interpretation[A] {
+import com.virtuslab.iat.dsl.Interpretable
+
+trait Interpretation[A <: Interpretable[A]] {
   def arguments: A
-  def interpretedWith[B](interpreter: A => B): (A, A => B, B => B) = (arguments, interpreter, identity)
-  def interpretedImplicitly[B](
+  def interpretedWith[B](interpreter: A => B): (A, A => B, B => B) =
+    (arguments, interpreter, identity)
+}
+
+// Requires implementation specific type and allows for graceful degradation of the API
+// Without it we run into implicit polymorphism problems and interpreter cannot be properly selected.
+trait ImplicitInterpretation[A <: Interpretable[A], BaseB] {
+  def arguments: A
+  def interpretedImplicitly[B <: BaseB](
       implicit
       interpreter: A => B
-    ): (A, A => B, B => B) = interpretedWith(interpreter)
+    ): (A, A => B, B => B) = (arguments, interpreter, identity)
 }
 
 trait InterpretationWithContext[A, C] {

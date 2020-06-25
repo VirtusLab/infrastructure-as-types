@@ -5,7 +5,6 @@ import java.nio.file.Path
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.{ Name, Role }
 import com.virtuslab.iat.dsl.TCP
-import com.virtuslab.iat.examples.CloudFileServer.conf
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Container, Namespace }
 
 object BlueGreen extends SkuberApp with scala.App {
@@ -93,7 +92,8 @@ object BlueGreen extends SkuberApp with scala.App {
         serviceUnchanged.merge(appDetails)
       )
 
-  val v1Ns = ns.interpretedWith(namespaceInterpreter) // FIXME
+  val v1Ns = ns.interpretedImplicitly
+//  val v1Ns = ns.interpretedWith(namespaceInterpreter)
 
   import skuber.json.format._
   upsertNamespace.execute(v1Ns).toTry.get
