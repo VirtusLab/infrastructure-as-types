@@ -67,9 +67,11 @@ object BlueGreen extends SkuberApp with scala.App {
       .inNamespace(ns)
       .interpretedImplicitly
 
-  // (Application, Namespace)
-  // (Application, Namespace) => (Service, Deployment)
-  // (Service, Deployment) => (Service, Deployment)
+  /*
+    (Application, Namespace)
+    (Application, Namespace) => (Service, Deployment)
+    (Service, Deployment) => (Service, Deployment)
+   */
   val v1App =
     app
       .inNamespace(ns)

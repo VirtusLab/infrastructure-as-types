@@ -1,6 +1,7 @@
 package com.virtuslab.iat.core.experimental
 
 import com.virtuslab.iat.dsl.Interpretable
+import com.virtuslab.iat.scala.ops.=!=
 
 trait Interpretation[A <: Interpretable[A]] {
   def arguments: A
@@ -12,8 +13,9 @@ trait Interpretation[A <: Interpretable[A]] {
 // Without it we run into implicit polymorphism problems and interpreter cannot be properly selected.
 trait ImplicitInterpretation[A <: Interpretable[A], BaseB] {
   def arguments: A
-  def interpretedImplicitly[B <: BaseB](
+  def interpretedImplicitly[B /* <: BaseB*/ ](
       implicit
+      ev: A =!= B,
       interpreter: A => B
     ): (A, A => B, B => B) = (arguments, interpreter, identity)
 }

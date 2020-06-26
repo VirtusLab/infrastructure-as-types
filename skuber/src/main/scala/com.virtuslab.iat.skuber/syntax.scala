@@ -1,5 +1,6 @@
 package com.virtuslab.iat.skuber
 
+import com.virtuslab.iat.scala.ops.Not
 import com.virtuslab.iat.scala.{ FunctionOps, TupleOps }
 
 object dsl {
@@ -42,6 +43,9 @@ object experimental {
   // Adds interpretedImplicitly method for Skuber interpretations
   implicit class SkuberInterpretationOps[A <: Interpretable[A]](val arguments: A)
     extends ImplicitInterpretation[A, ObjectResource]
+
+  import scala.language.implicitConversions
+  implicit def AIsNotB(unused: Namespace): Not[skuber.Namespace] = (_: skuber.Namespace) => ()
 
   // ensure D1
   // ensure S1
