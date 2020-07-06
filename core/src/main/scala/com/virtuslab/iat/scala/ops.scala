@@ -9,6 +9,6 @@ object tuple {
 }
 
 object ops extends TupleOps with FunctionOps {
-  type Not[T] = T => Unit
+  type Not[T] = T => Nothing
   type =!=[A, B] = A =:= Not[B]
 }
