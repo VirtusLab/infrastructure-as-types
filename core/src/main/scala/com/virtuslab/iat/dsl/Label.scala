@@ -1,6 +1,7 @@
 package com.virtuslab.iat.dsl
 
 trait Label {
+  // TODO: think about using Symbol instead of string
   def key: String
   def value: String
 

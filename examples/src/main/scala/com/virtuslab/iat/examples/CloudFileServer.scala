@@ -58,18 +58,22 @@ object CloudFileServer extends SkuberApp with App {
     )
   )
 
+  import iat.kubernetes.dsl.experimental._
   import iat.skuber.deployment._
+  import iat.skuber.experimental._
   import skuber.json.format._
 
   val results =
     ns.interpret.upsert.deinterpret.summary ::
       conf
-        .interpretWith(ns)
+        .inNamespace(ns)
+        .interpret
         .upsert
         .deinterpret
         .summary ::
       app
-        .interpretWith(ns)
+        .inNamespace(ns)
+        .interpret
         .map(appDetails)
         .upsert
         .deinterpret

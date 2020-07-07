@@ -28,4 +28,24 @@ trait InterpreterOps[Base] {
         interpreter: (A, C) => (B1, B2)
       ): (B1, B2) = interpreter(obj.reference, ctx)
   }
+
+  trait Contextualized1[A <: Interpretable[A], C, B1 <: Base] {
+    def arguments: (A, C)
+    def obj: A = arguments._1
+    def ctx: C = arguments._2
+    def interpret(
+        implicit
+        interpreter: (A, C) => B1
+      ): B1 = interpreter(obj.reference, ctx)
+  }
+
+  trait Contextualized2[A <: Interpretable[A], C, B1 <: Base, B2 <: Base] {
+    def arguments: (A, C)
+    def obj: A = arguments._1
+    def ctx: C = arguments._2
+    def interpret(
+        implicit
+        interpreter: (A, C) => (B1, B2)
+      ): (B1, B2) = interpreter(obj.reference, ctx)
+  }
 }
