@@ -1,6 +1,7 @@
 package com.virtuslab.iat.skuber
 
 import com.virtuslab.iat.scala.{ FunctionOps, TupleOps }
+import skuber.ext.Ingress
 
 object dsl {
   import com.virtuslab.iat.kubernetes.dsl.{ Configuration, Secret }
@@ -30,6 +31,7 @@ object experimental extends core.InterpreterOps[ObjectResource] {
   import com.virtuslab.iat.kubernetes.dsl.Namespace
   import com.virtuslab.iat.kubernetes.dsl.Application
   import com.virtuslab.iat.kubernetes.dsl.Configuration
+  import com.virtuslab.iat.kubernetes.dsl.Gateway
   import skuber.Service
   import skuber.ConfigMap
   import skuber.apps.v1.Deployment
@@ -38,4 +40,6 @@ object experimental extends core.InterpreterOps[ObjectResource] {
     extends Contextualized2[Application, Namespace, Service, Deployment]
   implicit class NamespacedConfigurationInterpreterOps(val arguments: (Configuration, Namespace))
     extends Contextualized1[Configuration, Namespace, ConfigMap]
+  implicit class NamespacedGatewayInterpreterOps(val arguments: (Gateway, Namespace))
+    extends Contextualized1[Gateway, Namespace, Ingress]
 }
