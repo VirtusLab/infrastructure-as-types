@@ -32,7 +32,7 @@ object Build {
     }
 
     def disablePublish: Project = {
-      project.settings(publishLocal := {}, publish := {})
+      project.settings(publishLocal := {}, publishM2 := {}, publish := {})
     }
   }
 }
