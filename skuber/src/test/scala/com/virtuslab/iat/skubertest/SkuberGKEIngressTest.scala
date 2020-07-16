@@ -52,7 +52,7 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
 
     // FIXME HACK
     val ing = Ingress(
-      apiVersion = "networking.k8s.io/v1beta1", // Skuber uses wrong api version
+      apiVersion = "extensions/v1beta1", // Skuber uses wrong api version
       metadata = ObjectMeta(
         name = "my-ingress",
         namespace = gke.name,
@@ -236,9 +236,9 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |    targetPort: 8080
             |  sessionAffinity: None
             |""".stripMargin)),
-        Metadata("networking.k8s.io/v1beta1", "Ingress", gke.name, "my-ingress") -> matchJson(yamlToJson(s"""
+        Metadata("extensions/v1beta1", "Ingress", gke.name, "my-ingress") -> matchJson(yamlToJson(s"""
             |---
-            |apiVersion: networking.k8s.io/v1beta1
+            |apiVersion: extensions/v1beta1
             |kind: Ingress
             |metadata:
             |  name: my-ingress

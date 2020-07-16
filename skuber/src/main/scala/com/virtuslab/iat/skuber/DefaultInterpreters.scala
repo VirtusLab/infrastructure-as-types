@@ -44,7 +44,7 @@ trait DefaultInterpreters {
 
   implicit val gatewayInterpreter: (Gateway, Namespace) => SIngress = (obj: Gateway, ns: Namespace) => {
     SIngress(
-      apiVersion = "networking.k8s.io/v1beta1", // Skuber uses wrong api version
+      apiVersion = "extensions/v1beta1", // Skuber uses wrong api version
       metadata = subinterpreter.objectMetaInterpreter(obj, ns),
       spec = obj.protocols match {
         case Protocols.Any => None

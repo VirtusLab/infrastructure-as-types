@@ -28,7 +28,7 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
     val ingress = gateway.interpretWith(ns).asJsValues.head
 
     ingress.should(matchJson(yamlToJson(s"""
-        |apiVersion: networking.k8s.io/v1beta1
+        |apiVersion: extensions/v1beta1
         |kind: Ingress
         |metadata:
         |  name: external
