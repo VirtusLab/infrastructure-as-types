@@ -77,7 +77,7 @@ trait DefaultSubinterpreters {
     )
   }
 
-  def containerInterpreter(c: Container, mounts: List[(Volume, Volume.Mount)]): SContainer = {
+  def containerInterpreter(c: Containerized.Container, mounts: List[(Volume, Volume.Mount)]): SContainer = {
     SContainer(
       name = c.name,
       image = c.image,
