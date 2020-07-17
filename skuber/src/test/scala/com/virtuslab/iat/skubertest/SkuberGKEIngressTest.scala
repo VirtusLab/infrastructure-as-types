@@ -2,8 +2,8 @@ package com.virtuslab.iat.skubertest
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.TCP
-import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace }
+import com.virtuslab.iat.dsl.{ HTTP, Port, Protocol, Protocols, TCP }
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Gateway, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.playjson.JsonMatchers
@@ -11,8 +11,7 @@ import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.JsValue
-import skuber.ext.Ingress
-import skuber.{ ObjectMeta, Service }
+import skuber.Service
 
 class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
 
@@ -42,42 +41,14 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
       ) :: Nil
     )
 
-//    val gw = Gateway(
-//      Name("my-ingress") :: Nil,
-//      protocols = Protocols(
-//        Protocol.Layers(l7 = HTTP(path = Path("/*")), l4 = TCP(Port(app1Port))),
-//        Protocol.Layers(l7 = HTTP(path = Path("/kube")), l4 = TCP(Port(app2Port)))
-//      )
-//    )
-
-    // FIXME HACK
-    val ing = Ingress(
-      apiVersion = "extensions/v1beta1", // Skuber uses wrong api version
-      metadata = ObjectMeta(
-        name = "my-ingress",
-        namespace = gke.name,
-        labels = Map("name" -> "my-ingress")
+    val gw = Gateway(
+      Name("my-ingress") :: Nil,
+      inputs = Protocols(
+        Protocol.Layers(l7 = HTTP(), l4 = TCP())
       ),
-      spec = Some(
-        Ingress.Spec(
-          rules =
-            Ingress.Rule(
-              host = None,
-              http = Ingress.HttpRule(
-                paths =
-                  Ingress.Path("/*",
-                               Ingress.Backend(
-                                 serviceName = app1.name,
-                                 servicePort = app1Port
-                               )) ::
-                    Ingress.Path("/kube",
-                                 Ingress.Backend(
-                                   serviceName = app2.name,
-                                   servicePort = app2Port
-                                 )) :: Nil
-              )
-            ) :: Nil
-        )
+      outputs = Protocols(
+        Protocol.Layers(l7 = HTTP(path = HTTP.Path("/*"), host = HTTP.Host(app1.name)), l4 = TCP(Port(app1Port))),
+        Protocol.Layers(l7 = HTTP(path = HTTP.Path("/kube"), host = HTTP.Host(app2.name)), l4 = TCP(Port(app2Port)))
       )
     )
 
@@ -117,9 +88,7 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
       app1.inNamespace(gke).interpret.map(app1Details),
       app2.inNamespace(gke).interpret.map(app2Details)
     ).flatMap(_.asMetaJsValues)
-//    val gws = gw.inNamespace(gke).interpret.asMetaJsValues
-
-    val gws = ing.asMetaJsValues
+    val gws = gw.inNamespace(gke).interpret.asMetaJsValues
 
     val resources = ns ++ apps ++ gws
 
@@ -253,6 +222,8 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |        backend:
             |          serviceName: hello-world
             |          servicePort: 60000
+            |  - http:
+            |      paths:
             |      - path: /kube
             |        backend:
             |          serviceName: hello-kubernetes

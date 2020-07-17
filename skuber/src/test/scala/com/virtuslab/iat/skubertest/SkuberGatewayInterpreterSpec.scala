@@ -17,8 +17,11 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
     val ns = Namespace(Name("foo") :: Nil)
     val gateway = Gateway(
       Name("external") :: Nil,
-      Protocols(
-        Protocol.Layers(l7 = HTTP(host = Host("test.dsl.virtuslab.com")), l4 = TCP(Port(80)))
+      inputs = Protocols(
+        Protocol.Layers(l7 = HTTP(host = Host("test.dsl.virtuslab.com")), l4 = TCP())
+      ),
+      outputs = Protocols(
+        Protocol.Layers(l7 = HTTP(host = Host("app1.ns1")), l4 = TCP(Port(80)))
       )
     )
 
@@ -42,7 +45,7 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
         |      paths:
         |      - path: /
         |        backend:
-        |          serviceName: ???
+        |          serviceName: app1.ns1
         |          servicePort: 80
         |""".stripMargin)))
   }

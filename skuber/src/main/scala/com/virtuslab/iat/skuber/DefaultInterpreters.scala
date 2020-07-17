@@ -43,33 +43,40 @@ trait DefaultInterpreters {
     }
 
   implicit val gatewayInterpreter: (Gateway, Namespace) => SIngress = (obj: Gateway, ns: Namespace) => {
+    def interpretOutputs(inputHttp: HTTP, outputs: Protocols): List[SIngress.Rule] = outputs match {
+      case Protocols.None => SIngress.Rule(host = None, http = SIngress.HttpRule()) :: Nil
+      case Protocols.Selected(layers) =>
+        layers.map {
+          case Protocol.SomeLayers(http: HTTP, tcp: TCP, _) =>
+            SIngress.Rule(
+              host = inputHttp.host.get,
+              http = SIngress.HttpRule(
+                paths = List(
+                  SIngress.Path(
+                    http.path.get.getOrElse("/"),
+                    SIngress.Backend(
+                      serviceName = http.host.get.get, // FIXME
+                      servicePort = tcp.port.get.get._1 // FIXME
+                    )
+                  )
+                )
+              )
+            )
+        }.toList
+    }
+
     SIngress(
       apiVersion = "extensions/v1beta1", // Skuber uses wrong api version
       metadata = subinterpreter.objectMetaInterpreter(obj, ns),
-      spec = obj.protocols match {
+      spec = obj.inputs match {
         case Protocols.Any => None
-        case Protocols.Selected(layers) =>
+        case Protocols.Selected(inLayers) =>
           Some(
             SIngress.Spec(
-              rules = layers.map {
-                case Protocol.AnyLayers => SIngress.Rule(host = None, http = SIngress.HttpRule())
-                case Protocol.SomeLayers(http: HTTP, tcp: TCP, _) =>
-                  SIngress.Rule(
-                    host = http.host.get,
-                    http = SIngress.HttpRule(
-                      paths = List(
-                        SIngress.Path(
-                          http.path.get.getOrElse("/"),
-                          SIngress.Backend(
-                            serviceName = "???", // FIXME get from identity
-                            servicePort = tcp.port.get.get._1 // FIXME
-                          )
-                        )
-                      )
-                    )
-                  )
+              rules = inLayers.flatMap {
+                case Protocol.SomeLayers(inputHttp: HTTP, _: TCP, _) => interpretOutputs(inputHttp, obj.outputs)
+                // TODO TLS
               }.toList
-              // TODO TLS
             )
           )
       }
