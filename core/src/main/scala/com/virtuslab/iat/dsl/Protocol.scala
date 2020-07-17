@@ -6,8 +6,22 @@ trait Protocol
 
 object Protocol {
   trait L7 extends Protocol
+  object L7 {
+    sealed trait Any extends L7
+    case object Any extends Any
+  }
+
   trait L4 extends Protocol
+  object L4 {
+    sealed trait Any extends L4
+    case object Any extends Any
+  }
+
   trait L3 extends Protocol
+  object L3 {
+    sealed trait Any extends L3
+    case object Any extends Any
+  }
 
   sealed trait Any extends L7 with L4 with L3
   case object Any extends Any
@@ -41,18 +55,18 @@ object Protocol {
       l3: L3)
     extends Layers[L7, L4, L3]
 
-  case object AnyLayers extends Layers[Protocol.Any, Protocol.Any, Protocol.Any] {
-    override def l7: Protocol.Any = Protocol.Any
-    override def l4: Protocol.Any = Protocol.Any
-    override def l3: Protocol.Any = Protocol.Any
+  case object AnyLayers extends Layers[Protocol.L7, Protocol.L4, Protocol.L3] {
+    override def l7: Protocol.L7.Any = Protocol.L7.Any
+    override def l4: Protocol.L4.Any = Protocol.L4.Any
+    override def l3: Protocol.L3.Any = Protocol.L3.Any
   }
 
   object Layers {
-    def apply(): Layers[Protocol.Any, Protocol.Any, Protocol.Any] = AnyLayers
-    def apply[A <: L7, B <: L4, C <: L3](
-        l7: A = Protocol.Any,
-        l4: B = Protocol.Any,
-        l3: C = Protocol.Any
+    def apply: Layers[Protocol.L7, Protocol.L4, Protocol.L3] = AnyLayers
+    def apply[A <: Protocol.L7, B <: Protocol.L4, C <: Protocol.L3](
+        l7: A = Protocol.L7.Any,
+        l4: B = Protocol.L4.Any,
+        l3: C = Protocol.L3.Any
       ): Layers[A, B, C] = SomeLayers(l7, l4, l3)
   }
 }
@@ -93,12 +107,14 @@ object IP {
 
 case class UDP(port: Port) extends Protocol.UDP
 object UDP {
+  def apply: UDP = UDP(Port.Any)
   def apply(number: Int): UDP = UDP(Port(number))
   def apply(name: String, number: Int): UDP = UDP(NamedPort(name, number))
 }
 
 case class TCP(port: Port) extends Protocol.TCP
 object TCP {
+  def apply(): TCP = TCP(Port.Any)
   def apply(number: Int): TCP = TCP(Port(number))
   def apply(name: String, number: Int): TCP = TCP(NamedPort(name, number))
 }
@@ -147,6 +163,7 @@ object HTTP {
     def apply(host: String): Host = AHost(host)
   }
 
+  def apply: HTTP = HTTP(Method.Any, Path.Any, Host.Any)
   def apply(
       method: Method = Method.Any,
       path: Path = Path.Any,
