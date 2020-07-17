@@ -7,6 +7,7 @@ trait TupleOps {
     def map[B1](f1: A1 => B1): Tuple1[B1] = Tuple1(f1(t.untupled))
     def reduce[B](f: A1 => B): B = f(t.untupled)
     def untupled: A1 = t._1
+    def append[A2](a2: A2): (A1, A2) = (t._1, a2)
   }
 
   implicit class TupleOps2[A1, A2](t: (A1, A2)) {
@@ -29,5 +30,7 @@ trait TupleOps {
 
     def reduce[B](f: (A1, A2) => B): B = f.tupled(t)
     def reduce[B](f: ((A1, A2)) => B): B = f(t)
+
+    def append[A3](a3: A3): (A1, A2, A3) = (t._1, t._2, a3)
   }
 }
