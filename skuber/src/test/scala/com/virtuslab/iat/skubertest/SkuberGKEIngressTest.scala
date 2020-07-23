@@ -53,26 +53,14 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
     )
 
     import iat.skuber.details._
-    def nativeService(a: (String, String)): Service => Service = {
-      import com.softwaremill.quicklens._
-      val annotate = (s: skuber.Service) =>
-        s.modify(_.metadata.annotations)
-          .using(
-            _ ++ Map(a)
-          )
-      annotate.andThen(serviceType(Service.Type.ClusterIP))
-    }
-
-    val defaultService: Service => Service = serviceType(Service.Type.NodePort)
+    val nodePortService: Service => Service = serviceType(Service.Type.NodePort)
 
     val app1Details = (
-//      nativeService("cloud.google.com/neg" -> """'{"ingress": true}'"""),
-      defaultService,
+      nodePortService,
       replicas(3)
     )
     val app2Details = (
-//      nativeService("cloud.google.com/neg" -> """'{"ingress": true}'"""),
-      defaultService,
+      nodePortService,
       replicas(3)
     )
 
@@ -222,8 +210,6 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
             |        backend:
             |          serviceName: hello-world
             |          servicePort: 60000
-            |  - http:
-            |      paths:
             |      - path: /kube
             |        backend:
             |          serviceName: hello-kubernetes

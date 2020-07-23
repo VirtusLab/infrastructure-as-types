@@ -43,26 +43,24 @@ trait DefaultInterpreters {
     }
 
   implicit val gatewayInterpreter: (Gateway, Namespace) => SIngress = (obj: Gateway, ns: Namespace) => {
-    def interpretOutputs(inputHttp: HTTP, outputs: Protocols): List[SIngress.Rule] = outputs match {
-      case Protocols.None => SIngress.Rule(host = None, http = SIngress.HttpRule()) :: Nil
+    def interpretOutputs(inputHttp: HTTP, outputs: Protocols): SIngress.Rule = outputs match {
+      case Protocols.None => SIngress.Rule(host = None, http = SIngress.HttpRule())
       case Protocols.Selected(layers) =>
-        layers.map {
-          case Protocol.SomeLayers(http: HTTP, tcp: TCP, _) =>
-            SIngress.Rule(
-              host = inputHttp.host.get,
-              http = SIngress.HttpRule(
-                paths = List(
-                  SIngress.Path(
-                    http.path.get.getOrElse("/"),
-                    SIngress.Backend(
-                      serviceName = http.host.get.get, // FIXME
-                      servicePort = tcp.port.get.get._1 // FIXME
-                    )
+        SIngress.Rule(
+          host = inputHttp.host.get,
+          http = SIngress.HttpRule(
+            paths = layers.map {
+              case Protocol.SomeLayers(http: HTTP, tcp: TCP, _) =>
+                SIngress.Path(
+                  http.path.get.getOrElse("/"),
+                  SIngress.Backend(
+                    serviceName = http.host.get.get, // FIXME
+                    servicePort = tcp.port.get.get._1 // FIXME
                   )
                 )
-              )
-            )
-        }.toList
+            }.toList
+          )
+        )
     }
 
     SIngress(
@@ -73,7 +71,7 @@ trait DefaultInterpreters {
         case Protocols.Selected(inLayers) =>
           Some(
             SIngress.Spec(
-              rules = inLayers.flatMap {
+              rules = inLayers.map {
                 case Protocol.SomeLayers(inputHttp: HTTP, _: TCP, _) => interpretOutputs(inputHttp, obj.outputs)
                 // TODO TLS
               }.toList

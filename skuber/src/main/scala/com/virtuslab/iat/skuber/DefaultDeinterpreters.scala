@@ -3,7 +3,8 @@ package com.virtuslab.iat.skuber
 import _root_.skuber.apps.v1.Deployment
 import _root_.skuber.{ ConfigMap, Service, Namespace => SNamespace }
 import com.virtuslab.iat.dsl.Label
-import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Namespace }
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Configuration, Gateway, Namespace }
+import skuber.ext.Ingress
 
 trait DefaultDeinterpreters {
   import Label.ops._
@@ -44,6 +45,17 @@ trait DefaultDeinterpreters {
     case Left(e) => Left(e)
   }
 
+  implicit val gatewayDeinterpreter: Maybe[Ingress] => Maybe[Gateway] = {
+    case Right(ingress) =>
+      Right(
+        Gateway(
+          labels = ingress.metadata.labels.map(fromMap).toList
+          // TODO
+        )
+      )
+    case Left(e) => Left(e)
+  }
+
   implicit class NamespaceDeinterpreterOps(obj: Maybe[SNamespace]) {
     def deinterpret(
         implicit
@@ -63,5 +75,12 @@ trait DefaultDeinterpreters {
         implicit
         d: Maybe[ConfigMap] => Maybe[Configuration]
       ): Maybe[Configuration] = d(obj)
+  }
+
+  implicit class GatewayDeinterpreter(obj: Maybe[Ingress]) {
+    def deinterpret(
+        implicit
+        d: Maybe[Ingress] => Maybe[Gateway]
+      ): Maybe[Gateway] = d(obj)
   }
 }
