@@ -1,4 +1,6 @@
 # Infrastructure as Types
+![Version](https://img.shields.io/badge/version-alpha4-brightgreen.svg)
+
 Infrastructure as Types project provides tools for modern infrastructure description and development.
 From simple application deployment to complex custom control plane, we'd like to help you write what you need.
 
