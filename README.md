@@ -87,7 +87,7 @@ The project is in **alpha** and under heavy development, **any and all APIs can 
 ## Kubernetes
 The first backend we provide is the Kubernetes API.
 
-Fragments of classic [GuestBook example](https://kubernetes.io/docs/tutorials/stateless-application/guestbook/):
+Fragments of classic [GuestBook example](https://kubernetes.io/docs/tutorials/stateless-application/guestbook/) with added Network Policy:
 ```scala
 val guestbook = Namespace(Name("guestbook") :: Nil)
 
@@ -148,7 +148,7 @@ See the [full GuestBook example here](https://github.com/VirtusLab/infrastructur
 For a different flavour, see the [same applications but materialized into JSON](https://github.com/VirtusLab/infrastructure-as-types/blob/master/skuber/src/test/scala/com/virtuslab/iat/skubertest/SkuberGuestBookTest.scala).
 
 ## Core concepts
-The basic concepts in the Infrastructure as Types are `Label`, `Protocol` and `Identity`,
+The basic concepts in the Infrastructure as Types high-level graphs are `Label`, `Protocol` and `Identity`,
 and, of course, **types**.
 
 ### Label, protocol, identity
