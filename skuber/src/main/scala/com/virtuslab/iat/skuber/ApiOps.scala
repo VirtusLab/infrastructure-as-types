@@ -10,7 +10,11 @@ trait ApiOps {
 
   import com.virtuslab.iat.scala.ops._
 
-  implicit class ObjectResourceOps[A <: ObjectResource: Format: ResourceDefinition](a: A) {
+  implicit class ObjectResourceOps[A <: ObjectResource](a: A) {
+    def map[B](f: A => B): B = f(a)
+  }
+
+  implicit class ObjectResourceOps1[A <: ObjectResource: Format: ResourceDefinition](a: A) {
     def upsert(
         implicit
         executor: ExecutionContext,

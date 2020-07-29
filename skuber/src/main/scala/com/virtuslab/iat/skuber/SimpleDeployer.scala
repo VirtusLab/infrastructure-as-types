@@ -3,7 +3,7 @@ package com.virtuslab.iat.skuber
 import akka.http.scaladsl.model.StatusCodes
 import play.api.libs.json.Format
 import skuber.api.client.LoggingContext
-import skuber.{ K8SException, K8SRequestContext, K8SWatchEvent, ObjectMeta, ObjectResource, ResourceDefinition, Service }
+import skuber.{ CustomResource, K8SException, K8SRequestContext, ObjectResource, ResourceDefinition, Service }
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, ExecutionContext, Future }
@@ -48,6 +48,23 @@ trait SimpleDeployer {
         client.usingNamespace(o.namespace).update(patched)
       } else {
         println(s"Not found '$s' on Kubernetes cluster, trying to update anyway")
+        client.usingNamespace(o.namespace).update(o)
+      }
+    case c: CustomResource[_, _] =>
+      val future = futureGet(o)
+      val maybeCr = Await.result(future, 1.minute)
+      if (maybeCr.isDefined) {
+        def patchWithOriginal(s: CustomResource[_, _], orig: CustomResource[_, _]): CustomResource[_, _] =
+          s.copy(
+            metadata = s.metadata.copy(resourceVersion = orig.metadata.resourceVersion)
+          )
+
+        val cr = maybeCr.get.asInstanceOf[CustomResource[_, _]]
+        println(s"Patching '$c' on Kubernetes cluster's original: '$cr'")
+        val patched = patchWithOriginal(c, cr).asInstanceOf[A]
+        client.usingNamespace(o.namespace).update(patched)
+      } else {
+        println(s"Not found '$c' on Kubernetes cluster, trying to update anyway")
         client.usingNamespace(o.namespace).update(o)
       }
     case o => client.usingNamespace(o.namespace).update(o)
