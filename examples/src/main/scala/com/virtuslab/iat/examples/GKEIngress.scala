@@ -2,7 +2,7 @@ package com.virtuslab.iat.examples
 
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
-import com.virtuslab.iat.dsl.{ HTTP, Port, Protocol, Protocols, TCP }
+import com.virtuslab.iat.dsl.{ HTTP, HTTPS, Port, Protocol, Protocols, TCP }
 import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Gateway, Namespace }
 
 object GKEIngress extends SkuberApp with App {
@@ -34,7 +34,7 @@ object GKEIngress extends SkuberApp with App {
   val gw = Gateway(
     Name("gke-example") :: Nil,
     inputs = Protocols(
-      Protocol.Layers(l7 = HTTP(), l4 = TCP())
+      Protocol.Layers(l7 = HTTPS())
     ),
     outputs = Protocols(
       Protocol.Layers(l7 = HTTP(path = HTTP.Path("/"), host = HTTP.Host(app1.name)), l4 = TCP(Port(app1Port))),
@@ -105,7 +105,8 @@ object details {
   def managedTLS(addressName: String, certificateName: String): Ingress => Ingress = {
     val annotations = Map(
       "kubernetes.io/ingress.global-static-ip-name" -> addressName,
-      "networking.gke.io/managed-certificates" -> certificateName
+      "networking.gke.io/managed-certificates" -> certificateName,
+      "kubernetes.io/ingress.allow-http" -> "false"
     )
     (i: Ingress) => i.modify(_.metadata.annotations).using(_ ++ annotations)
   }

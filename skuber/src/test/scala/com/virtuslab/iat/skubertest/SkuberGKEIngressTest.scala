@@ -44,7 +44,7 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
     val gw = Gateway(
       Name("my-ingress") :: Nil,
       inputs = Protocols(
-        Protocol.Layers(l7 = HTTP(), l4 = TCP())
+        Protocol.Layers(l7 = HTTP())
       ),
       outputs = Protocols(
         Protocol.Layers(l7 = HTTP(path = HTTP.Path("/*"), host = HTTP.Host(app1.name)), l4 = TCP(Port(app1Port))),

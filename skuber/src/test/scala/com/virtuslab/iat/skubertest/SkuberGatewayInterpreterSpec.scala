@@ -18,7 +18,7 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
     val gateway = Gateway(
       Name("external") :: Nil,
       inputs = Protocols(
-        Protocol.Layers(l7 = HTTP(host = Host("test.dsl.virtuslab.com")), l4 = TCP())
+        Protocol.Layers(l7 = HTTP(host = Host("test.dsl.virtuslab.com")))
       ),
       outputs = Protocols(
         Protocol.Layers(l7 = HTTP(host = Host("app1.ns1")), l4 = TCP(Port(80)))
@@ -47,6 +47,47 @@ class SkuberGatewayInterpreterSpec extends AnyFlatSpec with Matchers with JsonMa
         |        backend:
         |          serviceName: app1.ns1
         |          servicePort: 80
+        |""".stripMargin)))
+  }
+
+  it should "allow to define a TLS definition" in {
+    val ns = Namespace(Name("foo") :: Nil)
+    val gateway = Gateway(
+      Name("external") :: Nil,
+      inputs = Protocols(
+        Protocol.Layers(l7 = HTTPS(host = Host("test.dsl.virtuslab.com"), keyPairName = Some("secret-name")))
+      ),
+      outputs = Protocols(
+        Protocol.Layers(l7 = HTTP(host = Host("app1.ns1")), l4 = TCP(Port(80)))
+      )
+    )
+
+    import iat.skuber.playjson._
+    import skuber.json.ext.format._
+
+    val ingress = gateway.interpretWith(ns).asJsValues.head
+
+    ingress.should(matchJson(yamlToJson(s"""
+        |apiVersion: extensions/v1beta1
+        |kind: Ingress
+        |metadata:
+        |  name: external
+        |  namespace: ${ns.name}
+        |  labels:
+        |    name: external
+        |spec:
+        |  rules:
+        |  - host: test.dsl.virtuslab.com
+        |    http:
+        |      paths:
+        |      - path: /
+        |        backend:
+        |          serviceName: app1.ns1
+        |          servicePort: 80
+        |  tls:
+        |  - hosts:
+        |    - test.dsl.virtuslab.com
+        |    secretName: secret-name
         |""".stripMargin)))
   }
 }

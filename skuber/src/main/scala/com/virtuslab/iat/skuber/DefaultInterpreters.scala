@@ -43,7 +43,7 @@ trait DefaultInterpreters {
     }
 
   implicit val gatewayInterpreter: (Gateway, Namespace) => SIngress = (obj: Gateway, ns: Namespace) => {
-    def interpretOutputs(inputHttp: HTTP, outputs: Protocols): SIngress.Rule = outputs match {
+    def interpretOutputs(inputHttp: Protocol.HTTP, outputs: Protocols): SIngress.Rule = outputs match {
       case Protocols.None => SIngress.Rule(host = None, http = SIngress.HttpRule())
       case Protocols.Selected(layers) =>
         SIngress.Rule(
@@ -64,7 +64,7 @@ trait DefaultInterpreters {
     }
 
     SIngress(
-      apiVersion = "extensions/v1beta1", // Skuber uses wrong api version
+      apiVersion = "extensions/v1beta1", // Skuber uses different api version
       metadata = subinterpreter.objectMetaInterpreter(obj, ns),
       spec = obj.inputs match {
         case Protocols.Any => None
@@ -72,8 +72,14 @@ trait DefaultInterpreters {
           Some(
             SIngress.Spec(
               rules = inLayers.map {
-                case Protocol.SomeLayers(inputHttp: HTTP, _: TCP, _) => interpretOutputs(inputHttp, obj.outputs)
-                // TODO TLS
+                case Protocol.SomeLayers(inputHttp: Protocol.HTTP, _, _) => interpretOutputs(inputHttp, obj.outputs)
+              }.toList,
+              tls = inLayers.collect {
+                case Protocol.SomeLayers(inputHttps: Protocol.HTTPS, _, _) =>
+                  SIngress.TLS(
+                    hosts = inputHttps.host.get.fold(List.empty[String])(_ :: Nil),
+                    secretName = inputHttps.keyPairName.getOrElse("")
+                  )
               }.toList
             )
           )

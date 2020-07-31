@@ -38,9 +38,18 @@ object Protocol {
   trait UDP extends Protocol.L4 with HasPort
   trait TCP extends Protocol.L4 with HasPort
 
+  trait TLS extends Protocol {
+    def keyPairName: Option[String]
+  }
+
   trait HTTP extends Protocol.L7 {
     def method: HTTP.Method
     def path: HTTP.Path
+    def host: HTTP.Host
+  }
+
+  trait HTTPS extends Protocol.HTTP with Protocol.TLS {
+    keyPairName: Option[String]
   }
 
   trait Layers[L7 <: Protocol.L7, L4 <: Protocol.L4, L3 <: Protocol.L3] {
@@ -119,13 +128,12 @@ object TCP {
   def apply(name: String, number: Int): TCP = TCP(NamedPort(name, number))
 }
 
-// TODO TLS
-
 case class HTTP(
     method: HTTP.Method,
     path: HTTP.Path,
     host: HTTP.Host)
   extends Protocol.HTTP
+
 object HTTP {
   sealed trait Method {
     def get: Option[String] = this match {
@@ -171,7 +179,28 @@ object HTTP {
     ): HTTP = new HTTP(method, path, host)
 }
 
-// TODO HTTPS
+case class HTTPS(
+    method: HTTP.Method,
+    path: HTTP.Path,
+    host: HTTP.Host,
+    keyPairName: Option[String])
+  extends Protocol.HTTPS
+
+object HTTPS {
+  def apply: HTTPS = new HTTPS(
+    HTTP.Method.Any,
+    HTTP.Path.Any,
+    HTTP.Host.Any,
+    keyPairName = None
+  )
+
+  def apply(
+      method: HTTP.Method = HTTP.Method.Any,
+      path: HTTP.Path = HTTP.Path.Any,
+      host: HTTP.Host = HTTP.Host.Any,
+      keyPairName: Option[String] = None
+    ): HTTPS = new HTTPS(method, path, host, keyPairName)
+}
 
 trait Protocols {
   def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
