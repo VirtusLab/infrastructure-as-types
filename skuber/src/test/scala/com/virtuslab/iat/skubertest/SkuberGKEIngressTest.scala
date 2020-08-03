@@ -53,7 +53,6 @@ class SkuberGKEIngressTest extends AnyFlatSpec with Matchers with JsonMatchers w
     )
 
     import iat.skuber.details._
-    val nodePortService: Service => Service = serviceType(Service.Type.NodePort)
 
     val app1Details = (
       nodePortService,

@@ -1,7 +1,7 @@
 package com.virtuslab.iat.skuber
 
 import skuber.apps.v1.Deployment
-import skuber.{ Container, Resource, Service }
+import skuber.{Container, Probe, Resource, Service}
 
 trait DefaultDetails {
   import com.softwaremill.quicklens._
@@ -26,4 +26,16 @@ trait DefaultDetails {
       svc
         .modify(_.spec.each._type)
         .setTo(t)
+
+  def nodePortService: Service => Service = serviceType(Service.Type.NodePort)
+
+  def readinessProbe(probe: Probe): Deployment => Deployment =
+    readinessProbe(_ => true, probe)
+
+  def readinessProbe(filter: Container => Boolean, probe: Probe): Deployment => Deployment =
+    (dpl: Deployment) =>
+      dpl
+        .modify(_.spec.each.template.spec.each.containers.eachWhere(filter).readinessProbe)
+        .setTo(Some(probe))
+
 }
