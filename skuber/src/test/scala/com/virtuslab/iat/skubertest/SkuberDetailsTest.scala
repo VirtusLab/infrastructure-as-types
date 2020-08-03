@@ -3,7 +3,7 @@ package com.virtuslab.iat.skubertest
 import com.virtuslab.iat
 import com.virtuslab.iat.dsl.Label.Name
 import com.virtuslab.iat.dsl.TCP
-import com.virtuslab.iat.kubernetes.dsl.{Application, Container, Namespace}
+import com.virtuslab.iat.kubernetes.dsl.{ Application, Container, Namespace }
 import com.virtuslab.iat.kubernetes.meta.Metadata
 import com.virtuslab.iat.scalatest.EnsureMatchers
 import com.virtuslab.iat.scalatest.playjson.JsonMatchers
@@ -11,7 +11,7 @@ import com.virtuslab.iat.skuber.yaml.Yaml.yamlToJson
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import play.api.libs.json.JsValue
-import skuber.{HTTPGetAction, Probe}
+import skuber.{ HTTPGetAction, Probe }
 
 class SkuberDetailsTest extends AnyFlatSpec with Matchers with JsonMatchers with EnsureMatchers {
 
@@ -33,9 +33,11 @@ class SkuberDetailsTest extends AnyFlatSpec with Matchers with JsonMatchers with
 
     val app1Details = (
       nodePortService,
-      replicas(3).andThen(readinessProbe(
-        Probe(HTTPGetAction(skuber.portNumToNameablePort(app1Port), path="/healthz"))
-      ))
+      replicas(3).andThen(
+        readinessProbe(
+          Probe(HTTPGetAction(skuber.portNumToNameablePort(app1Port), path = "/healthz"))
+        )
+      )
     )
 
     import iat.kubernetes.dsl.experimental._
@@ -45,7 +47,7 @@ class SkuberDetailsTest extends AnyFlatSpec with Matchers with JsonMatchers with
 
     val resources: Seq[(Metadata, JsValue)] =
       ns.interpret.asMetaJsValues ++
-      app1.inNamespace(ns).interpret.map(app1Details).asMetaJsValues
+        app1.inNamespace(ns).interpret.map(app1Details).asMetaJsValues
 
     Ensure(resources)
       .contain(
@@ -113,7 +115,7 @@ class SkuberDetailsTest extends AnyFlatSpec with Matchers with JsonMatchers with
             |    port: 60000
             |    targetPort: 60000
             |  sessionAffinity: None
-            |""".stripMargin)),
+            |""".stripMargin))
       )
   }
 }

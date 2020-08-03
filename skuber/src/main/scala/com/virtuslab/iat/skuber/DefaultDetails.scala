@@ -1,7 +1,7 @@
 package com.virtuslab.iat.skuber
 
 import skuber.apps.v1.Deployment
-import skuber.{Container, Probe, Resource, Service}
+import skuber.{ Container, Probe, Resource, Service }
 
 trait DefaultDetails {
   import com.softwaremill.quicklens._

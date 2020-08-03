@@ -1,16 +1,15 @@
 import Build._
 import sbt.Keys.scalacOptions
 
-val diffsonPlayJson = "org.gnieh" %% "diffson-play-json" % "4.0.2"
-val jacksonDataformat = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.11.0"
+val diffsonPlayJson = "org.gnieh" %% "diffson-play-json" % "4.0.3"
+val jacksonDataformat = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.11.2"
 val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.9"
 val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
-val magnolia = "com.propensive" %% "magnolia" % "0.16.0"
-val playJson = "com.typesafe.play" %% "play-json" % "2.8.1"
+val playJson = "com.typesafe.play" %% "play-json" % "2.9.0"
 val quicklens = "com.softwaremill.quicklens" %% "quicklens" % "1.6.0"
 val scalatest = "org.scalatest" %% "scalatest" % "3.2.0"
 val skuber = "io.skuber" %% "skuber" % "2.4.0"
-val specs2Version = "4.10.0"
+val specs2Version = "4.10.1"
 val specs2Core = "org.specs2" %% "specs2-core" % specs2Version
 val specs2MatcherExtra = "org.specs2" %% "specs2-matcher-extra" % specs2Version
 val sttpClientVersion = "2.0.9"
@@ -20,7 +19,7 @@ val sttpClientJson4s = "com.softwaremill.sttp.client" %% "json4s" % sttpClientVe
 
 lazy val iatCore =
   module(id = "iat-core", directory = "core")
-    .libraries(jacksonDataformat, magnolia, quicklens)
+    .libraries(jacksonDataformat, quicklens)
     .libraries(scalatest % Test)
 
 lazy val kubernetesClient =

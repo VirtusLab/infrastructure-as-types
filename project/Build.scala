@@ -5,7 +5,7 @@ import sbt.{ Project, file }
 
 object Build {
   val scala212 = "2.12.11"
-  val scala213 = "2.13.2"
+  val scala213 = "2.13.3"
   val projectScalaVersion = scala213
   val supportedScalaVersions = List(scala213, scala212)
 
