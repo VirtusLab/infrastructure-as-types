@@ -24,7 +24,7 @@ jobs:
           root: '~'
           paths: ['*']
 
-  kind:
+  smoke-test:
     machine:
       # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
       image: ubuntu-1604:201903-01
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: Wait for GuestBook frontend pods to spin up
           command: |
-            kubectl wait --namespace guestbook --for condition=ready --selector app=guestbook --timeout 3m pods
+            kubectl wait --namespace guestbook --for condition=ready --selector app=guestbook --timeout 5m pods
       - run:
           name: '[Background] Launch port forwarding for GuestBook frontend'
           background: true
@@ -72,7 +72,7 @@ jobs:
           name: Smoke-test the deployed GuestBook
           command: |
             until nc -z localhost 3000; do
-              echo 'Waiting for frontend to listen on port 3000...'
+              echo 'Waiting for port forwarding to activate...'
               sleep 500
             done
 
@@ -91,5 +91,5 @@ workflows:
   workflow:
     jobs:
       - build
-      - kind:
+      - smoke-test:
           requires: [build]
