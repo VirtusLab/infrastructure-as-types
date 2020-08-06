@@ -1,8 +1,9 @@
 version: 2.1
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:8-jdk
+    machine:
+      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
+      image: ubuntu-1604:201903-01
 
     working_directory: ~/infrastructure-as-types
 
@@ -13,32 +14,22 @@ jobs:
 
     steps:
       - checkout
-      # -batch is necessary to make sure sbt doesn't stall waiting for user input in case of certain failures
-      - run: echo '-batch' > .sbtopts
 
+      # -batch is necessary to make sure sbt doesn't stall waiting for user input in case of certain failures
+      - run: echo '-batch' >> .sbtopts
       - run: sbt update
+      - run: sbt +scalafmtCheckAll
       - run: sbt +compile
       - run: sbt +test:compile
       - run: sbt +test
-      - persist_to_workspace:
-          root: '~'
-          paths: ['*']
 
-  smoke-test:
-    machine:
-      # https://circleci.com/docs/2.0/configuration-reference/#available-machine-images
-      image: ubuntu-1604:201903-01
-    working_directory: ~/infrastructure-as-types
-    steps:
       - run:
-          name: Install kind
+          name: 'Install kind & kubectl'
           command: |
+            set -x
             curl -fLo ./kind "https://kind.sigs.k8s.io/dl/v0.8.1/kind-Linux-amd64"
             chmod +x ./kind
             sudo mv ./kind /usr/local/bin/kind
-      - run:
-          name: Install kubectl
-          command: |
             curl -fLo ./kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
@@ -48,11 +39,8 @@ jobs:
           command: |
             kind create cluster
             mkdir -p ~/.kube/
-            kind get kubeconfig > ~/.kube/config
+            kind get kubeconfig | tee ~/.kube/config
 
-      # No checkout, just attaching the workspace from the build job.
-      - attach_workspace:
-          at: '~'
       - run:
           name: Deploy GuestBook
           environment:
@@ -61,9 +49,9 @@ jobs:
           command: |
             sbt "project iat-examples" "runMain com.virtuslab.iat.examples.GuestBook"
       - run:
-          name: Wait for GuestBook frontend pods to spin up
+          name: Wait for GuestBook pods to spin up
           command: |
-            kubectl wait --namespace guestbook --for condition=ready --selector app=guestbook --timeout 5m pods
+            kubectl wait --namespace guestbook --for condition=ready --selector 'app in (guestbook,redis)' --timeout 5m pods
       - run:
           name: '[Background] Launch port forwarding for GuestBook frontend'
           background: true
@@ -85,11 +73,3 @@ jobs:
           name: Delete cluster
           when: always
           command: kind delete cluster
-
-workflows:
-  version: 2
-  workflow:
-    jobs:
-      - build
-      - smoke-test:
-          requires: [build]
