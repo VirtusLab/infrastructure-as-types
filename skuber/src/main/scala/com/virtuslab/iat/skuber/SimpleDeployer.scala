@@ -107,13 +107,19 @@ object SimpleDeployer extends SimpleDeployer {
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
-    ): Either[Throwable, A] =
-    Try {
-      val future = futureUpsert(o)
-      val result = Await.result(future, 1.minute)
-      println(s"Successfully created or updated '$result' on Kubernetes cluster")
-      result
-    }.toEither
+    ): Future[A] = {
+    futureUpsert(o)
+  }
+
+  def upsertBlocking[A <: ObjectResource: Format: ResourceDefinition](
+      o: A
+    )(implicit
+      executor: ExecutionContext,
+      client: K8SRequestContext,
+      lc: LoggingContext
+    ): Either[Throwable, A] = {
+    tryAwait(upsert(o), 1.minute)
+  }
 
   def create[A <: ObjectResource: Format: ResourceDefinition](
       o: A
@@ -121,13 +127,19 @@ object SimpleDeployer extends SimpleDeployer {
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
-    ): Either[Throwable, A] =
-    Try {
-      val future = futureCreate(o)
-      val result = Await.result(future, 1.minute)
-      println(s"Successfully created '$result' on Kubernetes cluster")
-      result
-    }.toEither
+    ): Future[A] = {
+    futureCreate(o)
+  }
+
+  def createBlocking[A <: ObjectResource: Format: ResourceDefinition](
+      o: A
+    )(implicit
+      executor: ExecutionContext,
+      client: K8SRequestContext,
+      lc: LoggingContext
+    ): Either[Throwable, A] = {
+    tryAwait(futureCreate(o), 1.minute)
+  }
 
   def delete[A <: ObjectResource: Format: ResourceDefinition](
       o: A
@@ -135,10 +147,23 @@ object SimpleDeployer extends SimpleDeployer {
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
-    ): Either[Throwable, Unit] =
+    ): Future[Unit] = {
+    futureDelete(o)
+  }
+
+  def deleteBlocking[A <: ObjectResource: Format: ResourceDefinition](
+      o: A
+    )(implicit
+      executor: ExecutionContext,
+      client: K8SRequestContext,
+      lc: LoggingContext
+    ): Either[Throwable, Unit] = {
+    tryAwait(futureDelete(o), 1.minute)
+  }
+
+  private def tryAwait[A](future: Future[A], atMost: Duration): Either[Throwable, A] = {
     Try {
-      val future = futureDelete(o)
-      Await.result(future, 1.minute)
-      println(s"Successfully deleted '$o' from Kubernetes cluster")
+      Await.result(future, atMost)
     }.toEither
+  }
 }
