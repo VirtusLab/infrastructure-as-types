@@ -64,18 +64,18 @@ object CloudFileServer extends SkuberApp with App {
   import skuber.json.format._
 
   val results =
-    ns.interpret.upsert.deinterpret.summary ::
+    ns.interpret.upsertBlocking.deinterpret.summary ::
       conf
         .inNamespace(ns)
         .interpret
-        .upsert
+        .upsertBlocking
         .deinterpret
         .summary ::
       app
         .inNamespace(ns)
         .interpret
         .map(appDetails)
-        .upsert
+        .upsertBlocking
         .deinterpret
         .summary :: Nil
 

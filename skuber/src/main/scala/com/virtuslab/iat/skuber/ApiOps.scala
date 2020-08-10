@@ -3,8 +3,10 @@ package com.virtuslab.iat.skuber
 import play.api.libs.json.Format
 import skuber.api.client.LoggingContext
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
+import scala.concurrent.duration._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ Await, ExecutionContext, Future }
+import scala.util.Try
 
 trait ApiOps {
 
@@ -20,7 +22,15 @@ trait ApiOps {
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
-      ): Either[Throwable, A] = SimpleDeployer.upsert(a)
+      ): Future[A] = SimpleDeployer.upsert(a)
+
+    def upsertBlocking(
+        implicit
+        executor: ExecutionContext,
+        client: K8SRequestContext,
+        lc: LoggingContext
+      ): Either[Throwable, A] = SimpleDeployer.upsertBlocking(a)
+
   }
 
   implicit class ObjectResourceOps2[
@@ -33,6 +43,16 @@ trait ApiOps {
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
-      ): (Either[Throwable, A1], Either[Throwable, A2]) = t.map(_.upsert, _.upsert)
+      ): (Future[A1], Future[A2]) = t.map(_.upsert, _.upsert)
+
+    def upsertBlocking(
+        implicit
+        executor: ExecutionContext,
+        client: K8SRequestContext,
+        lc: LoggingContext
+      ): (Either[Throwable, A1], Either[Throwable, A2]) =
+      t.map(_.upsertBlocking, _.upsertBlocking)
+
   }
+
 }
