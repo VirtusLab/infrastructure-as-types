@@ -37,7 +37,10 @@ trait DefaultInterpreters {
         apiVersion = Some("v1"), // FIXME: should be in model
         kind = Some("Secret"), // FIXME: should be in model
         metadata = Some(subinterpreter.objectMetaInterpreter(obj, ns)),
-        data = Some(obj.data.mapValues(B64Encoded.apply).toMap)
+        data = {
+          import scala.collection.compat._
+          Some(obj.data.view.mapValues(B64Encoded.apply).toMap)
+        }
       )
 
   implicit val applicationInterpreter: (Application, Namespace) => (model.Service, model.Deployment) =

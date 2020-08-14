@@ -6,6 +6,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import skuber.LabelSelector._
 
+import scala.language.reflectiveCalls
+
 class SkuberLabelExpressionsTest extends AnyFlatSpec with Matchers {
   import com.virtuslab.iat.dsl.Expressions.ops._
 

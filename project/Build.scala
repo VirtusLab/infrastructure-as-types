@@ -12,12 +12,22 @@ object Build {
   val projectVersion = "0.3.5-SNAPSHOT"
   val projectOrganization = "com.virtuslab"
 
+  val commonScalacOptions = Seq(
+    "-deprecation", "-feature", "-unchecked", "-Xfatal-warnings", "-Ybackend-parallelism", "8", "-Ywarn-dead-code", "-Ywarn-extra-implicit"
+  )
+  val lintScalacOptions = {
+    "doc-detached inaccessible infer-any missing-interpolator nullary-unit private-shadow stars-align type-parameter-shadow"
+      .split(" ").map("-Xlint:" + _)
+  }
+  val productionOnlyScalacOptions = Seq("-Ywarn-value-discard")
+
   val commonSettings = Seq(
     version := projectVersion,
     crossScalaVersions := supportedScalaVersions,
     organization := projectOrganization,
     scalaVersion := projectScalaVersion,
-    scalacOptions += "-deprecation",
+    scalacOptions ++= commonScalacOptions ++ lintScalacOptions,
+    scalacOptions in compile ++= productionOnlyScalacOptions,
     scalafmtOnCompile := true
   )
 
@@ -32,7 +42,7 @@ object Build {
     }
 
     def disablePublish: Project = {
-      project.settings(publishLocal := {}, publishM2 := {}, publish := {})
+      project.settings(skip in publish := true)
     }
   }
 }

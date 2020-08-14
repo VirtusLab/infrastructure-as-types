@@ -38,7 +38,10 @@ trait DefaultInterpreters {
     (obj: Secret, ns: Namespace) => {
       SSecret(
         metadata = subinterpreter.objectMetaInterpreter(obj, ns),
-        data = obj.data.mapValues(_.getBytes).toMap
+        data = {
+          import scala.collection.compat._
+          obj.data.view.mapValues(_.getBytes).toMap
+        }
       )
     }
 

@@ -7,7 +7,11 @@ val json4sJackson = "org.json4s" %% "json4s-jackson" % "3.6.9"
 val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.2.3"
 val playJson = "com.typesafe.play" %% "play-json" % "2.9.0"
 val quicklens = "com.softwaremill.quicklens" %% "quicklens" % "1.6.0"
+val scalaCollectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6" cross CrossVersion.binary
 val scalatest = "org.scalatest" %% "scalatest" % "3.2.0"
+val silencerVersion = "1.7.1"
+val silencerLib = "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+val silencerPlugin = compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full)
 val skuber = "io.skuber" %% "skuber" % "2.4.0"
 val specs2Version = "4.10.2"
 val specs2Core = "org.specs2" %% "specs2-core" % specs2Version
@@ -38,11 +42,12 @@ lazy val iatScalatest =
 
 lazy val iatOpenapi =
   module(id = "iat-openapi", directory = "openapi")
+    .libraries(scalaCollectionCompat)
     .dependsOn(iatCore, kubernetesClient, iatScalatest % "test->test")
 
 lazy val iatSkuber =
   module(id = "iat-skuber", directory = "skuber")
-    .libraries(jacksonDataformat, quicklens, skuber)
+    .libraries(jacksonDataformat, quicklens, scalaCollectionCompat, silencerLib, silencerPlugin, skuber)
     .dependsOn(iatCore, iatScalatest % "test->test")
 
 lazy val iatExamples =
@@ -55,3 +60,5 @@ lazy val root =
   module(id = "infrastructure-as-types", directory = ".")
     .aggregate(iatCore, kubernetesClient, iatScalatest, iatOpenapi, iatSkuber, iatExamples)
     .dependsOn(iatCore, iatOpenapi, iatSkuber)
+
+onChangedBuildSource in Global := ReloadOnSourceChanges

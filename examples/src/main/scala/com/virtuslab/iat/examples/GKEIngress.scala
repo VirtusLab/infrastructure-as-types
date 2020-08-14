@@ -143,7 +143,7 @@ object custom {
       group = "networking.gke.io",
       version = "v1beta2",
       kind = "ManagedCertificate",
-      subresources = Some(Subresources().withStatusSubresource)
+      subresources = Some(Subresources().withStatusSubresource())
     )
 
     implicit val statusSubEnabled = CustomResource.statusMethodsEnabler[ManagedCertificate]

@@ -5,44 +5,44 @@ import com.virtuslab.iat.dsl.Port.NamedPort
 trait Protocol
 
 object Protocol {
-  trait L7 extends Protocol
-  object L7 {
-    sealed trait Any extends L7
+  trait Layer7 extends Protocol
+  object Layer7 {
+    sealed trait Any extends Layer7
     case object Any extends Any
   }
 
-  trait L4 extends Protocol
-  object L4 {
-    sealed trait Any extends L4
+  trait Layer4 extends Protocol
+  object Layer4 {
+    sealed trait Any extends Layer4
     case object Any extends Any
   }
 
-  trait L3 extends Protocol
-  object L3 {
-    sealed trait Any extends L3
+  trait Layer3 extends Protocol
+  object Layer3 {
+    sealed trait Any extends Layer3
     case object Any extends Any
   }
 
-  sealed trait Any extends L7 with L4 with L3
+  sealed trait Any extends Layer7 with Layer4 with Layer3
   case object Any extends Any
 
-  trait HasCidr extends Protocol.L3 {
+  trait HasCidr extends Protocol.Layer3 {
     def cidr: IP.CIDR
   }
 
-  trait HasPort extends Protocol.L4 {
+  trait HasPort extends Protocol.Layer4 {
     def port: Port
   }
 
-  trait IP extends Protocol.L3 with HasCidr
-  trait UDP extends Protocol.L4 with HasPort
-  trait TCP extends Protocol.L4 with HasPort
+  trait IP extends Protocol.Layer3 with HasCidr
+  trait UDP extends Protocol.Layer4 with HasPort
+  trait TCP extends Protocol.Layer4 with HasPort
 
   trait TLS extends Protocol {
     def keyPairName: Option[String]
   }
 
-  trait HTTP extends Protocol.L7 {
+  trait HTTP extends Protocol.Layer7 {
     def method: HTTP.Method
     def path: HTTP.Path
     def host: HTTP.Host
@@ -52,30 +52,30 @@ object Protocol {
     keyPairName: Option[String]
   }
 
-  trait Layers[L7 <: Protocol.L7, L4 <: Protocol.L4, L3 <: Protocol.L3] {
+  trait Layers[L7 <: Protocol.Layer7, L4 <: Protocol.Layer4, L3 <: Protocol.Layer3] {
     def l7: L7
     def l4: L4
     def l3: L3
   }
 
-  case class SomeLayers[L7 <: Protocol.L7, L4 <: Protocol.L4, L3 <: Protocol.L3](
+  case class SomeLayers[L7 <: Protocol.Layer7, L4 <: Protocol.Layer4, L3 <: Protocol.Layer3](
       l7: L7,
       l4: L4,
       l3: L3)
     extends Layers[L7, L4, L3]
 
-  case object AnyLayers extends Layers[Protocol.L7, Protocol.L4, Protocol.L3] {
-    override def l7: Protocol.L7.Any = Protocol.L7.Any
-    override def l4: Protocol.L4.Any = Protocol.L4.Any
-    override def l3: Protocol.L3.Any = Protocol.L3.Any
+  case object AnyLayers extends Layers[Protocol.Layer7, Protocol.Layer4, Protocol.Layer3] {
+    override def l7: Protocol.Layer7.Any = Protocol.Layer7.Any
+    override def l4: Protocol.Layer4.Any = Protocol.Layer4.Any
+    override def l3: Protocol.Layer3.Any = Protocol.Layer3.Any
   }
 
   object Layers {
-    def apply: Layers[Protocol.L7, Protocol.L4, Protocol.L3] = AnyLayers
-    def apply[A <: Protocol.L7, B <: Protocol.L4, C <: Protocol.L3](
-        l7: A = Protocol.L7.Any,
-        l4: B = Protocol.L4.Any,
-        l3: C = Protocol.L3.Any
+    def apply: Layers[Protocol.Layer7, Protocol.Layer4, Protocol.Layer3] = AnyLayers
+    def apply[A <: Protocol.Layer7, B <: Protocol.Layer4, C <: Protocol.Layer3](
+        l7: A = Protocol.Layer7.Any,
+        l4: B = Protocol.Layer4.Any,
+        l3: C = Protocol.Layer3.Any
       ): Layers[A, B, C] = SomeLayers(l7, l4, l3)
   }
 }
@@ -203,7 +203,7 @@ object HTTPS {
 }
 
 trait Protocols {
-  def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]
+  def protocols: Set[Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]]
   def ports: Set[Protocol.HasPort] = protocols.map(_.l4).collect { case p: Protocol.HasPort => p }
   def cidrs: Set[Protocol.HasCidr] = protocols.map(_.l3).collect { case p: Protocol.HasCidr => p }
   def merge(other: Protocols): Protocols = Protocols.Selected(protocols ++ other.protocols)
@@ -212,17 +212,18 @@ trait Protocols {
 object Protocols {
   sealed trait Any extends Protocols
   case object Any extends Any {
-    override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
+    override def protocols: Set[Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]] = Set()
   }
   sealed trait None extends Protocols
   case object None extends None {
-    override def protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]] = Set()
+    override def protocols: Set[Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]] = Set()
   }
-  case class Selected(protocols: Set[Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]) extends Protocols
+  case class Selected(protocols: Set[Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]])
+    extends Protocols
 
-  def apply(protocols: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]*): Protocols =
+  def apply(protocols: Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]*): Protocols =
     apply(protocols)
-  def apply(protocols: Seq[_ <: Protocol.Layers[_ <: Protocol.L7, _ <: Protocol.L4, _ <: Protocol.L3]]): Selected =
+  def apply(protocols: Seq[_ <: Protocol.Layers[_ <: Protocol.Layer7, _ <: Protocol.Layer4, _ <: Protocol.Layer3]]): Selected =
     Selected(protocols.toSet)
 
   def ports(ports: Protocol.HasPort*): Protocols = apply(ports.map(port => Protocol.Layers(l4 = port)))

@@ -48,7 +48,9 @@ private[yaml] object JacksonYaml {
       val gen = stringYamlGenerator(sw)
 
       if (escapeNonASCII) {
-        gen.enable(JsonGenerator.Feature.ESCAPE_NON_ASCII)
+        @scala.annotation.nowarn
+        val feature = JsonGenerator.Feature.ESCAPE_NON_ASCII
+        gen.enable(feature)
       }
 
       mapper.writeValue(gen, jsValue)

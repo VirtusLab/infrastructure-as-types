@@ -28,15 +28,15 @@ object Yaml {
 // Adapted from play.api.libs.json
 object StaticBinding {
 
-  /** Parses a [[JsValue]] from raw data. */
+  /** Parses a {@code JsValue} from raw data. */
   def parseJsValue(data: Array[Byte]): JsValue =
     JacksonYaml.parseJsValue(data)
 
-  /** Parses a [[JsValue]] from a string content. */
+  /** Parses a {@code JsValue} from a string content. */
   def parseJsValue(input: String): JsValue =
     JacksonYaml.parseJsValue(input)
 
-  /** Parses a [[JsValue]] from a stream. */
+  /** Parses a {@code JsValue} from a stream. */
   def parseJsValue(stream: java.io.InputStream): JsValue =
     JacksonYaml.parseJsValue(stream)
 
