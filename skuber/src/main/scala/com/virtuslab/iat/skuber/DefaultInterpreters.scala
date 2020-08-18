@@ -39,6 +39,7 @@ trait DefaultInterpreters {
       SSecret(
         metadata = subinterpreter.objectMetaInterpreter(obj, ns),
         data = {
+          // Necessary to provide `.view` in Scala 2.12; no effect in Scala 2.13
           import scala.collection.compat._
           obj.data.view.mapValues(_.getBytes).toMap
         }

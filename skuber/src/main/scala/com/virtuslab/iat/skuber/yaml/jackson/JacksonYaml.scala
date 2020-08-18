@@ -48,6 +48,9 @@ private[yaml] object JacksonYaml {
       val gen = stringYamlGenerator(sw)
 
       if (escapeNonASCII) {
+        // Note that in Scala 2.12, @nowarn is provided by scala-compat (and not by Scala itself);
+        // silencer-plugin is used to actually take the annotation into consideration and suppress the deprecation warning.
+        // In Scala 2.13, @nowarn is a part of the language library.
         @scala.annotation.nowarn
         val feature = JsonGenerator.Feature.ESCAPE_NON_ASCII
         gen.enable(feature)

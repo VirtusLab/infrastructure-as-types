@@ -38,6 +38,7 @@ trait DefaultInterpreters {
         kind = Some("Secret"), // FIXME: should be in model
         metadata = Some(subinterpreter.objectMetaInterpreter(obj, ns)),
         data = {
+          // Necessary to provide `.view` in Scala 2.12; no effect in Scala 2.13
           import scala.collection.compat._
           Some(obj.data.view.mapValues(B64Encoded.apply).toMap)
         }

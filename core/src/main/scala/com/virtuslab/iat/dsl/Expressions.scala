@@ -66,7 +66,6 @@ object Expressions {
 trait ExpressionsOps {
   import scala.language.implicitConversions
 
-  //noinspection TypeAnnotation
   // this DSL enables equality and set based selector expressions analogous to the Kubernetes API
   // The following illustrates mappings from this DSL to k8s selector expressions syntax:
   // "production" -> "production"
@@ -75,11 +74,13 @@ trait ExpressionsOps {
   // "status" isNot "release" -> "status!=release"
   // "env" isIn List("staging", "production") -> "env in (staging,release)"
   // "env" isNotIn List("local", "dev") -> "env notin (local,dev)"
-  implicit def stringToExpression(key: String) = new ExistsExpression(key) {
+  class StringExistsExpressionOps(key: String) extends ExistsExpression(key) {
     def doesNotExist: NotExistsExpression = NotExistsExpression(key)
     def is(value: String): IsEqualExpression = IsEqualExpression(key, value)
     def isNot(value: String): IsNotEqualExpression = IsNotEqualExpression(key, value)
     def in(values: String*): InExpression = InExpression(key, values)
     def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
   }
+
+  implicit def stringToExpression(key: String): StringExistsExpressionOps = new StringExistsExpressionOps(key)
 }
