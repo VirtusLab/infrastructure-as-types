@@ -14,14 +14,13 @@ object Validation {
 
   def IsQualifiedName(value: String): (Boolean, String) = {
     if (value.length == 0) {
-      return (false, "value is empty")
+      (false, "value is empty")
+    } else if (value.length > qualifiedNameMaxLength) {
+      (false, s"value length exceeds $qualifiedNameMaxLength characters")
+    } else if (!qualifiedNameRegexp.pattern.matcher(value).matches()) {
+      (false, s"value doesn not match pattern '$qualifiedNameRegexp'")
+    } else {
+      (true, "")
     }
-    if (value.length > qualifiedNameMaxLength) {
-      return (false, "value length exceeds " + qualifiedNameMaxLength + " characters")
-    }
-    if (!qualifiedNameRegexp.pattern.matcher(value).matches) {
-      return (false, s"value doesn not match pattern '$qualifiedNameRegexp'")
-    }
-    (true, "")
   }
 }

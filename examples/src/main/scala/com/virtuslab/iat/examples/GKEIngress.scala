@@ -81,7 +81,7 @@ object GKEIngress extends SkuberApp with App {
   results.foreach(s => println(s.asString))
 
   val mngcrt = managedCert.map(_.withNamespace(gke.name)).upsertBlocking
-  println("mngcrt:" + mngcrt)
+  println(s"mngcrt: $mngcrt")
 
   // Cleanup
   close()

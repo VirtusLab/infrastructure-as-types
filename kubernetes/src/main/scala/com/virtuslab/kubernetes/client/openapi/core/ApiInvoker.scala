@@ -35,6 +35,7 @@ object Helpers {
 
   // Helper to handle Optional header parameters
   implicit class optionalParams(val request: RequestT[Identity, Either[String, String], Nothing]) extends AnyVal {
+    @SuppressWarnings(Array("org.wartremover.warts.ToString"))
     def header(header: String, optValue: Option[Any]): RequestT[Identity, Either[String, String], Nothing] = {
       optValue.map(value => request.header(header, value.toString)).getOrElse(request)
     }

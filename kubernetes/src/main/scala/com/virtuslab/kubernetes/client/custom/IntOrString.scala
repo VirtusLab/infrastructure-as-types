@@ -13,6 +13,7 @@ object IntOrString {
   import org.json4s.CustomSerializer
   import org.json4s.JsonAST._
 
+  @SuppressWarnings(Array("org.wartremover.warts.Null"))
   case object Serializer
     extends CustomSerializer[IntOrString](
       _ =>

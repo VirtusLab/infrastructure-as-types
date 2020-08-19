@@ -36,27 +36,27 @@ object Expressions {
     def valuesAsString: String = "(" + values.mkString(",") + ")"
   }
 
-  case class ExistsExpression(key: String) extends Expression {
+  sealed case class ExistsExpression(key: String) extends Expression {
     override def toString: String = key
   }
 
-  case class NotExistsExpression(key: String) extends Expression {
+  final case class NotExistsExpression(key: String) extends Expression {
     override def toString: String = "!" + key
   }
 
-  case class IsEqualExpression(key: String, value: String) extends EqualityExpression {
+  final case class IsEqualExpression(key: String, value: String) extends EqualityExpression {
     override def toString: String = key + "=" + value
   }
 
-  case class IsNotEqualExpression(key: String, value: String) extends EqualityExpression {
+  final case class IsNotEqualExpression(key: String, value: String) extends EqualityExpression {
     override def toString: String = key + "!=" + value
   }
 
-  case class InExpression(key: String, values: Seq[String]) extends SetExpression {
+  final case class InExpression(key: String, values: Seq[String]) extends SetExpression {
     override def toString: String = key + " in " + valuesAsString
   }
 
-  case class NotInExpression(key: String, values: Seq[String]) extends SetExpression {
+  final case class NotInExpression(key: String, values: Seq[String]) extends SetExpression {
     override def toString: String = key + " notin " + valuesAsString
   }
 
@@ -74,7 +74,7 @@ trait ExpressionsOps {
   // "status" isNot "release" -> "status!=release"
   // "env" isIn List("staging", "production") -> "env in (staging,release)"
   // "env" isNotIn List("local", "dev") -> "env notin (local,dev)"
-  class StringExistsExpressionOps(key: String) extends ExistsExpression(key) {
+  final class StringExistsExpressionOps(key: String) extends ExistsExpression(key) {
     def doesNotExist: NotExistsExpression = NotExistsExpression(key)
     def is(value: String): IsEqualExpression = IsEqualExpression(key, value)
     def isNot(value: String): IsNotEqualExpression = IsNotEqualExpression(key, value)

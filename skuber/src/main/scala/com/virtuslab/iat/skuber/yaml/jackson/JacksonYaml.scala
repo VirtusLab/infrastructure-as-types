@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.{ JsonNode, ObjectMapper, ObjectWriter }
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.virtuslab.iat.scala.unit.ops._
 import play.api.libs.json.jackson.PlayJsonModule
 import play.api.libs.json.{ JsValue, JsonParserSettings }
 
@@ -53,7 +54,7 @@ private[yaml] object JacksonYaml {
         // In Scala 2.13, @nowarn is a part of the language library.
         @scala.annotation.nowarn
         val feature = JsonGenerator.Feature.ESCAPE_NON_ASCII
-        gen.enable(feature)
+        gen.enable(feature).toUnit()
       }
 
       mapper.writeValue(gen, jsValue)

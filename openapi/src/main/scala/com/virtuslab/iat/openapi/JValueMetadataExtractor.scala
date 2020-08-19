@@ -24,9 +24,12 @@ trait JValueMetadataExtractor {
     }
     val m = apiVersion :: kind :: name :: namespace :: Nil
     val lefts = m.filter(_.isLeft).map(_.swap).map(_.toOption.get)
-    if (lefts.nonEmpty)
-      Left(lefts.mkString(", ") + "; JValue: " + json)
-    else
+    if (lefts.nonEmpty) {
+      @SuppressWarnings(Array("org.wartremover.warts.ToString"))
+      val jsonAsString = json.toString
+
+      Left(lefts.mkString(", ") + "; JValue: " + jsonAsString)
+    } else {
       Right(
         Metadata(
           apiVersion = apiVersion.toOption.get,
@@ -35,5 +38,6 @@ trait JValueMetadataExtractor {
           namespace = namespace.getOrElse("")
         )
       )
+    }
   }
 }

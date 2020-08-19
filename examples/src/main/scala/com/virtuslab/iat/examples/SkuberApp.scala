@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.virtuslab.iat.dsl.Labeled
+import com.virtuslab.iat.scala.unit.ops._
 import play.api.libs.json._
 import skuber.api.Configuration
 import skuber.api.client.{ Context, LoggingContext }
@@ -48,7 +49,7 @@ abstract class SkuberApp {
     println("All done.")
     client.close // AFAIU it does nothing
     Await.result(Http().shutdownAllConnectionPools(), 1.minute) // This actually closes the Akka HTTP client (Skuber) connection pool
-    Await.result(system.terminate(), 1.minute)
+    Await.result(system.terminate(), 1.minute).toUnit()
     actorMaterializer.shutdown()
   }
 
@@ -78,6 +79,7 @@ abstract class SkuberApp {
       (JsPath \ "code").writeNullable[Int]
     )(unlift(Status.unapply))
 
+    @SuppressWarnings(Array("org.wartremover.warts.Recursion", "org.wartremover.warts.ToString"))
     def anyToJsValue(m: Any): JsValue = {
       m match {
         case s: String     => JsString(s)
@@ -100,7 +102,7 @@ abstract class SkuberApp {
         (err, ru.typeTag[A].tpe) match {
           case (err: K8SException, name) => Summary(s"""|Error[${err.status.code.getOrElse("unknown")}]: '$name', details:
                 |${asYamlString(err.status)}""".stripMargin)
-          case (err, name)               => Summary(s"Error: '$name', details: " + err)
+          case (err, name)               => Summary(s"Error: '$name', details: $err")
         }
       case Right(result) =>
         (result, getTypeTag(result).tpe) match {

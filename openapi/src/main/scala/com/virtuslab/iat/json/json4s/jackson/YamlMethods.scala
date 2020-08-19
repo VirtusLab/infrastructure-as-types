@@ -3,6 +3,7 @@ package com.virtuslab.iat.json.json4s.jackson
 import com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_INTEGER_FOR_INTS
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.{ YAMLFactory, YAMLGenerator }
+import com.virtuslab.iat.scala.unit.ops._
 import org.json4s.JsonInput
 import org.json4s.jackson.{ Json4sScalaModule, JsonMethods }
 
@@ -13,9 +14,9 @@ trait YamlMethods extends JsonMethods {
         .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
         .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
     )
-    m.registerModule(new Json4sScalaModule)
+    m.registerModule(new Json4sScalaModule).toUnit()
     // for backwards compatibility
-    m.configure(USE_BIG_INTEGER_FOR_INTS, true)
+    m.configure(USE_BIG_INTEGER_FOR_INTS, true).toUnit()
     m
   }
   override def mapper: ObjectMapper = yamlMapper

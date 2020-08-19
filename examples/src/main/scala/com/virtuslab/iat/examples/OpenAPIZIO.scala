@@ -56,6 +56,7 @@ object OpenAPIZIO extends App {
       body = ns
     )
 
+    @SuppressWarnings(Array("org.wartremover.warts.ToString"))
     val sendAndPrint: ZIO[Console with SttpClient, Throwable, Unit] = for {
       response <- SttpClient.send(request)
       _ <- console.putStrLn(s"Got response code: ${response.code}")
@@ -82,7 +83,7 @@ object OpenAPIZIO extends App {
 //        SupportedCipherSuiteFilter.INSTANCE)
 //      .protocols(sslFactory.getSslContext.getDefaultSSLParameters.getProtocols)
     if (trustManagers.isDefined) trustManagers.get.foreach(sslContextBuilder.trustManager)
-    if (keyManagers.isDefined) keyManagers.get.map(sslContextBuilder.keyManager)
+    if (keyManagers.isDefined) keyManagers.get.foreach(sslContextBuilder.keyManager)
     sslContextBuilder
   }
 

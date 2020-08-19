@@ -98,6 +98,8 @@ trait DefaultSubinterpreters {
   def mountInterpreter(mount: Mount): (Volume, Volume.Mount) = mount match {
     case KeyValueMount(name, mountPath, key, readOnly, source: Volume.Source) =>
       val volume = Volume(name, source)
+
+      @SuppressWarnings(Array("org.wartremover.warts.ToString"))
       val volumeMount = Volume.Mount(
         name = name,
         mountPath = mountPath.toString,

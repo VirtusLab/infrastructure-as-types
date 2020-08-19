@@ -12,7 +12,9 @@
 package com.virtuslab.kubernetes.client.openapi.api
 
 import org.json4s._
+
 import scala.reflect.ClassTag
+import scala.util.Try
 
 object EnumsSerializers {
 
@@ -33,11 +35,13 @@ object EnumsSerializers {
         }
     }
 
+    @SuppressWarnings(Array("org.wartremover.warts.ToString"))
     private[this] def isValid(json: JValue) = json match {
       case JString(value) if enum.values.exists(_.toString == value) => true
       case _                                                         => false
     }
 
+    @SuppressWarnings(Array("org.wartremover.warts.ToString"))
     def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
       case i: E#Value => i.toString
     }

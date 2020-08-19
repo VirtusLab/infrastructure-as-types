@@ -48,9 +48,7 @@ object Protocol {
     def host: HTTP.Host
   }
 
-  trait HTTPS extends Protocol.HTTP with Protocol.TLS {
-    keyPairName: Option[String]
-  }
+  trait HTTPS extends Protocol.HTTP with Protocol.TLS
 
   trait Layers[L7 <: Protocol.Layer7, L4 <: Protocol.Layer4, L3 <: Protocol.Layer3] {
     def l7: L7
@@ -92,10 +90,10 @@ object IP {
     def mask: Short
     override def cidr: CIDR = this
   }
-  case class Address(ip: String) extends CIDR {
+  final case class Address(ip: String) extends CIDR {
     def mask: Short = 32
   }
-  case class Range(ip: String, mask: Short) extends CIDR {
+  final case class Range(ip: String, mask: Short) extends CIDR {
     def except(exceptions: CIDR*): RangeWithExceptions = RangeWithExceptions(ip, mask, exceptions.toSet)
   }
   object Range {
@@ -103,7 +101,7 @@ object IP {
       case cidrRegexp(ip, _, mask) => Range(ip, mask.toShort)
     }
   }
-  case class RangeWithExceptions(
+  final case class RangeWithExceptions(
       ip: String,
       mask: Short,
       exceptions: Set[CIDR])
@@ -143,7 +141,7 @@ object HTTP {
   }
   object Method {
     case object Any extends Method
-    case class AMethod(method: String) extends Method
+    final case class AMethod(method: String) extends Method
     def apply(method: String): Method = AMethod(method)
   }
 
@@ -155,7 +153,7 @@ object HTTP {
   }
   object Path {
     case object Any extends Path
-    case class APath(path: String) extends Path
+    final case class APath(path: String) extends Path
     def apply(path: String): Path = APath(path)
   }
 
@@ -167,7 +165,7 @@ object HTTP {
   }
   object Host {
     case object Any extends Host
-    case class AHost(host: String) extends Host
+    final case class AHost(host: String) extends Host
     def apply(host: String): Host = AHost(host)
   }
 
@@ -242,8 +240,8 @@ sealed trait Port {
 object Port {
   sealed trait Any extends Port
   case object Any extends Any
-  case class APort(number: Int) extends Port
-  case class NamedPort(name: String, number: Int) extends Port
+  final case class APort(number: Int) extends Port
+  final case class NamedPort(name: String, number: Int) extends Port
 
   def apply(number: Int): Port = APort(number)
   def apply(name: String, number: Int): Port = NamedPort(name, number)
