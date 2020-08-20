@@ -3,7 +3,7 @@ package com.virtuslab.iat.kubernetes.dsl
 import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.Label.ops._
 
-case class Namespace(labels: List[Label])
+case class Namespace(labels: Seq[Label])
   extends Named
   with Labeled
   with Patchable[Namespace]

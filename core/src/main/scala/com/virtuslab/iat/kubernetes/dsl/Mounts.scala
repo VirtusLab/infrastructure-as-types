@@ -19,7 +19,7 @@ final case class KeyValueMount[S](
   extends Mount
 
 trait Mounts {
-  def mounts: List[Mount]
+  def mounts: Seq[Mount]
 }
 
 object Mountable {

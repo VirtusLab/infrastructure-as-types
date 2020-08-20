@@ -5,11 +5,11 @@ import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.Label.ops._
 
 case class Application(
-    labels: List[Label],
-    containers: List[Container] = Nil,
-    configurations: List[Configuration] = Nil,
-    secrets: List[Secret] = Nil,
-    mounts: List[Mount] = Nil)
+    labels: Seq[Label],
+    containers: Seq[Container] = Nil,
+    configurations: Seq[Configuration] = Nil,
+    secrets: Seq[Secret] = Nil,
+    mounts: Seq[Mount] = Nil)
   extends Named
   with Labeled
   with Containerized
@@ -17,7 +17,7 @@ case class Application(
   with Patchable[Application]
   with Interpretable[Application]
   with Peer[Application] {
-  def allPorts: List[HasPort] = containers.flatMap(_.ports)
+  def allPorts: Seq[HasPort] = containers.flatMap(_.ports)
   override def expressions: Expressions = Expressions(labels.asExpressions.toSet)
   override def protocols: Protocols = Protocols.ports(allPorts: _*)
   override def identities: Identities = Identities(ClusterDNS(this))
@@ -30,10 +30,10 @@ object Application {
 }
 
 case class Container(
-    labels: List[Label],
+    labels: Seq[Label],
     image: String,
-    command: List[String] = Nil,
-    args: List[String] = Nil,
-    envs: List[(String, String)] = Nil,
-    ports: List[HasPort] = Nil)
+    command: Seq[String] = Nil,
+    args: Seq[String] = Nil,
+    envs: Seq[(String, String)] = Nil,
+    ports: Seq[HasPort] = Nil)
   extends Containerized.Container

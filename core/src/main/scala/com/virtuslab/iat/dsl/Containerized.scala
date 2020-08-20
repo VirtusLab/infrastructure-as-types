@@ -3,16 +3,16 @@ package com.virtuslab.iat.dsl
 import com.virtuslab.iat.dsl.Protocol.HasPort
 
 trait Containerized {
-  def containers: List[Containerized.Container]
+  def containers: Seq[Containerized.Container]
 }
 
 object Containerized {
   trait Container extends Named with Labeled with Patchable[Container] {
-    def labels: List[Label]
+    def labels: Seq[Label]
     def image: String
-    def command: List[String]
-    def args: List[String]
-    def envs: List[(String, String)]
-    def ports: List[HasPort]
+    def command: Seq[String]
+    def args: Seq[String]
+    def envs: Seq[(String, String)]
+    def ports: Seq[HasPort]
   }
 }

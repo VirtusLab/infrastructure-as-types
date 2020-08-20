@@ -16,12 +16,12 @@ trait PlayJsonProcessors {
   def asMetaJsValue[T <: ObjectResource: Writes](o: T): (Metadata, JsValue) = asMetadata(o) -> asJsValue(o)
 
   implicit class ObjectResourceOps1[A <: ObjectResource: Writes](a: A) {
-    def asJsValues: List[JsValue] = asJsValue(a) :: Nil
-    def asMetaJsValues: List[(Metadata, JsValue)] = asMetaJsValue(a) :: Nil
+    def asJsValues: Seq[JsValue] = asJsValue(a) :: Nil
+    def asMetaJsValues: Seq[(Metadata, JsValue)] = asMetaJsValue(a) :: Nil
   }
 
   implicit class ObjectResourceOps2[A1 <: ObjectResource: Writes, A2 <: ObjectResource: Writes](t: (A1, A2)) {
-    def asJsValues: List[JsValue] = t.map(_.asJsValues, _.asJsValues).reduce(_ ++ _)
-    def asMetaJsValues: List[(Metadata, JsValue)] = t.map(_.asMetaJsValues, _.asMetaJsValues).reduce(_ ++ _)
+    def asJsValues: Seq[JsValue] = t.map(_.asJsValues, _.asJsValues).reduce(_ ++ _)
+    def asMetaJsValues: Seq[(Metadata, JsValue)] = t.map(_.asMetaJsValues, _.asMetaJsValues).reduce(_ ++ _)
   }
 }

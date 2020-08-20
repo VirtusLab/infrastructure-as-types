@@ -97,7 +97,7 @@ trait DefaultInterpreters {
             ingress = obj.ingress.flatMap {
               case DenyIngressRule => Nil
               case AllowIngressRule(protocols) =>
-                SNetworkPolicy.IngressRule(ports = subinterpreter.ports(protocols)) :: Nil
+                SNetworkPolicy.IngressRule(ports = subinterpreter.ports(protocols).toList) :: Nil
               case IngressRule(from, protocols) =>
                 SNetworkPolicy.IngressRule(
                   from = from.map {
@@ -119,15 +119,15 @@ trait DefaultInterpreters {
                           subinterpreter.ipBlocks(cidr)
                         )
                       )
-                  },
-                  ports = subinterpreter.ports(protocols)
+                  }.toList,
+                  ports = subinterpreter.ports(protocols).toList
                 ) :: Nil
-            },
+            }.toList,
             egress = obj.egress.flatMap {
               case DenyEgressRule => Nil
               case AllowEgressRule(protocols) =>
                 SNetworkPolicy.EgressRule(
-                  ports = subinterpreter.ports(protocols)
+                  ports = subinterpreter.ports(protocols).toList
                 ) :: Nil
               case EgressRule(to, protocols) =>
                 SNetworkPolicy.EgressRule(
@@ -150,10 +150,10 @@ trait DefaultInterpreters {
                           subinterpreter.ipBlocks(cidr)
                         )
                       )
-                  },
-                  ports = subinterpreter.ports(protocols)
+                  }.toList,
+                  ports = subinterpreter.ports(protocols).toList
                 ) :: Nil
-            },
+            }.toList,
             policyTypes = (obj.ingress.nonEmpty, obj.egress.nonEmpty) match {
               case (true, false)  => List("Ingress")
               case (false, true)  => List("Egress")

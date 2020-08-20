@@ -80,6 +80,6 @@ trait ExpressionsOps {
     def is(value: String): IsEqualExpression = IsEqualExpression(key, value)
     def isNot(value: String): IsNotEqualExpression = IsNotEqualExpression(key, value)
     def in(values: String*): InExpression = InExpression(key, values)
-    def isNotIn(values: List[String]): NotInExpression = NotInExpression(key, values)
+    def isNotIn(values: Seq[String]): NotInExpression = NotInExpression(key, values)
   }
 }

@@ -7,7 +7,7 @@ trait Named { self: Labeled =>
 }
 
 trait Labeled {
-  def labels: List[Label]
+  def labels: Seq[Label]
 }
 
 trait Patchable[A] { self: A =>

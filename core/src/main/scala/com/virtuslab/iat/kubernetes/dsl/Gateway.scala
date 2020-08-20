@@ -4,7 +4,7 @@ import com.virtuslab.iat.dsl._
 import com.virtuslab.iat.dsl.Label.ops._
 
 case class Gateway(
-    labels: List[Label],
+    labels: Seq[Label],
     inputs: Protocols = Protocols.Any,
     outputs: Protocols = Protocols.None)
   extends Named

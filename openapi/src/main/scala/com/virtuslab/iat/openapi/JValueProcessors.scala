@@ -34,22 +34,22 @@ trait JValueProcessors extends JValueMetadataExtractor {
   def asYamlString(json: JValue): String = YamlMethods.pretty(json)
 
   implicit class ApiModelOps1[A <: ApiModel](a: A) {
-    def asJValues(implicit formats: Formats): List[JValue] = asJValue(a) :: Nil
-    def asMetaJValues(implicit formats: Formats): List[(Metadata, JValue)] = asMetaJValue(a) :: Nil
-    def asMetaJsonString(implicit formats: Formats): List[(Metadata, String)] =
+    def asJValues(implicit formats: Formats): Seq[JValue] = asJValue(a) :: Nil
+    def asMetaJValues(implicit formats: Formats): Seq[(Metadata, JValue)] = asMetaJValue(a) :: Nil
+    def asMetaJsonString(implicit formats: Formats): Seq[(Metadata, String)] =
       asMetaJValue(a).map(identity, asJsonString) :: Nil
-    def asMetaYamlString(implicit formats: Formats): List[(Metadata, String)] =
+    def asMetaYamlString(implicit formats: Formats): Seq[(Metadata, String)] =
       asMetaJValue(a).map(identity, asYamlString) :: Nil
   }
 
   implicit class ObjectResourceOps2[A1 <: ApiModel, A2 <: ApiModel](t: (A1, A2)) {
-    def asJValues(implicit formats: Formats): List[JValue] =
+    def asJValues(implicit formats: Formats): Seq[JValue] =
       t.map(_.asJValues, _.asJValues).reduce(_ ++ _)
-    def asMetaJValues(implicit formats: Formats): List[(Metadata, JValue)] =
+    def asMetaJValues(implicit formats: Formats): Seq[(Metadata, JValue)] =
       t.map(_.asMetaJValues, _.asMetaJValues).reduce(_ ++ _)
-    def asMetaJsonString(implicit formats: Formats): List[(Metadata, String)] =
+    def asMetaJsonString(implicit formats: Formats): Seq[(Metadata, String)] =
       t.map(_.asMetaJsonString, _.asMetaJsonString).reduce(_ ++ _)
-    def asMetaYamlString(implicit formats: Formats): List[(Metadata, String)] =
+    def asMetaYamlString(implicit formats: Formats): Seq[(Metadata, String)] =
       t.map(_.asMetaYamlString, _.asMetaYamlString).reduce(_ ++ _)
   }
 }

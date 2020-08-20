@@ -125,12 +125,12 @@ object custom {
 
   //noinspection TypeAnnotation
   object ManagedCertificate {
-    case class Spec(domains: List[String])
+    case class Spec(domains: Seq[String])
     case class Status(
         certificateName: Option[String] = None,
         certificateStatus: Option[String] = None,
         expireTime: Option[skuber.Timestamp] = None,
-        domainStatus: List[Status.DomainStatus] = Nil)
+        domainStatus: Seq[Status.DomainStatus] = Nil)
     object Status {
       case class DomainStatus(domain: Option[String] = None, status: Option[String] = None)
       implicit val domainStatusFmt: Format[DomainStatus] = Json.format[DomainStatus]

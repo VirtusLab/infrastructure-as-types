@@ -61,8 +61,8 @@ trait DefaultSubinterpreters {
         .Spec(
           spec = Some(
             Pod.Spec(
-              containers = obj.containers.map(c => containerInterpreter(c, mounts)),
-              volumes = mounts.map(_._1)
+              containers = obj.containers.map(c => containerInterpreter(c, mounts)).toList,
+              volumes = mounts.map(_._1).toList
             )
           )
         )
@@ -77,21 +77,24 @@ trait DefaultSubinterpreters {
     )
   }
 
-  def containerInterpreter(c: Containerized.Container, mounts: List[(Volume, Volume.Mount)]): SContainer = {
+  def containerInterpreter(c: Containerized.Container, mounts: Seq[(Volume, Volume.Mount)]): SContainer = {
     SContainer(
       name = c.name,
       image = c.image,
-      command = c.command,
-      args = c.args,
+      command = c.command.toList,
+      args = c.args.toList,
       env = c.envs.map { env =>
         EnvVar(env._1, EnvVar.StringValue(env._2))
-      },
-      ports = c.ports.map(_.port).flatMap {
-        case NamedPort(name, number) => SContainer.Port(containerPort = number, name = name) :: Nil
-        case APort(number)           => SContainer.Port(containerPort = number) :: Nil
-        case _                       => Nil
-      },
-      volumeMounts = mounts.map(_._2)
+      }.toList,
+      ports = c.ports
+        .map(_.port)
+        .flatMap {
+          case NamedPort(name, number) => SContainer.Port(containerPort = number, name = name) :: Nil
+          case APort(number)           => SContainer.Port(containerPort = number) :: Nil
+          case _                       => Nil
+        }
+        .toList,
+      volumeMounts = mounts.map(_._2).toList
     )
   }
 
@@ -136,7 +139,7 @@ trait DefaultSubinterpreters {
   }
 
   object ports {
-    def apply(ps: Protocols): List[SPort] = ps.ports.flatMap(p => apply(p)).toList
+    def apply(ps: Protocols): Seq[SPort] = ps.ports.flatMap(p => apply(p)).toList
 
     def apply(p: HasPort): Option[SPort] = p match {
       case UDP(port: APort)     => Some(SPort(Left(port.number), SProtocol.UDP))

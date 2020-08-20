@@ -9,10 +9,10 @@ import com.virtuslab.iat.kubernetes.dsl.Namespace.IsNamespace
 import com.virtuslab.iat.kubernetes.dsl.NetworkPolicy.{ RuleEgress, RuleIngress }
 
 case class NetworkPolicy(
-    labels: List[Label],
+    labels: Seq[Label],
     podSelector: Expressions,
-    ingress: List[RuleIngress],
-    egress: List[RuleEgress])
+    ingress: Seq[RuleIngress],
+    egress: Seq[RuleEgress])
   extends Labeled
   with Named
   with Patchable[NetworkPolicy]
@@ -22,25 +22,25 @@ object NetworkPolicy {
   sealed trait RuleIngress
   final object DenyIngressRule extends RuleIngress
   final case class AllowIngressRule(protocols: Protocols) extends RuleIngress
-  final case class IngressRule(from: List[RulePeer], protocols: Protocols) extends RuleIngress
+  final case class IngressRule(from: Seq[RulePeer], protocols: Protocols) extends RuleIngress
   object IngressRule {
     def apply[A, B](
         peer: Selection[A],
         other: Selection[B],
-        otherRules: List[RulePeer]
-      ): List[IngressRule] = IngressRule(otherRules, peer.protocols) :: Nil
+        otherRules: Seq[RulePeer]
+      ): Seq[IngressRule] = IngressRule(otherRules, peer.protocols) :: Nil
   }
 
   sealed trait RuleEgress
   final object DenyEgressRule extends RuleEgress
   final case class AllowEgressRule(protocols: Protocols) extends RuleEgress
-  final case class EgressRule(to: List[RulePeer], protocols: Protocols) extends RuleEgress
+  final case class EgressRule(to: Seq[RulePeer], protocols: Protocols) extends RuleEgress
   object EgressRule {
     def apply[A, B](
         peer: Selection[A],
         other: Selection[B],
-        peerRules: List[RulePeer]
-      ): List[EgressRule] = EgressRule(peerRules, other.protocols) :: Nil
+        peerRules: Seq[RulePeer]
+      ): Seq[EgressRule] = EgressRule(peerRules, other.protocols) :: Nil
   }
 
   sealed trait RulePeer
@@ -50,10 +50,10 @@ object NetworkPolicy {
 
   case class Builder(
       podSelector: Expressions,
-      ingress: List[RuleIngress],
-      egress: List[RuleEgress]) {
+      ingress: Seq[RuleIngress],
+      egress: Seq[RuleEgress]) {
     def named(name: String): NetworkPolicy = labeled(Name(name) :: Nil)
-    def labeled(labels: List[Label]): NetworkPolicy =
+    def labeled(labels: Seq[Label]): NetworkPolicy =
       NetworkPolicy(labels, podSelector, ingress, egress)
     def ingressOnly: Builder = Builder(podSelector, ingress, Nil)
     def egressOnly: Builder = Builder(podSelector, Nil, egress)
@@ -61,34 +61,34 @@ object NetworkPolicy {
 
   def apply[A](
       podSelector: Expressions,
-      ingress: List[RuleIngress],
-      egress: List[RuleEgress]
+      ingress: Seq[RuleIngress],
+      egress: Seq[RuleEgress]
     ): Builder = Builder(podSelector, ingress, egress)
-  def ingressOnly(podSelector: Expressions, ingress: List[RuleIngress]): Builder =
+  def ingressOnly(podSelector: Expressions, ingress: Seq[RuleIngress]): Builder =
     Builder(podSelector, ingress, Nil)
-  def egressOnly(podSelector: Expressions, egress: List[RuleEgress]): Builder =
+  def egressOnly(podSelector: Expressions, egress: Seq[RuleEgress]): Builder =
     Builder(podSelector, Nil, egress)
 
   object ops {
 
     trait SelectionOpsIP[A] {
       def selection: Selection[A]
-      protected def ipRules: List[IPBlock] = selection.protocols.cidrs.map(_.cidr).map(IPBlock).toList
+      protected def ipRules: Seq[IPBlock] = selection.protocols.cidrs.map(_.cidr).map(IPBlock).toList
     }
 
     implicit class SelectionOpsApp[A](val selection: Selection[A])(implicit ev: A =:= Application) extends SelectionOpsIP[A] {
-      private def applicationRules: List[RulePeer] = PodSelector(selection.expressions) :: Nil
-      private[NetworkPolicy] def rules: List[RulePeer] = applicationRules ++ ipRules
+      private def applicationRules: Seq[RulePeer] = PodSelector(selection.expressions) :: Nil
+      private[NetworkPolicy] def rules: Seq[RulePeer] = applicationRules ++ ipRules
     }
     implicit class SelectionOpsNs[A](val selection: Selection[A])(implicit ev: A =:= Namespace) extends SelectionOpsIP[A] {
-      private def namespaceRules: List[RulePeer] = NamespaceSelector(selection.expressions) :: Nil
-      private[NetworkPolicy] def rules: List[RulePeer] = namespaceRules ++ ipRules
+      private def namespaceRules: Seq[RulePeer] = NamespaceSelector(selection.expressions) :: Nil
+      private[NetworkPolicy] def rules: Seq[RulePeer] = namespaceRules ++ ipRules
     }
     implicit class SelectionOpsAny[A](val selection: Selected.Any) extends SelectionOpsIP[scala.Any] {
-      private[NetworkPolicy] def rules: List[RulePeer] = ipRules
+      private[NetworkPolicy] def rules: Seq[RulePeer] = ipRules
     }
     implicit class SelectionOpsNone(val selection: Selected.None) extends SelectionOpsIP[scala.Nothing] {
-      private[NetworkPolicy] def rules: List[RulePeer] = ipRules
+      private[NetworkPolicy] def rules: Seq[RulePeer] = ipRules
     }
 
     implicit class NetworkPolicyOpsApp[A](peer: Selection[A])(implicit ev: A =:= Application) {

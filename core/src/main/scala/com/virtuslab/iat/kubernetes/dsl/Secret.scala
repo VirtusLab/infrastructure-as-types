@@ -2,7 +2,7 @@ package com.virtuslab.iat.kubernetes.dsl
 
 import com.virtuslab.iat.dsl._
 
-case class Secret(labels: List[Label], data: Map[String, String])
+case class Secret(labels: Seq[Label], data: Map[String, String])
   extends Named
   with Labeled
   with KeyValue

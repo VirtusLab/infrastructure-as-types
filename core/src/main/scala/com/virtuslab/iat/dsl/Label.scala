@@ -43,9 +43,9 @@ object Label {
       case (k, v)                => UntypedLabel(k, v)
     }
 
-    implicit class LabelsOps(ls: List[Label]) {
+    implicit class LabelsOps(ls: Seq[Label]) {
       def asMap: Map[String, String] = ls.map(_.asTuple).toMap
-      def asExpressions: List[Expressions.Expression] = ls.map(l => Expressions.IsEqualExpression(l.key, l.value))
+      def asExpressions: Seq[Expressions.Expression] = ls.map(l => Expressions.IsEqualExpression(l.key, l.value))
     }
   }
 }
