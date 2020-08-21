@@ -120,10 +120,10 @@ abstract class SkuberApp {
   }
 
   implicit class SummaryOps1[A: ru.TypeTag](r1: Either[Throwable, A]) {
-    def summary: Summary = Summary(r1)
+    def summary(): Summary = Summary(r1)
   }
 
   implicit class SummaryOps2[A1: ru.TypeTag, A2: ru.TypeTag](r: (Either[Throwable, A1], Either[Throwable, A2])) {
-    def summary: List[Summary] = Summary(r._1) :: Summary(r._2) :: Nil
+    def summary(): List[Summary] = Summary(r._1) :: Summary(r._2) :: Nil
   }
 }
