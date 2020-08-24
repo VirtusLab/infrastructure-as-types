@@ -18,14 +18,14 @@ trait ApiOps {
 
   implicit class ObjectResourceOps1[A <: ObjectResource: Format: ResourceDefinition](a: A) {
     def upsert(
-        implicit
+      )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
       ): Future[A] = SimpleDeployer.upsert(a)
 
     def upsertBlocking(
-        implicit
+      )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
@@ -39,19 +39,19 @@ trait ApiOps {
     ](
       t: (A1, A2)) {
     def upsert(
-        implicit
+      )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
-      ): (Future[A1], Future[A2]) = t.map(_.upsert, _.upsert)
+      ): (Future[A1], Future[A2]) = t.map(_.upsert(), _.upsert())
 
     def upsertBlocking(
-        implicit
+      )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
       ): (Either[Throwable, A1], Either[Throwable, A2]) =
-      t.map(_.upsertBlocking, _.upsertBlocking)
+      t.map(_.upsertBlocking(), _.upsertBlocking())
 
   }
 

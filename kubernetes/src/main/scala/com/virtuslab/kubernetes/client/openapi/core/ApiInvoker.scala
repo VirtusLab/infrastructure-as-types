@@ -53,7 +53,7 @@ object ApiInvoker {
     */
   implicit class ApiRequestImprovements[R[_], T](request: RequestT[Identity, Either[ResponseError[Exception], T], Nothing]) {
 
-    def result(implicit backend: SttpBackend[R, Nothing, Nothing]): R[T] = {
+    def result()(implicit backend: SttpBackend[R, Nothing, Nothing]): R[T] = {
       val responseT = request.send()
       val ME: MonadError[R] = backend.responseMonad
       ME.flatMap(responseT) { response =>

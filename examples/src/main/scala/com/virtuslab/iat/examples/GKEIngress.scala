@@ -73,14 +73,14 @@ object GKEIngress extends SkuberApp with App {
   import skuber.json.format._
 
   val results =
-    gke.interpret.upsertBlocking.deinterpret.summary ::
-      app1.inNamespace(gke).interpret.map(app1Details).upsertBlocking.deinterpret.summary ::
-      app2.inNamespace(gke).interpret.map(app2Details).upsertBlocking.deinterpret.summary ::
-      gw.inNamespace(gke).interpret.map(ingressDetails).upsertBlocking.deinterpret.summary :: Nil
+    gke.interpret.upsertBlocking().deinterpret.summary ::
+      app1.inNamespace(gke).interpret.map(app1Details).upsertBlocking().deinterpret.summary ::
+      app2.inNamespace(gke).interpret.map(app2Details).upsertBlocking().deinterpret.summary ::
+      gw.inNamespace(gke).interpret.map(ingressDetails).upsertBlocking().deinterpret.summary :: Nil
 
   results.foreach(s => println(s.asString))
 
-  val mngcrt = managedCert.map(_.withNamespace(gke.name)).upsertBlocking
+  val mngcrt = managedCert.map(_.withNamespace(gke.name)).upsertBlocking()
   println(s"mngcrt: $mngcrt")
 
   // Cleanup
