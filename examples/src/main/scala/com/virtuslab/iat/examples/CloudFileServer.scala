@@ -67,20 +67,20 @@ object CloudFileServer extends SkuberApp with App {
     ns.interpret
       .upsertBlocking()
       .deinterpret
-      .summary() ::
+      .summary ::
       conf
         .inNamespace(ns)
         .interpret
         .upsertBlocking()
         .deinterpret
-        .summary() ::
+        .summary ::
       app
         .inNamespace(ns)
         .interpret
         .map(appDetails)
         .upsertBlocking()
         .deinterpret
-        .summary() :: Nil
+        .summary :: Nil
 
   results.foreach(s => println(s.asString))
 

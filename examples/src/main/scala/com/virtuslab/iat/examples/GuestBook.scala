@@ -113,7 +113,7 @@ object GuestBook extends SkuberApp with scala.App {
   import skuber.json.format._
 
   val ns: Seq[Summary] =
-    guestbook.interpret.upsertBlocking().summary() :: Nil
+    guestbook.interpret.upsertBlocking().summary :: Nil
   val apps: Seq[Summary] = List(
     redisMaster
       .interpretWith(guestbook)
@@ -124,7 +124,7 @@ object GuestBook extends SkuberApp with scala.App {
     frontend
       .interpretWith(guestbook)
       .map(frontendDetails)
-    ).flatMap(_.upsertBlocking().summary())
+    ).flatMap(_.upsertBlocking().summary)
 
   val conns: Seq[Summary] = List(
     NetworkPolicy.default.denyAll.interpretWith(guestbook),
@@ -134,7 +134,7 @@ object GuestBook extends SkuberApp with scala.App {
     connRedisSM.interpretWith(guestbook),
     connFrontDns.interpretWith(guestbook),
     connRedisSlaveDns.interpretWith(guestbook)
-  ).map(_.upsertBlocking().summary())
+  ).map(_.upsertBlocking().summary)
 
   (ns ++ apps ++ conns).foreach(s => println(s.asString))
 
