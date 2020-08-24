@@ -112,13 +112,14 @@ object SimpleDeployer extends SimpleDeployer {
   }
 
   def upsertBlocking[A <: ObjectResource: Format: ResourceDefinition](
-      o: A
+      o: A,
+      atMost: Duration = 1.minute
     )(implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
     ): Either[Throwable, A] = {
-    tryAwait(upsert(o), 1.minute)
+    tryAwait(upsert(o), atMost)
   }
 
   def create[A <: ObjectResource: Format: ResourceDefinition](
@@ -132,13 +133,14 @@ object SimpleDeployer extends SimpleDeployer {
   }
 
   def createBlocking[A <: ObjectResource: Format: ResourceDefinition](
-      o: A
+      o: A,
+      atMost: Duration = 1.minute
     )(implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
     ): Either[Throwable, A] = {
-    tryAwait(futureCreate(o), 1.minute)
+    tryAwait(futureCreate(o), atMost)
   }
 
   def delete[A <: ObjectResource: Format: ResourceDefinition](
@@ -152,13 +154,14 @@ object SimpleDeployer extends SimpleDeployer {
   }
 
   def deleteBlocking[A <: ObjectResource: Format: ResourceDefinition](
-      o: A
+      o: A,
+      atMost: Duration = 1.minute
     )(implicit
       executor: ExecutionContext,
       client: K8SRequestContext,
       lc: LoggingContext
     ): Either[Throwable, Unit] = {
-    tryAwait(futureDelete(o), 1.minute)
+    tryAwait(futureDelete(o), atMost)
   }
 
   private def tryAwait[A](future: Future[A], atMost: Duration): Either[Throwable, A] = {

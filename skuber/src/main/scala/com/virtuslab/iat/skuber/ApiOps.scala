@@ -5,8 +5,8 @@ import skuber.api.client.LoggingContext
 import skuber.{ K8SRequestContext, ObjectResource, ResourceDefinition }
 import scala.concurrent.duration._
 
-import scala.concurrent.{ Await, ExecutionContext, Future }
-import scala.util.Try
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ ExecutionContext, Future }
 
 trait ApiOps {
 
@@ -25,11 +25,12 @@ trait ApiOps {
       ): Future[A] = SimpleDeployer.upsert(a)
 
     def upsertBlocking(
+        atMost: Duration = 1.minute
       )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
-      ): Either[Throwable, A] = SimpleDeployer.upsertBlocking(a)
+      ): Either[Throwable, A] = SimpleDeployer.upsertBlocking(a, atMost)
 
   }
 
@@ -46,13 +47,13 @@ trait ApiOps {
       ): (Future[A1], Future[A2]) = t.map(_.upsert(), _.upsert())
 
     def upsertBlocking(
+        atMost: Duration = 1.minute
       )(implicit
         executor: ExecutionContext,
         client: K8SRequestContext,
         lc: LoggingContext
       ): (Either[Throwable, A1], Either[Throwable, A2]) =
-      t.map(_.upsertBlocking(), _.upsertBlocking())
+      t.map(_.upsertBlocking(atMost), _.upsertBlocking(atMost))
 
   }
-
 }
