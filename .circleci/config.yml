@@ -61,7 +61,7 @@ jobs:
           command: |
             until nc -z localhost 3000; do
               echo 'Waiting for port forwarding to activate...'
-              sleep 500
+              sleep 0.5
             done
 
             set -x
