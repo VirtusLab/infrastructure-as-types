@@ -15,9 +15,9 @@ object dsl {
     (obj: Configuration) => ConfigMapVolumeSource(name = obj.name)
 }
 
-object deployment extends ApiOps with DefaultInterpreters with DefaultDeinterpreters with InterpreterOps with TupleOps
+object deployment extends UpsertOps with DefaultInterpreters with DefaultDeinterpreters with InterpreterOps with TupleOps
 
-object playjson extends PlayJsonProcessors with DefaultInterpreters with InterpreterOps with TupleOps
+object playjson extends PlayJsonProcessors with DefaultInterpreters with InterpreterOps with TupleOps with ApiOps
 
 object interpreter extends DefaultInterpreters
 object subinterpreter extends DefaultSubinterpreters

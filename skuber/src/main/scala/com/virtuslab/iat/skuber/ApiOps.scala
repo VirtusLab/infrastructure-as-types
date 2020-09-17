@@ -9,12 +9,13 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ ExecutionContext, Future }
 
 trait ApiOps {
-
-  import com.virtuslab.iat.scala.ops._
-
   implicit class ObjectResourceOps[A <: ObjectResource](a: A) {
     def map[B](f: A => B): B = f(a)
   }
+}
+
+trait UpsertOps extends ApiOps {
+  import com.virtuslab.iat.scala.ops._
 
   implicit class ObjectResourceOps1[A <: ObjectResource: Format: ResourceDefinition](a: A) {
     def upsert(
