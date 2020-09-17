@@ -18,10 +18,12 @@ trait PlayJsonProcessors {
   implicit class ObjectResourceOps1[A <: ObjectResource: Writes](a: A) {
     def asJsValues: List[JsValue] = asJsValue(a) :: Nil
     def asMetaJsValues: List[(Metadata, JsValue)] = asMetaJsValue(a) :: Nil
+    def asYamlStrings: List[String] = asYamlString(a) :: Nil
   }
 
   implicit class ObjectResourceOps2[A1 <: ObjectResource: Writes, A2 <: ObjectResource: Writes](t: (A1, A2)) {
     def asJsValues: List[JsValue] = t.map(_.asJsValues, _.asJsValues).reduce(_ ++ _)
     def asMetaJsValues: List[(Metadata, JsValue)] = t.map(_.asMetaJsValues, _.asMetaJsValues).reduce(_ ++ _)
+    def asYamlStrings: List[String] = t.map(_.asYamlStrings, _.asYamlStrings).reduce(_ ++ _)
   }
 }
