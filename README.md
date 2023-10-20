@@ -3,6 +3,12 @@
 
 ![Logo](logo-square-400.png)
 
+> [!IMPORTANT]  
+> The successor of this project is called [**Besom**](https://github.com/VirtusLab/besom) and uses [Pulumi](pulumi.com).
+
+> [!WARNING]  
+> This repository is archived
+
 Infrastructure as Types project provides tools for modern infrastructure declaration and deployment.
 From simple application deployment script to a complex custom control plane, we'd like to help you write the code you need.
 
